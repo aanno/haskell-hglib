@@ -281,8 +281,9 @@ data HgError
 ## Compatibility
 
 - **Mercurial**: Requires Mercurial 1.9+ (command server support)
-- **GHC**: Tested with GHC 8.10.7, 9.0.2, 9.2.8, 9.4.8, 9.6.3
-- **Platforms**: Linux, macOS, Windows (anywhere Mercurial runs)
+- **GHC**: Tested with GHC 9.8.4 ~8.10.7, 9.0.2, 9.2.8, 9.4.8, 9.6.3~
+- **Stack snapshot**: lts-23.14
+- **Platforms**: Linux ~, macOS, Windows (anywhere Mercurial runs)~
 
 ## Examples
 
