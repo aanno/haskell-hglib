@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{-# LANGUAGE OverloadedStrings #-}
-
 -- Test/HgLib/CommitSpec.hs
 module Test.HgLib.CommitSpec (spec) where
 

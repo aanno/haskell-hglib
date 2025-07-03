@@ -49,7 +49,7 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
-- -fprint-potential-instances
+# - -fprint-potential-instances
 - -O2
 
 library:
