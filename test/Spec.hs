@@ -3,7 +3,7 @@
 
 -- Main test runner
 -- Spec.hs
-module Spec (main) where
+module Main (main) where
 
 import Test.Hspec
 import qualified Test.HgLib.SummarySpec as Summary
