@@ -38,6 +38,7 @@ import System.Exit (ExitCode(..))
 import System.IO (Handle, hClose, hFlush)
 import System.Process (ProcessHandle, createProcess, proc, std_in, std_out, std_err, 
                       StdStream(..), waitForProcess, terminateProcess)
+import System.Timeout (timeout)
 
 import HgLib.Types
 import HgLib.Error
@@ -114,14 +115,27 @@ openClient config@HgConfig{..} = do
 
 -- | Close the Mercurial client and return exit code
 closeClient :: HgClient -> IO ExitCode
-closeClient HgClient{..} =
-    let cleanup = do
-            hClose clientStdin
+closeClient HgClient{..} = do
+    logDebug "closeClient: starting cleanup"
+
+    -- First, close stdin to signal the server to exit
+    hClose clientStdin
+
+    -- Give the process a moment to exit gracefully
+    result <- timeout 5000000 (waitForProcess clientProcess)  -- 5 second timeout
+
+    case result of
+        Just exitCode -> do
+            logDebug $ "closeClient: process exited with " ++ show exitCode
             hClose clientStdout
             hClose clientStderr
-    in do
-        logDebug "closeClient"
-        waitForProcess clientProcess `finally` cleanup
+            return exitCode
+        Nothing -> do
+            logDebug "closeClient: timeout, terminating process"
+            terminateProcess clientProcess
+            hClose clientStdout
+            hClose clientStderr
+            return (ExitFailure 124)  -- time
 
 -- closeClient HgClient{..} = do
 --     hClose clientStdin `finally` do
