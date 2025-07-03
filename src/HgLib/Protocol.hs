@@ -41,6 +41,7 @@ import System.Process (ProcessHandle, createProcess, proc, std_in, std_out, std_
 
 import HgLib.Types
 import HgLib.Error
+import Logging
 
 -- | Protocol constants
 inputFormatSize :: Int
@@ -95,7 +96,6 @@ openClient config@HgConfig{..} = do
     let args = [hgHgPath, "serve", "--cmdserver", "pipe", "--config", "ui.interactive=True"]
             ++ maybe [] (\p -> ["-R", p]) hgPath
             ++ concatMap (\c -> ["--config", c]) hgConfigs
-    -- putStrLn $ show args
     
     let envs = [("HGPLAIN", "1")] ++ maybe [] (\e -> [("HGENCODING", e)]) hgEncoding
     
@@ -105,6 +105,7 @@ openClient config@HgConfig{..} = do
             , std_out = CreatePipe
             , std_err = CreatePipe
             }
+    logDebug $ "openClient: " ++ show hgHgPath ++ " " ++ show args ++ " env: " ++ show envs
     
     let client = HgClient proc_h stdin_h stdout_h stderr_h [] "" config Nothing hgDebug
     
@@ -118,7 +119,9 @@ closeClient HgClient{..} =
             hClose clientStdin
             hClose clientStdout
             hClose clientStderr
-    in waitForProcess clientProcess `finally` cleanup
+    in do
+        logDebug "closeClient"
+        waitForProcess clientProcess `finally` cleanup
 
 -- closeClient HgClient{..} = do
 --     hClose clientStdin `finally` do
@@ -134,7 +137,9 @@ withClient config action = bracket (openClient config) closeClient action
 readHello :: HgClient -> IO HgClient
 readHello client@HgClient{..} = do
     ChannelData channel msg <- readChannel client
-    
+
+    logDebug $ "readHello: channel: " ++ show channel ++ " msg: " ++ show msg
+
     when (channel == HelpChannel) $
         throwIO $ HgResponseError $ "Call to hg command shows help: Maybe wrong flag?" ++ show msg
 
@@ -188,6 +193,7 @@ readChannel HgClient{..} = do
         then return $ BS.pack [fromIntegral payloadLength]
         else BS.hGet clientStdout (fromIntegral payloadLength)
     
+    logDebug $ "readChannel: channel: " ++ show channel ++ " -> " ++ show payload
     return $ ChannelData channel payload
 
 -- | Write a command to the server
@@ -203,6 +209,7 @@ writeCommand HgClient{..} args = do
     BS.hPut clientStdin lengthHeader
     BS.hPut clientStdin argData
     hFlush clientStdin
+    logDebug $ "writeCommand: lengthHeader: " ++ show lengthHeader ++ " argData:" ++ show argData
 
 -- | Run a command and collect all output
 runCommand :: HgClient -> [ByteString] -> IO (ByteString, ByteString, Int)
@@ -258,7 +265,7 @@ rawCommand :: HgClient -> [ByteString] -> IO ByteString
 rawCommand client args = do
     let debugArgs = args ++ (["--logfile=-" | clientDebug client && head args `elem` debugChannelCommands])
     (stdout', stderr', exitCode) <- runCommand client debugArgs
-    
+    logDebug $ "rawCommand: exitCode: " ++ show exitCode ++ " stdout: " ++ show stdout' ++ "stderr: " ++ show stderr'
     if exitCode == 0
         then return stdout'
         else throwIO $ HgCommandError 
@@ -274,4 +281,6 @@ getEncoding = clientEncoding
 
 -- | Safely terminate client process
 terminateClient :: HgClient -> IO ()
-terminateClient HgClient{..} = terminateProcess clientProcess
+terminateClient HgClient{..} = do
+    logDebug "terminateClient"
+    terminateProcess clientProcess

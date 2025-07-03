@@ -10,9 +10,11 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Options.Applicative
 import System.Exit (exitFailure)
+import System.IO (hFlush, stdout)
 
 import HgLib
 import qualified HgLib.Commands as C
+import Logging
 
 -- | Command line options
 data Options = Options
@@ -84,7 +86,13 @@ main = do
        <> progDesc "Haskell Mercurial client demo"
        <> header "hglib-demo - demonstrate Haskell HgLib functionality" )
     
-    runCli opts
+    let logConfig = defaultLogConfig 
+            { minLogLevel = DEBUG
+            , logFile = Nothing
+            , console = Just stdout
+            }
+
+    withLogging logConfig $ runCli opts
 
 -- | Execute the selected command
 runCli :: Options -> IO ()

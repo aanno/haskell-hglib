@@ -1,6 +1,6 @@
 name:                haskell-hglib
 version:             0.1.0.0
-github:              "https://github.com/aanno/haskell-hglib"
+github:              "aanno/haskell-hglib"
 license:             BSD-3-Clause
 author:              "aanno"
 maintainer:          "aanno@users.noreply.github.com"
@@ -28,6 +28,13 @@ dependencies:
 - aeson >= 2.2.3.0
 - binary >= 0.8.9.1
 - optparse-applicative
+# logging
+- filepath >= 1.4.301.0
+- stm >= 2.5.3.1
+- async
+- tasty >= 1.5.3
+- streamly >= 0.10.1
+- streamly-core >= 0.2.3
 
 ghc-options:
 - -Wall
