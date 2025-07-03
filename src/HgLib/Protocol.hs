@@ -57,6 +57,7 @@ data Channel
     | InputChannel      -- ^ 'I' - input request
     | LineInputChannel  -- ^ 'L' - line input request
     | DebugChannel      -- ^ 'd' - debug output
+    | HelpChannel       -- ^ 'h' - help output
     deriving (Show, Eq)
 
 -- | Channel data from server
@@ -74,6 +75,7 @@ parseChannel = \case
     73  -> Right InputChannel      -- 'I'
     76  -> Right LineInputChannel  -- 'L'
     100 -> Right DebugChannel      -- 'd'
+    104 -> Right HelpChannel       -- 'h'
     c   -> Left $ "Unknown channel: " ++ show (toEnum $ fromIntegral c :: Char)
 
 -- | Convert channel to byte
@@ -85,6 +87,7 @@ channelToByte = \case
     InputChannel     -> 73   -- 'I' 
     LineInputChannel -> 76   -- 'L'
     DebugChannel     -> 100  -- 'd'
+    HelpChannel      -> 104  -- 'h'
 
 -- | Open a new Mercurial client with the given configuration
 openClient :: HgConfig -> IO HgClient
@@ -92,6 +95,7 @@ openClient config@HgConfig{..} = do
     let args = [hgHgPath, "serve", "--cmdserver", "pipe", "--config", "ui.interactive=True"]
             ++ maybe [] (\p -> ["-R", p]) hgPath
             ++ concatMap (\c -> ["--config", c]) hgConfigs
+    -- putStrLn $ show args
     
     let envs = [("HGPLAIN", "1")] ++ maybe [] (\e -> [("HGENCODING", e)]) hgEncoding
     
@@ -102,7 +106,7 @@ openClient config@HgConfig{..} = do
             , std_err = CreatePipe
             }
     
-    let client = HgClient proc_h stdin_h stdout_h stderr_h [] "" config Nothing
+    let client = HgClient proc_h stdin_h stdout_h stderr_h [] "" config Nothing hgDebug
     
     -- Read hello message and validate server
     readHello client
@@ -131,8 +135,11 @@ readHello :: HgClient -> IO HgClient
 readHello client@HgClient{..} = do
     ChannelData channel msg <- readChannel client
     
+    when (channel == HelpChannel) $
+        throwIO $ HgResponseError $ "Call to hg command shows help: Maybe wrong flag?" ++ show msg
+
     when (channel /= OutputChannel) $ 
-        throwIO $ HgResponseError "Expected output channel in hello message"
+        throwIO $ HgResponseError $ "Expected output channel in hello message:\n" ++ show msg
     
     let lines' = BS8.lines msg
     when (length lines' < 2) $ 
@@ -235,14 +242,22 @@ collectResponse client stdout' stderr' = do
             hFlush (clientStdin client)
             collectResponse client stdout' stderr'
         
-        DebugChannel ->
+        DebugChannel -> do
+            putStrLn $ "DebugChannel: " ++ show stdout' ++ ": " ++ show stderr'
+            -- Ignore debug output and continue
+            collectResponse client stdout' stderr'
+
+        HelpChannel -> do
+            -- TODO: formatting \n, \\n ...
+            putStrLn $ "HelpChannel: " ++ show stdout' ++ ": " ++ show stderr'
             -- Ignore debug output and continue
             collectResponse client stdout' stderr'
 
 -- | Run a raw command with error handling
 rawCommand :: HgClient -> [ByteString] -> IO ByteString
 rawCommand client args = do
-    (stdout', stderr', exitCode) <- runCommand client args
+    let debugArgs = args ++ (["--logfile=-" | clientDebug client && head args `elem` debugChannelCommands])
+    (stdout', stderr', exitCode) <- runCommand client debugArgs
     
     if exitCode == 0
         then return stdout'

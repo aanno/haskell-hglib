@@ -30,6 +30,7 @@ module HgLib.Types
     , formatRevision
     , statusCodeToChar
     , charToStatusCode
+    , debugChannelCommands
     ) where
 
 import Control.Exception (Exception)
@@ -54,6 +55,7 @@ data HgClient = HgClient
     , clientEncoding :: !ByteString
     , clientConfig :: !HgConfig
     , clientVersion :: !(Maybe (Int, Int, Int, String))
+    , clientDebug :: !Bool -- from hgDebug of HgConfig
     } deriving stock (Generic)
 
 -- | Configuration for creating an HgClient
@@ -63,7 +65,43 @@ data HgConfig = HgConfig
     , hgConfigs :: ![String]           -- ^ Additional hg config options
     , hgHidden :: !Bool                -- ^ Include hidden changesets
     , hgHgPath :: !String              -- ^ Path to hg executable
+    , hgDebug :: !Bool                 -- ^ Set `--logfile=-` is command supports that;
+                                       -- ^ this will enable the debug channel
     } deriving stock (Show, Eq, Generic)
+
+-- `--logfile` is supported on:
+-- * commit
+-- * backout
+-- * import
+-- * amend
+-- * close-head
+-- * fetch
+-- * qcommit
+-- * qnew
+-- * qrefresh
+-- * qfold
+-- * qsave
+-- * rebase
+-- * record
+-- * uncommit
+
+debugChannelCommands :: [ByteString]
+debugChannelCommands = [
+    "commit"
+    , "backout"
+    , "import"
+    , "amend"
+    , "close-head"
+    , "fetch"
+    , "qcommit"
+    , "qnew"
+    , "qrefresh"
+    , "qfold"
+    , "qsave"
+    , "rebase"
+    , "record"
+    , "uncommit"
+    ]
 
 -- | Default configuration using current directory and system defaults
 defaultConfig :: HgConfig
@@ -73,6 +111,7 @@ defaultConfig = HgConfig
     , hgConfigs = []
     , hgHidden = False
     , hgHgPath = "hg"
+    , hgDebug = True
     }
 
 -- | Default configuration with specified repository path
