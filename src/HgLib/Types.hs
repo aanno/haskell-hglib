@@ -41,6 +41,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale, formatTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import GHC.Generics (Generic)
 import System.IO (Handle)
 import System.Process (ProcessHandle)
@@ -144,7 +145,8 @@ instance FromJSON Revision where
         return Revision{..}
       where
         parseTimeFromUnix :: Double -> UTCTime
-        parseTimeFromUnix = error "TODO: implement proper time parsing"
+        parseTimeFromUnix = posixSecondsToUTCTime . realToFrac
+        -- parseTimeFromUnix = error "TODO: implement proper time parsing"
 
 instance ToJSON Revision where
     toJSON Revision{..} = object

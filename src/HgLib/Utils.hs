@@ -52,9 +52,8 @@ import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale, formatTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime, utcTimeToPOSIXSeconds)
 import Text.Read (readMaybe)
-import Data.Aeson (Value(..), Object, Array, decode, (.:))
-import Data.Aeson.Key (fromString)
-import qualified Data.Aeson.KeyMap as A (lookup)
+import Data.Aeson (Value(..), Object, Array, decode, (.:), Result(..), withObject)
+import Data.Aeson.Types (parse)
 import qualified Data.Vector as V
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 
@@ -91,49 +90,39 @@ parseJsonRevisions text =
 
 -- | Parse a single JSON revision object
 parseJsonRevision :: Value -> Maybe Revision
-parseJsonRevision (Object obj) = do
-    -- Extract fields using KeyMap lookup
-    let rev = case A.lookup (fromString "rev") obj of
-                Just (Number n) -> Just $ T.pack $ show (round n :: Int)
-                _ -> Nothing
-                
-        node = case A.lookup (fromString "node") obj of
-                 Just (String s) -> Just $ TE.encodeUtf8 s
-                 _ -> Nothing
-                 
-        tags = case A.lookup (fromString "tags") obj of
-                 Just (Array arr) -> Just $ T.intercalate " " $ mapMaybe extractString $ V.toList arr
-                 _ -> Just ""
-                 
-        branch = case A.lookup (fromString "branch") obj of
-                   Just (String s) -> Just s
-                   _ -> Nothing
-                   
-        author = case A.lookup (fromString "user") obj of
-                   Just (String s) -> Just s
-                   _ -> Nothing
-                   
-        desc = case A.lookup (fromString "desc") obj of
-                 Just (String s) -> Just s
-                 _ -> Nothing
-                 
-        date = case A.lookup (fromString "date") obj of
-                 Just (Array arr) | V.length arr >= 1 ->
-                   case V.head arr of
-                     Number timestamp -> Just $ posixSecondsToUTCTime $ realToFrac timestamp
-                     _ -> Nothing
-                 _ -> Nothing
-    
-    -- Build revision if all required fields are present
-    case (rev, node, tags, branch, author, desc, date) of
-        (Just r, Just n, Just t, Just b, Just a, Just d, Just dt) ->
-            Just $ Revision r n t b a d dt
-        _ -> Nothing
+parseJsonRevision val = 
+    case parse parseRev val of
+        Success rev -> Just rev
+        Error _ -> Nothing
   where
-    extractString (String s) = Just s
-    extractString _ = Nothing
-
-parseJsonRevision _ = Nothing
+    parseRev = withObject "Revision" $ \obj -> do
+        rev <- obj .: "rev"
+        node <- obj .: "node"
+        tags <- obj .: "tags"
+        branch <- obj .: "branch"
+        author <- obj .: "user"
+        desc <- obj .: "desc"
+        dateArray <- obj .: "date"
+        
+        timestamp <- case dateArray of
+            Array arr | V.length arr >= 1 -> 
+                case V.head arr of
+                    Number n -> return $ realToFrac n
+                    _ -> fail "Invalid timestamp"
+            _ -> fail "Invalid date format"
+        
+        let utcTime = posixSecondsToUTCTime timestamp
+            tagsText = T.intercalate " " tags
+        
+        return $ Revision
+            { revRev = T.pack $ show (rev :: Int)
+            , revNode = TE.encodeUtf8 node
+            , revTags = tagsText
+            , revBranch = branch
+            , revAuthor = author
+            , revDesc = desc
+            , revDate = utcTime
+            }
 
 -- | Parse annotation lines from annotate command output
 parseAnnotationLines :: Text -> [AnnotationLine]
