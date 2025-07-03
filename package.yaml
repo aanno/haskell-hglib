@@ -28,6 +28,9 @@ dependencies:
 - aeson >= 2.2.3.0
 - binary >= 0.8.9.1
 - optparse-applicative
+- vector >= 0.13.2.0
+- scientific >= 0.3.8.0
+- unordered-containers >= 0.2.20
 # logging
 - filepath >= 1.4.301.0
 - stm >= 2.5.3.1
