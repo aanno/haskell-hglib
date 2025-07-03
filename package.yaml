@@ -76,3 +76,9 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - haskell-hglib
+    - hspec-core >= 2.11.12
+    - hspec >= 2.11.12
+    - temporary
+    - directory
+    - process
+    - time

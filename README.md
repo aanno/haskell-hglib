@@ -5,7 +5,7 @@ Even this README is from the AI LLM!
 
 # HgLib - Haskell Mercurial Client Library
 
-A complete Haskell port of [python-hglib](https://www.mercurial-scm.org/wiki/PythonHglib) that provides a fast, convenient interface to Mercurial. It uses Mercurial's command server for communication with hg, offering better performance than spawning individual hg processes.
+A complete Haskell port of [python-hglib](https://www.mercurial-scm.org/wiki/PythonHglib) (from 03.07.2025, after version 2.6.2) that provides a fast, convenient interface to Mercurial. It uses Mercurial's command server for communication with hg, offering better performance than spawning individual hg processes.
 
 ## Features
 

@@ -59,6 +59,14 @@ data HgClient = HgClient
     , clientDebug :: !Bool -- from hgDebug of HgConfig
     } deriving stock (Generic)
 
+instance Show HgClient where
+    show HgClient{..} = 
+        "HgClient { capabilities = " ++ show clientCapabilities ++
+        ", encoding = " ++ show clientEncoding ++
+        ", config = " ++ show clientConfig ++
+        ", version = " ++ show clientVersion ++
+        ", debug = " ++ show clientDebug ++ " }"
+
 -- | Configuration for creating an HgClient
 data HgConfig = HgConfig
     { hgPath :: !(Maybe FilePath)      -- ^ Repository path (Nothing for current directory)

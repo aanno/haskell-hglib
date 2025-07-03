@@ -93,6 +93,13 @@ test-suite haskell-hglib-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Test.HgLib.CommitSpec
+      Test.HgLib.Common
+      Test.HgLib.ConfigSpec
+      Test.HgLib.LogSpec
+      Test.HgLib.StatusSpec
+      Test.HgLib.SummarySpec
+      Test.HgLib.UpdateSpec
       Paths_haskell_hglib
   autogen-modules:
       Paths_haskell_hglib
@@ -105,17 +112,21 @@ test-suite haskell-hglib-test
     , base >=4.7 && <5
     , binary >=0.8.9.1
     , bytestring >=0.12.1.0
+    , directory
     , filepath >=1.4.301.0
     , haskell-hglib
+    , hspec >=2.11.12
+    , hspec-core >=2.11.12
     , optparse-applicative
-    , process >=1.6.25.0
+    , process
     , scientific >=0.3.8.0
     , stm >=2.5.3.1
     , streamly >=0.10.1
     , streamly-core >=0.2.3
     , tasty >=1.5.3
+    , temporary
     , text >=2.1.1
-    , time >=1.12.2
+    , time
     , unordered-containers >=0.2.20
     , vector >=0.13.2.0
   default-language: Haskell2010
