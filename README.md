@@ -1,3 +1,8 @@
+**Work in progress!** - Not tested. Not functional.
+
+A port of `python-hglib` mostly done by [claude.ai](https://claude.ai).
+Even this README is from the AI LLM!
+
 # HgLib - Haskell Mercurial Client Library
 
 A complete Haskell port of [python-hglib](https://www.mercurial-scm.org/wiki/PythonHglib) that provides a fast, convenient interface to Mercurial. It uses Mercurial's command server for communication with hg, offering better performance than spawning individual hg processes.
@@ -9,9 +14,11 @@ A complete Haskell port of [python-hglib](https://www.mercurial-scm.org/wiki/Pyt
 - **Type Safety**: Leverages Haskell's type system for reliability
 - **Resource Management**: Automatic cleanup of server connections
 - **Error Handling**: Structured error types with detailed information
-- **Well Tested**: Extensive test suite covering all functionality
+- ~**Well Tested**: Extensive test suite covering all functionality~
 
 ## Installation
+
+**Not published!** Hence the following will _not_ work!
 
 Add to your `cabal.project` or install directly:
 
@@ -289,13 +296,15 @@ See the [demo application](app/Main.hs) for comprehensive usage examples, includ
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+~Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.~
 
 ## License
 
-This library is available under the MIT license, same as python-hglib.
+This library is available under the BSD-3-Clause license, while python-hglib is MIT.
 
 ## Comparison with python-hglib
+
+**Not tested!** Hence the following is only opinion of claude.ai!
 
 This Haskell port aims for API compatibility while leveraging Haskell's strengths:
 
