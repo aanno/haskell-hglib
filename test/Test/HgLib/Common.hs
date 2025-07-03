@@ -9,6 +9,7 @@ module Test.HgLib.Common
     , commonCreateFile
     , commonRemoveFile
     , hspec
+    , nonInteractiveConfig
     ) where
 
 import Control.Exception (bracket, finally)
@@ -36,6 +37,16 @@ data BaseTest = BaseTest
     , btTempDir :: FilePath
     } deriving (Show)
 
+-- nonInteractiveConfig = defaultConfig 
+--     { configEditor = Just "true"
+--     , configNonInteractive = True  -- if this option exists
+--     }
+
+nonInteractiveConfig :: HgConfig
+nonInteractiveConfig = defaultConfig {
+    hgConfigs = ["ui.editor=true", "ui.interactive=false", "ui.hgeditor=true"]
+}
+
 -- | Setup a test repository and run tests
 withTestRepo :: (BaseTest -> IO a) -> IO a
 withTestRepo action = 
@@ -45,7 +56,7 @@ withTestRepo action =
             (setCurrentDirectory tmpDir >> callProcess "hg" ["init"])
             (setCurrentDirectory oldDir)
             $ do
-                client <- openClient defaultConfig
+                client <- openClient nonInteractiveConfig
                 let baseTest = BaseTest client tmpDir
                 finally (action baseTest) (closeClient client >> return ())
 
@@ -59,13 +70,13 @@ withTwoRepos action =
             -- Setup first repo
             setCurrentDirectory tmpDir1
             callProcess "hg" ["init"]
-            client1 <- openClient defaultConfig
+            client1 <- openClient nonInteractiveConfig
             let baseTest1 = BaseTest client1 tmpDir1
             
             -- Setup second repo  
             setCurrentDirectory tmpDir2
             callProcess "hg" ["init"]
-            client2 <- openClient defaultConfig
+            client2 <- openClient nonInteractiveConfig
             let baseTest2 = BaseTest client2 tmpDir2
             
             finally 

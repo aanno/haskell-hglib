@@ -20,7 +20,7 @@ spec = describe "Config" $ do
         hPutStrLn h "[section]\nkey=value"
       -- Reopen client to see config changes
       closeClient (btClient bt)
-      client <- openClient defaultConfig
+      client <- openClient nonInteractiveConfig
       config <- C.config client [] []
       let hasConfig = any (\(s, k, v) -> s == "section" && k == "key" && v == "value") config
       hasConfig `shouldBe` True
@@ -34,7 +34,7 @@ spec = describe "Config" $ do
         hPutStrLn h "[section]\nkey=value"
         hPutStrLn h "[other]\nother=val"
       closeClient (btClient bt)
-      client <- openClient defaultConfig
+      client <- openClient nonInteractiveConfig
       sectionConfig <- C.config client ["section"] []
       all (\(s, _, _) -> s == "section") sectionConfig `shouldBe` True
       closeClient client
