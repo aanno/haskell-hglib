@@ -19,7 +19,7 @@ module HgLib.Utils
     , parseResolve
     , parseTags
     , parsePhase
-    , parseStatus
+    , parseStatusWithRoot
     , parseCommitResult
     , parseUpdateResult
     , parseVersion
@@ -56,8 +56,12 @@ import Data.Aeson (Value(..), Object, Array, decode, (.:), Result(..), withObjec
 import Data.Aeson.Types (parse)
 import qualified Data.Vector as V
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import System.FilePath (takeFileName, normalise, makeRelative)
+import Data.List (isInfixOf)
+import System.IO.Unsafe (unsafePerformIO)
 
 import HgLib.Types
+import Logging
 
 -- | Build command arguments from options and positional arguments
 buildArgs :: String -> [(String, Maybe String)] -> [String] -> [ByteString]
@@ -241,14 +245,31 @@ parsePhase = mapMaybe parsePhaseLine . T.lines
                 Nothing -> Nothing
             _ -> Nothing
 
--- | Parse status from status command output
-parseStatus :: ByteString -> [HgStatus]
-parseStatus = mapMaybe parseStatusLine . BS8.split '\0'
+-- | Parse status relative to repository root
+parseStatusWithRoot :: FilePath -> ByteString -> [HgStatus]
+parseStatusWithRoot repoRoot = mapMaybe parseStatusLine . BS8.split '\0'
   where
     parseStatusLine line 
-        | BS.length line >= 2 = 
-            Just $ HgStatus (BS8.head line) (BS8.unpack $ BS.drop 2 line)
+        | BS.length line >= 2 =
+            let code = BS8.head line
+                rawPath = BS8.unpack $ BS.drop 2 line
+                cleanPath = takeWhile (`notElem` ['\n', '\r']) rawPath
+                -- Extract everything after the last occurrence of repoRoot/
+                relativePath = extractRelative (repoRoot ++ "/") cleanPath
+            in Just $ HgStatus code relativePath
         | otherwise = Nothing
+
+    extractRelative prefix fullPath =
+        case findLastIndex prefix fullPath of
+            Just idx -> drop (idx + length prefix) fullPath
+            Nothing -> takeFileName fullPath  -- fallback to just filename
+
+    findLastIndex needle haystack =
+        let indices = [i | i <- [0..length haystack - length needle],
+                          take (length needle) (drop i haystack) == needle]
+        in case indices of
+            [] -> Nothing
+            _ -> Just (last indices)
 
 -- | Parse commit result to extract revision number and node
 parseCommitResult :: Text -> IO (Int, Text)

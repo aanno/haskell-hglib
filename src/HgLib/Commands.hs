@@ -78,6 +78,7 @@ import HgLib.Types
 import HgLib.Protocol
 import HgLib.Error
 import HgLib.Utils
+import Logging
 
 -- | Options for the add command
 data AddOptions = AddOptions
@@ -518,6 +519,11 @@ root client = do
 -- | Show repository status
 status :: HgClient -> StatusOptions -> IO [HgStatus]
 status client StatusOptions{..} = do
+    -- First get the repository root
+    (rootResult, _, _) <- runCommand client ["root"]
+    let repoRoot = T.unpack $ T.strip $ TE.decodeUtf8 rootResult
+
+    -- Then run status command
     let args = buildArgs "status"
             [ ("rev", statusRev)
             , ("change", statusChange)
@@ -535,9 +541,11 @@ status client StatusOptions{..} = do
             , ("exclude", statusExclude)
             , ("print0", Just "")
             ] []
-    
-    result <- rawCommand client args
-    return $ parseStatus result
+
+    (result, _, _) <- runCommand client args
+    logDebug $ "status: args: " ++ show args
+    logDebug $ "calling parseStatusWithRoot " ++ show repoRoot ++ show result
+    return $ parseStatusWithRoot repoRoot result
 
 -- | Add tags
 tag :: HgClient -> [String] -> [String] -> IO ()
