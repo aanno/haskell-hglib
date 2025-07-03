@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | Demo application showing how to use the Haskell HgLib
 module Main where
@@ -11,6 +12,7 @@ import Options.Applicative
 import System.Exit (exitFailure)
 
 import HgLib
+import qualified HgLib.Commands as C
 
 -- | Command line options
 data Options = Options
@@ -82,11 +84,11 @@ main = do
        <> progDesc "Haskell Mercurial client demo"
        <> header "hglib-demo - demonstrate Haskell HgLib functionality" )
     
-    runCommand opts
+    runCli opts
 
 -- | Execute the selected command
-runCommand :: Options -> IO ()
-runCommand Options{..} = do
+runCli :: Options -> IO ()
+runCli Options{..} = do
     let config = maybe defaultConfig defaultConfigWithPath optRepository
     
     case optCommand of
@@ -131,7 +133,7 @@ showLog client limitOpt = do
     putStrLn "================="
     
     let limit = maybe 10 id limitOpt
-    revisions <- log_ client [] defaultLogOptions { logLimit = Just limit }
+    revisions <- C.log_ client [] C.defaultLogOptions { C.logLimit = Just limit }
     
     forM_ revisions $ \rev -> do
         putStrLn $ "Revision: " ++ T.unpack (formatRevision rev)
@@ -193,7 +195,7 @@ doAdd client files = do
         then putStrLn "No files specified"
         else do
             putStrLn $ "Adding " ++ show (length files) ++ " files..."
-            success <- add client files defaultAddOptions
+            success <- C.add client files C.defaultAddOptions
             
             if success
                 then putStrLn "Files added successfully"
@@ -211,27 +213,27 @@ advancedExample = do
     
     withClient config $ \client -> do
         -- Get detailed status with options
-        statuses <- status client defaultStatusOptions
-            { statusModified = True
-            , statusAdded = True
-            , statusRemoved = True
+        statuses <- C.status client C.defaultStatusOptions
+            { C.statusModified = True
+            , C.statusAdded = True
+            , C.statusRemoved = True
             }
         
         putStrLn $ "Modified/Added/Removed files: " ++ show (length statuses)
         
         -- Get log with specific options
-        recent <- log_ client [] defaultLogOptions
-            { logLimit = Just 5
-            , logBranch = Just "default"
-            , logNoMerges = True
+        recent <- C.log_ client [] C.defaultLogOptions
+            { C.logLimit = Just 5
+            , C.logBranch = Just "default"
+            , C.logNoMerges = True
             }
         
         putStrLn $ "Recent non-merge commits: " ++ show (length recent)
         
         -- Show diff for working directory
-        diff <- HgLib.Commands.diff client [] defaultDiffOptions
-            { diffGit = True
-            , diffShowFunction = True
+        diff <- C.diff client [] C.defaultDiffOptions
+            { C.diffGit = True
+            , C.diffShowFunction = True
             }
         
         putStrLn "Current diff:"

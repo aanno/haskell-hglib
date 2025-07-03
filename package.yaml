@@ -27,6 +27,7 @@ dependencies:
 - bytestring >= 0.12.1.0
 - aeson >= 2.2.3.0
 - binary >= 0.8.9.1
+- optparse-applicative
 
 ghc-options:
 - -Wall
