@@ -244,7 +244,7 @@ parseVersion text =
                     [] -> (0, "")
                     (micro:_) -> 
                         let microStr = T.unpack micro
-                            (digits, suffix) = span (`elem` ['0'..'9']) microStr
+                            (digits, suffix) = span (`elem` ['0' .. '9']) microStr
                         in (fromMaybe 0 $ readMaybe digits, suffix)
             in (majorNum, minorNum, microNum, extra)
         _ -> (0, 0, 0, T.unpack cleanText)

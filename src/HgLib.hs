@@ -59,13 +59,14 @@ import qualified Data.Text.Encoding as TE
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BS8
+import Data.Maybe (fromMaybe, mapMaybe, listToMaybe)
+import Text.Read (readMaybe)
 
 import HgLib.Types
 import qualified HgLib.Commands as C
 import HgLib.Protocol
 import HgLib.Error
 import qualified HgLib.Utils as U
-import Data.Maybe (fromMaybe, mapMaybe, listToMaybe)
 import HgLib.Utils (buildArgs)
 
 -- | Summary information about a repository
@@ -81,24 +82,24 @@ data RepositoryInfo = RepositoryInfo
 simpleClone :: String -> FilePath -> IO ()
 simpleClone source dest = do
     withClient defaultConfig $ \client ->
-        clone client source (Just dest) []
+        C.clone client source (Just dest) []
 
 -- | Simple commit with just a message
 simpleCommit :: HgClient -> String -> IO (Int, Text)
 simpleCommit client message = 
-    commit client defaultCommitOptions { C.commitMessage = Just message }
+    C.commit client C.defaultCommitOptions { C.commitMessage = Just message }
 
 -- | Simple status check (all files)
 simpleStatus :: HgClient -> IO [HgStatus]
-simpleStatus client = status client C.defaultStatusOptions
+simpleStatus client = C.status client C.defaultStatusOptions
 
 -- | Simple log (last 10 revisions)
 simpleLog :: HgClient -> IO [Revision]
-simpleLog client = log_ client [] C.defaultLogOptions { C.logLimit = Just 10 }
+simpleLog client = C.log_ client [] C.defaultLogOptions { C.logLimit = Just 10 }
 
 -- | Get the current (tip) revision
 getCurrentRevision :: HgClient -> IO Revision
-getCurrentRevision = tip
+getCurrentRevision = C.tip
 
 -- | Check if working directory is clean (no uncommitted changes)
 isCleanWorkingDirectory :: HgClient -> IO Bool
@@ -109,26 +110,22 @@ isCleanWorkingDirectory client = do
 -- | Get comprehensive repository information
 getRepositoryInfo :: HgClient -> IO RepositoryInfo
 getRepositoryInfo client = do
-    repoRoot <- root client
+    repoRoot <- C.root client
     repoCurrentRevision <- getCurrentRevision client
     repoBranch <- C.branch client Nothing []
     
     statuses <- simpleStatus client
     let repoIsClean = null statuses
     
-    summaryInfo <- summary client []
-    let repoUpdateCount = summaryUpdateCount summaryInfo
+    summaryKV <- C.summary client []
+    let repoUpdateCount = parseUpdateCount $ lookup "update" summaryKV
     
-    return RepositoryInfo{..} (buildArgs "branches" opts [])
-    return $ parseBranches $ T.lines $ TE.decodeUtf8 result
+    return RepositoryInfo{..}
   where
-    parseBranches = mapMaybe parseBranch
-    parseBranch line = case T.splitOn ":" (T.strip line) of
-        [nameRev, node] -> case T.words nameRev of
-            parts -> case reads (T.unpack $ last parts) of
-                [(revNum, "")] -> Just (T.unwords (init parts), revNum, T.strip node)
-                _ -> Nothing
-        _ -> Nothing
+    parseUpdateCount Nothing = 0
+    parseUpdateCount (Just text)
+        | "(current)" `T.isInfixOf` text = 0
+        | otherwise = fromMaybe 0 $ readMaybe . T.unpack . T.takeWhile (/= ' ') $ text
 
 -- | Create a bundle
 bundle :: HgClient -> FilePath -> [String] -> IO Bool

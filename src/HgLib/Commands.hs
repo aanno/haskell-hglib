@@ -72,6 +72,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale)
+import Text.Read (readMaybe)
 
 import HgLib.Types
 import HgLib.Protocol
@@ -180,8 +181,8 @@ add client files AddOptions{..} = do
             , ("exclude", addExclude)
             ] files
     
-    result <- rawCommand client args
-    return True  -- TODO: Parse actual result
+    (result, _, exitCode) <- runCommand client args
+    return (exitCode == 0)
 
 -- | Add new files and remove missing files
 addRemove :: HgClient -> [FilePath] -> Maybe Int -> Bool -> Maybe String -> Maybe String -> IO Bool
@@ -193,8 +194,8 @@ addRemove client files similarity dryrun include exclude = do
             , ("exclude", exclude)
             ] files
     
-    result <- rawCommand client args
-    return True
+    (result, _, exitCode) <- runCommand client args
+    return (exitCode == 0)
 
 -- | Show changeset information by line for each file
 annotate :: HgClient -> [FilePath] -> Maybe String -> [String] -> IO [AnnotationLine]
