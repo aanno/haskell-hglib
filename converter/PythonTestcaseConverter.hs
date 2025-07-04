@@ -197,7 +197,7 @@ convertExpr expr = case expr of
   _ -> "-- TODO: expr"
 
 extractTestMethods :: StatementSpan -> [String]
-extractTestMethods (Class name _ _ body) = mapMaybe convertTestMethod body
+extractTestMethods (Class _ _ body _) = mapMaybe convertTestMethod body
 extractTestMethods _ = []
 
 -- | Generate the Haskell module
