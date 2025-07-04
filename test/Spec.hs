@@ -45,15 +45,18 @@ import qualified Test.HgLib.UpdateSpec as Update
 -- import qualified Test.HgLib.AnnotateSpec as Annotate
 -- import qualified Test.HgLib.ClientSpec as Client
 
-logConfig :: LogConfig
-logConfig = defaultLogConfig { 
+logging :: IO () -> IO ()
+logging action = do
+  osPath <- encodeFS "spec.log"
+  let config = defaultLogConfig { 
     minLogLevel = DEBUG
     , logFile = Just $ unsafePerformIO $ encodeFS "spec.log"
     , console = Nothing
     }
+  withLogging config action
 
 main :: IO ()
-main = hspec $ around_ (withLogging logConfig) $ do
+main = hspec $ around_ logging $ do
   describe "HgLib" $ do
     Summary.spec
     Status.spec
