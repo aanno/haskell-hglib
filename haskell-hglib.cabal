@@ -128,6 +128,7 @@ test-suite haskell-hglib-test
       Test.HgLib.CommitSpec
       Test.HgLib.Common
       Test.HgLib.ConfigSpec
+      Test.HgLib.ConvertedCommitSpec
       Test.HgLib.LogSpec
       Test.HgLib.StatusSpec
       Test.HgLib.SummarySpec

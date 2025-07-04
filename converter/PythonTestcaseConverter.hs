@@ -51,6 +51,13 @@ pythonToHaskellIdent s =
     "test_update" -> "should handle update"
     "test_remote" -> "should handle remote"
     "test_two_parents" -> "should handle two parents"
+    "test_user" -> "should handle commit with custom user"
+    "test_no_user" -> "should fail with empty user"
+    "test_close_branch" -> "should close branch"
+    "test_message_logfile" -> "should handle message and logfile conflicts"
+    "test_date" -> "should handle custom date"
+    "test_amend" -> "should amend previous commit"
+    "test_nul_injection" -> "should prevent null injection"
     _ -> s
 
 -- | Convert a Python test method to Haskell spec
@@ -91,6 +98,18 @@ convertStatement stmt = case stmt of
     [ArgExpr expr _] _) _ ->
       [convertExpr expr ++ " `shouldBe` True"]
   
+  -- Handle self.assertRaises
+  StmtExpr (Call 
+    (Dot (Var (Ident "self" _) _) (Ident "assertRaises" _) _) 
+    args _) _ ->
+      convertAssertRaises args
+
+  -- Handle self.assertNotEqual
+  StmtExpr (Call 
+    (Dot (Var (Ident "self" _) _) (Ident "assertNotEqual" _) _) 
+    [ArgExpr actual _, ArgExpr expected _] _) _ ->
+      [convertExpr actual ++ " `shouldNotBe` " ++ convertExpr expected]
+  
   -- Handle self.append
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "append" _) _) 
@@ -98,14 +117,76 @@ convertStatement stmt = case stmt of
       case (file, content) of
         (Strings [fileStr] _, Strings [contentStr] _) ->
           ["commonAppendFile \"" ++ fileStr ++ "\" \"" ++ contentStr ++ "\""]
-        _ -> ["-- TODO: append with non-string args"]
+        _ -> ["commonAppendFile " ++ convertExpr file ++ " " ++ convertExpr content]
   
-  -- Handle self.client.commit
+  -- Handle self.client.commit with tuple assignment
   Assign 
     [Tuple [Var (Ident rev _) _, Var (Ident node _) _] _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
       let commitArgs = convertCommitArgs args
       in ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client " ++ commitArgs]
+  
+  -- Handle self.client.commit with single variable assignment
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
+      let commitArgs = convertCommitArgs args
+      in [var ++ " <- C.commit client " ++ commitArgs]
+  
+  -- Handle self.client.log assignment
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "log" _) _) args _) _ ->
+      case args of
+        [ArgExpr nodeExpr _] -> [var ++ " <- C.log_ client [" ++ convertExpr nodeExpr ++ "] C.defaultLogOptions"]
+        [] -> [var ++ " <- C.log_ client [] C.defaultLogOptions"]
+        _ -> [var ++ " <- C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"]
+  
+  -- Handle self.client.branches assignment
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "branches" _) _) args _) _ ->
+      [var ++ " <- C.branches client " ++ convertBranchesArgs args]
+  
+  -- Handle self.client.tip assignment
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "tip" _) _) args _) _ ->
+      [var ++ " <- C.tip client"]
+  
+  -- Handle self.client.branch call
+  StmtExpr (Call 
+    (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "branch" _) _) 
+    args _) _ ->
+      case args of
+        [ArgExpr branchName _] -> ["C.branch client (Just " ++ convertExpr branchName ++ ") []"]
+        _ -> ["C.branch client Nothing []"]
+  
+  -- Handle variable assignment from indexing
+  Assign 
+    [Var (Ident var _) _]
+    (Subscript listExpr (Int 0 _ _) _) _ ->
+      [var ++ " <- head <$> " ++ convertExpr listExpr]
+  
+  -- Handle multiple variable assignment from self.client.log
+  Assign 
+    [Tuple vars _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "log" _) _) args _) _ ->
+      let varNames = [name | Var (Ident name _) _ <- vars]
+          logArgs = convertLogArgs args
+      in ["[" ++ intercalate ", " varNames ++ "] <- C.log_ client " ++ logArgs ++ " C.defaultLogOptions"]
+  
+  -- Handle datetime.datetime.now assignment
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "datetime" _) _) (Ident "datetime" _) _) (Ident "now" _) _) [] _) _ ->
+      [var ++ " <- getCurrentTime"]
+  
+  -- Handle datetime method calls
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot varExpr (Ident "replace" _) _) args _) _ ->
+      [var ++ " <- return " ++ convertExpr varExpr ++ " -- TODO: handle replace"]
   
   -- Handle self.client.summary()
   Assign 
@@ -130,8 +211,62 @@ convertStatement stmt = case stmt of
           ["pendingWith \"phase not supported\""]
         _ -> ["-- TODO: raise " ++ take 30 (show expr)]
   
+  -- Handle len() function calls in assertions
+  StmtExpr (Call 
+    (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
+    [ArgExpr expected _, ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _] _) _ ->
+      ["length " ++ convertExpr listExpr ++ " `shouldBe` " ++ convertExpr expected]
+  
+  -- Handle reversed len() function calls in assertions
+  StmtExpr (Call 
+    (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
+    [ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _, ArgExpr expected _] _) _ ->
+      ["length " ++ convertExpr listExpr ++ " `shouldBe` " ++ convertExpr expected]
+  
   -- Default case
-  _ -> ["-- TODO: " ++ take 60 (show stmt)]
+  _ -> ["-- TODO: " ++ take 80 (show stmt)]
+
+-- | Convert assertRaises calls
+convertAssertRaises :: [ArgumentSpan] -> [String]
+convertAssertRaises args = case args of
+  [ArgExpr exceptionType _, ArgExpr (Call func funcArgs _) _] ->
+    let funcCall = convertFunctionCall func funcArgs
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ funcCall,
+        "result `shouldSatisfy` isLeft"]
+  [ArgExpr exceptionType _, ArgExpr func _, ArgExpr arg _] ->
+    let funcCall = convertExpr func ++ " " ++ convertExpr arg
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ funcCall,
+        "result `shouldSatisfy` isLeft"]
+  _ -> ["-- TODO: assertRaises with " ++ show (length args) ++ " args"]
+
+-- | Convert function calls
+convertFunctionCall :: ExprSpan -> [ArgumentSpan] -> String
+convertFunctionCall func args = case func of
+  Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _ ->
+    "C." ++ method ++ " client " ++ convertMethodArgs method args
+  _ -> convertExpr func ++ " " ++ intercalate " " (map convertArg args)
+
+-- | Convert method arguments based on method name
+convertMethodArgs :: String -> [ArgumentSpan] -> String
+convertMethodArgs method args = case method of
+  "commit" -> convertCommitArgs args
+  "log" -> convertLogArgs args
+  "branches" -> convertBranchesArgs args
+  _ -> intercalate " " (map convertArg args)
+
+-- | Convert branches arguments
+convertBranchesArgs :: [ArgumentSpan] -> String
+convertBranchesArgs [] = "[]"
+convertBranchesArgs args = 
+  let opts = extractKeywordArgs args
+  in if "closed" `elem` map fst opts
+     then "[\"--closed\"]"
+     else "[]"
+
+-- | Convert log arguments
+convertLogArgs :: [ArgumentSpan] -> String
+convertLogArgs [] = "[]"
+convertLogArgs args = "[" ++ intercalate ", " (map convertArg args) ++ "]"
 
 -- | Convert if statement
 convertIfStatement :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> [String]
@@ -142,7 +277,7 @@ convertIfStatement [(cond, thenSuite)] elseSuite =
       let versionCheck = convertVersionCheck op versionParts
       in ["when " ++ versionCheck ++ " $ do"] ++ 
          map ("  " ++) (convertSuite thenSuite)
-    _ -> ["-- TODO: if statement"]
+    _ -> ["-- TODO: if statement with condition: " ++ take 50 (show cond)]
 convertIfStatement _ _ = ["-- TODO: complex if statement"]
 
 -- | Convert version check
@@ -157,30 +292,44 @@ convertVersionCheck op parts =
 
 -- | Convert commit arguments
 convertCommitArgs :: [ArgumentSpan] -> String
+convertCommitArgs [] = "C.defaultCommitOptions"
 convertCommitArgs args = 
-  let opts = extractCommitOptions args
-  in case lookup "message" opts of
-       Just msg -> "(mkTestCommitOptions " ++ show msg ++ 
-                  if lookup "addremove" opts == Just "True" 
-                  then " { C.commitAddRemove = True })"
-                  else ")"
-       Nothing -> case args of
-         [ArgExpr (Strings [msg] _) _] -> 
-           "(mkTestCommitOptions " ++ show msg ++ ")"
-         _ -> "[]"
+  let opts = extractKeywordArgs args
+      message = case args of
+        (ArgExpr msgExpr _):_ -> convertExpr msgExpr
+        _ -> "\"default\""
+      buildOptions = foldl addOption ("mkTestCommitOptions " ++ message) opts
+  in "(" ++ buildOptions ++ ")"
+
+-- | Add option to commit options
+addOption :: String -> (String, String) -> String
+addOption base (key, value) = case key of
+  "addremove" -> base ++ " { C.commitAddRemove = " ++ value ++ " }"
+  "user" -> base ++ " { C.commitUser = Just " ++ value ++ " }"
+  "date" -> base ++ " { C.commitDate = Just " ++ value ++ " }"
+  "closebranch" -> base ++ " { C.commitCloseBranch = " ++ value ++ " }"
+  "amend" -> base ++ " { C.commitAmend = " ++ value ++ " }"
+  "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
+  _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
 convertSummaryArgs [] = "[]"
 convertSummaryArgs args = "-- TODO: summary args"
 
--- | Extract commit options from arguments
-extractCommitOptions :: [ArgumentSpan] -> [(String, String)]
-extractCommitOptions = mapMaybe extractOpt
+-- | Extract keyword arguments
+extractKeywordArgs :: [ArgumentSpan] -> [(String, String)]
+extractKeywordArgs = mapMaybe extractOpt
   where
     extractOpt (ArgKeyword (Ident name _) expr _) = 
       Just (name, convertExpr expr)
     extractOpt _ = Nothing
+
+-- | Convert argument
+convertArg :: ArgumentSpan -> String
+convertArg (ArgExpr expr _) = convertExpr expr
+convertArg (ArgKeyword (Ident name _) expr _) = name ++ "=" ++ convertExpr expr
+convertArg _ = "-- TODO: arg"
 
 -- | Convert Python expression to Haskell
 convertExpr :: ExprSpan -> String
@@ -198,7 +347,11 @@ convertExpr expr = case expr of
         Equality _ -> convertExpr left ++ " == " ++ convertExpr right
         _ -> convertExpr left ++ " <op> " ++ convertExpr right
   Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> show s
-  _ -> "-- TODO: expr"
+  Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _ -> "length " ++ convertExpr listExpr
+  Call (Dot expr (Ident method _) _) args _ -> 
+    convertExpr expr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+  Dot expr (Ident attr _) _ -> convertExpr expr ++ "." ++ attr
+  _ -> "-- TODO: expr " ++ take 50 (show expr)
 
 extractTestMethods :: StatementSpan -> [String]
 extractTestMethods (Class _ _ body _) = mapMaybe convertTestMethod body
@@ -244,6 +397,13 @@ generateHaskellModule filePath (Module stmts) =
       , "import HgLib.Types (SummaryInfo(..))"
       , "import Data.Text (Text)"
       , "import qualified Data.Text as T"
+      , "import Data.Time"
+      , "import Control.Exception (try, SomeException)"
+      , ""
+      , "-- Helper function to check if Either is Left"
+      , "isLeft :: Either a b -> Bool"
+      , "isLeft (Left _) = True"
+      , "isLeft (Right _) = False"
       , ""
       , "spec :: Spec"
       , "spec = describe \"" ++ moduleNameFromClassName expectedClassName ++ "\" $ do"
