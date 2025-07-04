@@ -6,6 +6,7 @@ module Main where
 
 import Control.Monad (forM_, when)
 import Data.List (isPrefixOf, isInfixOf, intercalate)
+import qualified Data.List as L
 import Data.Maybe (mapMaybe, fromMaybe, isJust)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
@@ -15,6 +16,9 @@ import Language.Python.Version3 (parseModule)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.IO (stderr, stdout)
+import Data.Char (toUpper)
+import System.FilePath (takeBaseName)
+
 import Logging
 
 -- | Parse a Python file
@@ -200,11 +204,31 @@ extractTestMethods :: StatementSpan -> [String]
 extractTestMethods (Class _ _ body _) = mapMaybe convertTestMethod body
 extractTestMethods _ = []
 
+extractTestMethodsFromSuite :: Suite SrcSpan -> [String]
+extractTestMethodsFromSuite = mapMaybe convertTestMethod
+
+-- Convert "test_summary" → "Summary"
+moduleNameFromClassName :: String -> String
+moduleNameFromClassName name =
+  case L.stripPrefix "test_" name of
+    Just rest -> capitalize rest
+    Nothing   -> capitalize name
+  where
+    capitalize (x:xs) = toUpper x : xs
+    capitalize [] = []
+
 -- | Generate the Haskell module
-generateHaskellModule :: String -> ModuleSpan -> String
-generateHaskellModule className (Module stmts) = 
-  let testMethods = concatMap extractTestMethods stmts
-      moduleName = className ++ "Spec"
+generateHaskellModule :: FilePath -> ModuleSpan -> String
+generateHaskellModule filePath (Module stmts) =
+  let expectedClassName = takeBaseName filePath      -- e.g., "test_summary"
+      moduleName = moduleNameFromClassName expectedClassName ++ "Spec" -- e.g., SummarySpec
+      classStmt = L.find (\case
+                            Class (Ident name _) _ _ _ 
+                              -> name == expectedClassName
+                            _ -> False) stmts
+      testMethods = case classStmt of
+                      Just (Class _ _ body _) -> extractTestMethodsFromSuite body
+                      _ -> []
   in
   if null testMethods
     then "-- No test methods found."
@@ -221,7 +245,7 @@ generateHaskellModule className (Module stmts) =
       , "import qualified Data.Text as T"
       , ""
       , "spec :: Spec"
-      , "spec = describe \"" ++ className ++ "\" $ do"
+      , "spec = describe \"" ++ moduleNameFromClassName expectedClassName ++ "\" $ do"
       ] ++ testMethods
 
 main :: IO ()
@@ -240,7 +264,7 @@ main = do
         pyModule <- parsePythonFile pythonFile
         case extractTestClassName pyModule of
           Just "test_summary" -> do
-            let haskellCode = generateHaskellModule "Summary" pyModule
+            let haskellCode = generateHaskellModule pythonFile pyModule
             putStrLn haskellCode
           _ -> putStrLn "Error: Could not find test_summary class"
       _ -> do
