@@ -22,9 +22,9 @@ spec = describe "Update" $ do
 --       let client = btClient bt
       
 --       -- Create two commits
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
 --       -- Update to first revision
@@ -48,14 +48,14 @@ spec = describe "Update" $ do
 --       let client = btClient bt
       
 --       -- Create divergent history
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
 --       -- Update back and create conflicting change
 --       C.update client (C.defaultUpdateOptions { C.updateRev = Just (show rev0) })
---       appendFile "a" "b"
+--       commonAppendFile "a" "b"
       
 --       -- Try to update - should create unresolved conflict
 --       (updated, merged, removed, unresolved) <- C.update client C.defaultUpdateOptions
@@ -71,11 +71,11 @@ spec = describe "Update" $ do
 --     withTestRepo $ \bt -> do
 --       let client = btClient bt
       
---       createFile "a" "original"
+--       commonCreateFile "a" "original"
 --       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       
 --       -- Modify file
---       createFile "a" "modified"
+--       commonCreateFile "a" "modified"
       
 --       -- Clean update should restore original content
 --       (updated, merged, removed, unresolved) <- C.update client 

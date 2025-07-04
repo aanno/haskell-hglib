@@ -57,9 +57,9 @@ spec = describe "Log" $ do
 --     withTestRepo $ \bt -> do
 --       let client = btClient bt
       
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
 --       revs <- C.log_ client (C.defaultLogOptions { C.logRev = Just "0" })
@@ -72,14 +72,14 @@ spec = describe "Log" $ do
   --   withTestRepo $ \bt -> do
   --     let client = btClient bt
       
-  --     createFile "a" "a"
-  --     createFile "b" "b"
+  --     commonCreateFile "a" "a"
+  --     commonCreateFile "b" "b"
   --     C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       
-  --     appendFile "a" "a"
+  --     commonAppendFile "a" "a"
   --     C.commit client "second on a" C.defaultCommitOptions
       
-  --     appendFile "b" "b"  
+  --     commonAppendFile "b" "b"  
   --     C.commit client "third on b" C.defaultCommitOptions
       
   --     -- Log should show all commits

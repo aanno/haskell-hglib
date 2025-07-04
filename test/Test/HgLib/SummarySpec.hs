@@ -22,7 +22,7 @@ spec = describe "Summary" $ do
       let client = btClient bt
       
       -- Create and commit a file
-      appendFile "a" "a"
+      commonAppendFile "a" "a"
       let options = mkTestCommitOptions "msg2"
       (rev, node) <- C.commit client (options { C.commitAddRemove = True })
       
@@ -37,12 +37,12 @@ spec = describe "Summary" $ do
       let client = btClient bt
       
       -- Create and commit a file
-      appendFile "a" "a"
+      commonAppendFile "a" "a"
       let options = mkTestCommitOptions "msg1"
       (rev, node) <- C.commit client ( options { C.commitAddRemove = True })
       
       -- Modify the file
-      appendFile "a" "b"
+      commonAppendFile "a" "b"
       
       summary <- C.summary client []
       -- Should not be clean anymore
@@ -54,9 +54,9 @@ spec = describe "Summary" $ do
   --     let client = btClient bt
   --     
   --     -- Create two commits
-  --     appendFile "a" "a"
+  --     appendcommonAppendFileFile "a" "a"
   --     (rev0, node0) <- C.commit client (C.defaultCommitOptions { C.commitAddRemove = True })
-  --     appendFile "a" "a"
+  --     commonAppendFile "a" "a"
   --     (rev1, node1) <- C.commit client C.defaultCommitOptions
   --     
   --     -- Update to first revision (need UpdateOptions implementation)
@@ -72,9 +72,9 @@ spec = describe "Summary" $ do
 --       let client = btClient bt
       
 --       -- Create two commits
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
 --       -- Update to first revision

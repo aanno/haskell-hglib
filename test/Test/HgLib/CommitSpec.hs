@@ -133,7 +133,7 @@ spec = describe "Commit" $ do
 --     withTestRepo $ \bt -> do
 --       let client = btClient bt
       
---       appendFile "a" "a"
+--       commonAppendFile "a" "a"
 --       (rev, node) <- C.commit client "first" 
 --         (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "foo" })
       
@@ -160,7 +160,7 @@ spec = describe "Commit" $ do
   --   withTestRepo $ \bt -> do
   --     let client = btClient bt
       
-  --     appendFile "a" "a"
+  --     commonAppendFile "a" "a"
   --     now <- getCurrentTime
   --     let dateStr = T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" now
       
