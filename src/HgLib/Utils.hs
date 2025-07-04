@@ -51,7 +51,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale, formatTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime, utcTimeToPOSIXSeconds)
-import Text.Read (readMaybe)
+-- import Text.Read (readMaybe)
 import Data.Aeson (Value(..), Object, Array, decode, (.:), Result(..), withObject)
 import Data.Aeson.Types (parse)
 import qualified Data.Vector as V
@@ -59,6 +59,8 @@ import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import System.FilePath (takeFileName, normalise, makeRelative)
 import Data.List (isInfixOf)
 import System.IO.Unsafe (unsafePerformIO)
+import Data.Char (isSpace, isDigit)
+import Data.Maybe (mapMaybe)
 
 import HgLib.Types
 import Logging
@@ -314,6 +316,40 @@ parseVersion text =
             in (majorNum, minorNum, microNum, extra)
         _ -> (0, 0, 0, T.unpack cleanText)
 
+-- | Parses the parent field from hg summary output.
+parseParents :: Maybe Text -> [(Int, Text, Maybe Text, Maybe Text)]
+parseParents Nothing = []
+parseParents (Just txt) =
+    mapMaybe parseParentLine (T.lines txt)
+  where
+    -- Parses a single parent line.
+    parseParentLine :: Text -> Maybe (Int, Text, Maybe Text, Maybe Text)
+    parseParentLine line =
+        let line' = T.strip line
+            -- Find the revision and node (format: rev:node)
+            (revNode, rest) = T.break isSpace line'
+            (revTxt, nodeTxt) = T.breakOn ":" revNode
+            rev = readMaybe (T.unpack revTxt) :: Maybe Int
+            node = T.drop 1 nodeTxt  -- remove the ':'
+            rest' = T.strip rest
+            -- Extract tag/bookmark if present in parentheses at end
+            (msgPart, tagPart) = T.breakOnEnd "(" rest'
+            tags = if T.null tagPart
+                   then Nothing
+                   else Just . T.strip . T.dropAround (\c -> c == '(' || c == ')') $ tagPart
+            -- Remove tag from message, if present
+            message = let m = T.strip . T.dropWhileEnd (/= ')') $ rest'
+                      in if T.null m then Just rest' else Just (T.strip $ T.dropEnd (T.length tagPart) rest')
+        in case rev of
+            Just r -> Just (r, node, tags, message)
+            Nothing -> Nothing
+
+-- Safe read for Int
+readMaybe :: Read a => String -> Maybe a
+readMaybe s = case reads s of
+    [(x, "")] -> Just x
+    _         -> Nothing
+
 -- | Parse summary information from summary command output
 parseSummary :: Text -> IO SummaryInfo
 parseSummary text = do
@@ -326,11 +362,14 @@ parseSummary text = do
         updateCount = maybe 0 parseUpdateCount $ lookup "update" summaryMap
         remote = parseRemote $ lookup "remote" summaryMap
     
-    return $ SummaryInfo parents branch commitClean updateCount remote
+    return SummaryInfo {
+        summaryParents = parents
+        , summaryBranch = branch
+        , summaryCommitClean = commitClean
+        , summaryUpdateCount = updateCount
+        , summaryRemote = remote
+    }
   where
-    parseParents Nothing = []
-    parseParents (Just _) = []  -- TODO: Implement proper parent parsing
-    
     parseUpdateCount text 
         | "(current)" `T.isInfixOf` text = 0
         | otherwise = fromMaybe 0 $ readMaybe . T.unpack . T.takeWhile (/= ' ') $ text
