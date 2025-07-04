@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module PythonTestcaseConverter where
+module Main where
 
 import Control.Monad (forM_, when)
 import Data.List (isPrefixOf, isInfixOf, intercalate)

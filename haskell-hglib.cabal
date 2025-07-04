@@ -62,7 +62,6 @@ library
 executable haskell-hglib-exe
   main-is: Main.hs
   other-modules:
-      PythonTestcaseConverter
       Paths_haskell_hglib
   autogen-modules:
       Paths_haskell_hglib
@@ -94,12 +93,11 @@ executable haskell-hglib-exe
 executable python-testcase-converter-exe
   main-is: PythonTestcaseConverter.hs
   other-modules:
-      Main
       Paths_haskell_hglib
   autogen-modules:
       Paths_haskell_hglib
   hs-source-dirs:
-      app
+      converter
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson >=2.2.3.0

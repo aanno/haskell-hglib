@@ -69,7 +69,7 @@ executables:
     - language-python >= 0.6.0
   python-testcase-converter-exe:
     main:                PythonTestcaseConverter.hs
-    source-dirs:         app
+    source-dirs:         converter
     ghc-options:
     - -threaded
     - -rtsopts
