@@ -264,10 +264,12 @@ main = do
       [pythonFile] -> do
         pyModule <- parsePythonFile pythonFile
         case extractTestClassName pyModule of
-          Just "test_summary" -> do
+          Just className -> do
             let haskellCode = generateHaskellModule pythonFile pyModule
             putStrLn haskellCode
-          _ -> putStrLn "Error: Could not find test_summary class"
+          Nothing -> do
+            putStrLn $ "Error: Could not find test class in " ++ pythonFile
+            exitFailure
       _ -> do
         putStrLn "Usage: PythonTestcaseConverter <python-test-file>"
         exitFailure
