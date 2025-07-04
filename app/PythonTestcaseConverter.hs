@@ -187,10 +187,10 @@ convertExpr expr = case expr of
   List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
   Dictionary items _ -> "-- TODO: dict"
   Subscript e idx _ -> convertExpr e ++ "[" ++ convertExpr idx ++ "]"
-  BinaryOp e1 op e2 _ -> 
+  BinaryOp op left right _ -> 
       case op of
-        Equality _ -> convertExpr e1 ++ " == " ++ convertExpr e2
-        _ -> convertExpr e1 ++ " <op> " ++ convertExpr e2
+        Equality _ -> convertExpr left ++ " == " ++ convertExpr right
+        _ -> convertExpr left ++ " <op> " ++ convertExpr right
   Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> show s
   _ -> "-- TODO: expr"
 
