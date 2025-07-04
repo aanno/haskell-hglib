@@ -350,6 +350,31 @@ readMaybe s = case reads s of
     [(x, "")] -> Just x
     _         -> Nothing
 
+-- | Parse the remote field from hg summary --remote output.
+--   Returns (incoming, incoming bookmarks, outgoing, outgoing bookmarks)
+parseRemote :: Maybe Text -> Maybe (Int, Int, Int, Int)
+parseRemote Nothing = Nothing
+parseRemote (Just txt)
+  | "(synced)" `T.isInfixOf` txt || "(current)" `T.isInfixOf` txt = Just (0, 0, 0, 0)
+  | otherwise = Just (incoming, inBookmarks, outgoing, outBookmarks)
+  where
+    incoming = extractNum "incoming"
+    outgoing = extractNum "outgoing"
+    inBookmarks = extractNum "incoming bookmarks"
+    outBookmarks = extractNum "outgoing bookmarks"
+
+    extractNum key =
+      case [n | (n, k) <- parsePairs, key `T.isPrefixOf` k] of
+        (x:_) -> x
+        []    -> 0
+
+    parsePairs = map parsePair $ T.splitOn "," txt
+    parsePair t =
+      let ws = T.words (T.strip t)
+      in case ws of
+           (numTxt:rest) | Just n <- readMaybe (T.unpack numTxt) -> (n, T.unwords rest)
+           _ -> (0, "")
+
 -- | Parse summary information from summary command output
 parseSummary :: Text -> IO SummaryInfo
 parseSummary text = do
@@ -373,11 +398,6 @@ parseSummary text = do
     parseUpdateCount text 
         | "(current)" `T.isInfixOf` text = 0
         | otherwise = fromMaybe 0 $ readMaybe . T.unpack . T.takeWhile (/= ' ') $ text
-    
-    parseRemote Nothing = Nothing
-    parseRemote (Just text)
-        | "(synced)" `T.isInfixOf` text = Just (0, 0, 0, 0)
-        | otherwise = Nothing  -- TODO: Parse complex remote status
 
 -- | Parse key-value lines from command output
 parseKeyValueLines :: [Text] -> [(Text, Text)]
