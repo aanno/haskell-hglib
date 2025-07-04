@@ -14,6 +14,8 @@ import Language.Python.Common.SrcLocation
 import Language.Python.Version3 (parseModule)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
+import System.IO (stderr, stdout)
+import Logging
 
 -- | Parse a Python file
 parsePythonFile :: FilePath -> IO (ModuleSpan)
@@ -194,38 +196,53 @@ convertExpr expr = case expr of
   Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> show s
   _ -> "-- TODO: expr"
 
+extractTestMethods :: StatementSpan -> [String]
+extractTestMethods (Class name _ _ body) = mapMaybe convertTestMethod body
+extractTestMethods _ = []
+
 -- | Generate the Haskell module
 generateHaskellModule :: String -> ModuleSpan -> String
 generateHaskellModule className (Module stmts) = 
-  let testMethods = mapMaybe convertTestMethod stmts
+  let testMethods = concatMap extractTestMethods stmts
       moduleName = className ++ "Spec"
-  in unlines $
-    [ "{-# LANGUAGE OverloadedStrings #-}"
-    , ""
-    , "module Test.HgLib." ++ moduleName ++ " (spec) where"
-    , ""
-    , "import Test.Hspec"
-    , "import Test.HgLib.Common"
-    , "import qualified HgLib.Commands as C"
-    , "import HgLib.Types (SummaryInfo(..))"
-    , "import Data.Text (Text)"
-    , "import qualified Data.Text as T"
-    , ""
-    , "spec :: Spec"
-    , "spec = describe \"" ++ className ++ "\" $ do"
-    ] ++ testMethods
+  in
+  if null testMethods
+    then "-- No test methods found."
+    else unlines $
+      [ "{-# LANGUAGE OverloadedStrings #-}"
+      , ""
+      , "module Test.HgLib." ++ moduleName ++ " (spec) where"
+      , ""
+      , "import Test.Hspec"
+      , "import Test.HgLib.Common"
+      , "import qualified HgLib.Commands as C"
+      , "import HgLib.Types (SummaryInfo(..))"
+      , "import Data.Text (Text)"
+      , "import qualified Data.Text as T"
+      , ""
+      , "spec :: Spec"
+      , "spec = describe \"" ++ className ++ "\" $ do"
+      ] ++ testMethods
 
 main :: IO ()
 main = do
+  let logConfig = defaultLogConfig { 
+    minLogLevel = DEBUG
+    , logFile = Nothing
+    , console = Just stderr
+    }
+
   args <- getArgs
-  case args of
-    [pythonFile] -> do
-      pyModule <- parsePythonFile pythonFile
-      case extractTestClassName pyModule of
-        Just "test_summary" -> do
-          let haskellCode = generateHaskellModule "Summary" pyModule
-          putStrLn haskellCode
-        _ -> putStrLn "Error: Could not find test_summary class"
-    _ -> do
-      putStrLn "Usage: PythonTestcaseConverter <python-test-file>"
-      exitFailure
+
+  withLogging logConfig $
+    case args of
+      [pythonFile] -> do
+        pyModule <- parsePythonFile pythonFile
+        case extractTestClassName pyModule of
+          Just "test_summary" -> do
+            let haskellCode = generateHaskellModule "Summary" pyModule
+            putStrLn haskellCode
+          _ -> putStrLn "Error: Could not find test_summary class"
+      _ -> do
+        putStrLn "Usage: PythonTestcaseConverter <python-test-file>"
+        exitFailure
