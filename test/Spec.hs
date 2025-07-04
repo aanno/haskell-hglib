@@ -50,7 +50,7 @@ logging action = do
   osPath <- encodeFS "spec.log"
   let config = defaultLogConfig { 
     minLogLevel = DEBUG
-    , logFile = Just $ unsafePerformIO $ encodeFS "spec.log"
+    , logFile = Just osPath
     , console = Nothing
     }
   withLogging config action
