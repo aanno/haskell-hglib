@@ -6,6 +6,11 @@
 module Main (main) where
 
 import Test.Hspec
+import System.IO (stdout, stderr)
+import System.OsPath (OsPath, encodeFS)
+import System.IO.Unsafe (unsafePerformIO)
+import Logging
+
 import qualified Test.HgLib.SummarySpec as Summary
 import qualified Test.HgLib.StatusSpec as Status
 import qualified Test.HgLib.LogSpec as Log
@@ -40,8 +45,15 @@ import qualified Test.HgLib.UpdateSpec as Update
 -- import qualified Test.HgLib.AnnotateSpec as Annotate
 -- import qualified Test.HgLib.ClientSpec as Client
 
+logConfig :: LogConfig
+logConfig = defaultLogConfig { 
+    minLogLevel = DEBUG
+    , logFile = Just $ unsafePerformIO $ encodeFS "spec.log"
+    , console = Nothing
+    }
+
 main :: IO ()
-main = hspec $ do
+main = hspec $ around_ (withLogging logConfig) $ do
   describe "HgLib" $ do
     Summary.spec
     Status.spec
