@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Test/HgLib/ConfigSpec.hs
-module Test.HgLib.ConfigSpec (spec) where
+-- Test/HgLib/MyConfigSpec.hs
+module Test.HgLib.MyConfigSpec (spec) where
 
 import System.Exit
 import Test.Hspec

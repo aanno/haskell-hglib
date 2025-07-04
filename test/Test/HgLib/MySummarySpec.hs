@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.HgLib.SummarySpec (spec) where
+-- Test/HgLib/MySummarySpec.hs
+module Test.HgLib.MySummarySpec (spec) where
 
 import Test.Hspec
 import Test.HgLib.Common

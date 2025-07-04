@@ -127,12 +127,12 @@ test-suite haskell-hglib-test
   other-modules:
       Test.HgLib.CommitSpec
       Test.HgLib.Common
-      Test.HgLib.ConfigSpec
       Test.HgLib.ConvertedCommitSpec
-      Test.HgLib.LogSpec
-      Test.HgLib.StatusSpec
-      Test.HgLib.SummarySpec
-      Test.HgLib.UpdateSpec
+      Test.HgLib.MyConfigSpec
+      Test.HgLib.MyLogSpec
+      Test.HgLib.MyStatusSpec
+      Test.HgLib.MySummarySpec
+      Test.HgLib.MyUpdateSpec
       Paths_haskell_hglib
   autogen-modules:
       Paths_haskell_hglib

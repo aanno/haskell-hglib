@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Test/HgLib/StatusSpec.hs  
-module Test.HgLib.StatusSpec (spec) where
+-- Test/HgLib/MyStatusSpec.hs  
+module Test.HgLib.MyStatusSpec (spec) where
 
 import Test.Hspec
 import Test.HgLib.Common

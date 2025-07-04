@@ -11,10 +11,12 @@ import System.OsPath (OsPath, encodeFS)
 import System.IO.Unsafe (unsafePerformIO)
 import Logging
 
-import qualified Test.HgLib.SummarySpec as Summary
-import qualified Test.HgLib.StatusSpec as Status
-import qualified Test.HgLib.LogSpec as Log
-import qualified Test.HgLib.UpdateSpec as Update
+import qualified Test.HgLib.MySummarySpec as MySummary
+import qualified Test.HgLib.MyStatusSpec as MyStatus
+import qualified Test.HgLib.MyLogSpec as MyLog
+import qualified Test.HgLib.MyUpdateSpec as MyUpdate
+import qualified Test.HgLib.MyConfigSpec as MyConfig
+-- import qualified Test.HgLib.MyUpdateSpec as MyUpdate
 -- import qualified Test.HgLib.TagsSpec as Tags
 -- import qualified Test.HgLib.ResolveSpec as Resolve
 -- import qualified Test.HgLib.RemoveSpec as Remove
@@ -58,10 +60,12 @@ logging action = do
 main :: IO ()
 main = hspec $ around_ logging $ do
   describe "HgLib" $ do
-    Summary.spec
-    Status.spec
-    Log.spec
-    Update.spec
+    MySummary.spec
+    MyStatus.spec
+    MyLog.spec
+    MyUpdate.spec
+    MyLog.spec
+    MyConfig.spec
     -- TODO: implement
     -- Tags.spec
     -- Resolve.spec

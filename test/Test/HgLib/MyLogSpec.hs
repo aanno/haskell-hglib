@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Test/HgLib/LogSpec.hs
-module Test.HgLib.LogSpec (spec) where
+-- Test/HgLib/MyLogSpec.hs
+module Test.HgLib.MyLogSpec (spec) where
 
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import qualified HgLib as HgLib
+import qualified HgLib
 import HgLib.Types
 import Data.Text (Text)
 import qualified Data.Text as T

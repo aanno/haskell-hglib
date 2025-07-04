@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Test/HgLib/UpdateSpec.hs
-module Test.HgLib.UpdateSpec (spec) where
+-- Test/HgLib/MyUpdateSpec.hs
+module Test.HgLib.MyUpdateSpec (spec) where
 
 import Test.Hspec
 import Test.HgLib.Common
