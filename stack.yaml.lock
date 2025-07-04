@@ -18,6 +18,19 @@ packages:
       size: 315
   original:
     hackage: haskell-dap-0.0.16.0@sha256:5ee4fba7ce1b8220f486a5251a941e6cd739ab2330e8f25efc5af553a4e1c61d,944
+- completed:
+    commit: 9fa3c8b258c05d388a0cbb4e69c639bd9fddfdbb
+    git: https://github.com/bjpop/language-python.git
+    name: language-python
+    pantry-tree:
+      sha256: 8df4a93a55558bfd11588d66101100407f311811f8ce237ec916476c826608a2
+      size: 2432
+    subdir: language-python
+    version: 0.6.0
+  original:
+    commit: 9fa3c8b258c05d388a0cbb4e69c639bd9fddfdbb
+    git: https://github.com/bjpop/language-python.git
+    subdir: language-python
 snapshots:
 - completed:
     sha256: 1191e70bcd219fb660a5bf5d43a0fb235ef12a891994fd02d02643f61d6755ed
