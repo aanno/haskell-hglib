@@ -27,14 +27,16 @@ spec = describe "Log" $ do
       
       -- Try to create commits
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
-          commonAppendFile "a" "a"  
+          commonAppendFile "a" "a"
+          let options = mkTestCommitOptions "second"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-            C.commit client (C.defaultCommitOptions { C.commitMessage = Just "second" })
+            C.commit client options
           
           case result2 of
             Right (rev1, node1) -> do

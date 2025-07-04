@@ -41,9 +41,11 @@ spec = describe "Status" $ do
       -- Create a file
       commonCreateFile "a" "a"
       
+      let options = mkTestCommitOptions "first"
+
       -- Try to commit (fix the Maybe String issue)
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True })
       
       case result of
         Right _ -> do

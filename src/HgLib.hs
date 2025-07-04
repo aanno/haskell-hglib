@@ -80,7 +80,7 @@ simpleClone source dest = do
 -- | Simple commit with just a message
 simpleCommit :: HgClient -> String -> IO (Int, Text)
 simpleCommit client message = 
-    C.commit client C.defaultCommitOptions { C.commitMessage = Just message }
+    C.commit client $ C.mkDefaultCommitOptions message
 
 -- | Simple status check (all files)
 simpleStatus :: HgClient -> IO [HgStatus]

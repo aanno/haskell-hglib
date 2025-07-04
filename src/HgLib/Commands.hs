@@ -55,7 +55,7 @@ module HgLib.Commands
     , StatusOptions(..)
     , DiffOptions(..)
     , defaultAddOptions
-    , defaultCommitOptions
+    , mkDefaultCommitOptions
     , defaultLogOptions
     , defaultStatusOptions
     , defaultDiffOptions
@@ -93,7 +93,7 @@ defaultAddOptions = AddOptions False False Nothing Nothing
 
 -- | Options for the commit command
 data CommitOptions = CommitOptions
-    { commitMessage :: !(Maybe String)
+    { commitMessage :: !String -- mandatory
     , commitLogfile :: !(Maybe FilePath)
     , commitAddRemove :: !Bool
     , commitCloseBranch :: !Bool
@@ -104,8 +104,11 @@ data CommitOptions = CommitOptions
     , commitAmend :: !Bool
     } deriving (Show, Eq)
 
+mkDefaultCommitOptions :: String -> CommitOptions
+mkDefaultCommitOptions msg = defaultCommitOptions { commitMessage = msg }
+
 defaultCommitOptions :: CommitOptions
-defaultCommitOptions = CommitOptions Nothing Nothing False False Nothing Nothing Nothing Nothing False
+defaultCommitOptions = CommitOptions "" Nothing False False Nothing Nothing Nothing Nothing False
 
 -- | Options for the log command
 data LogOptions = LogOptions
@@ -282,7 +285,7 @@ clone client source dest options = do
 commit :: HgClient -> CommitOptions -> IO (Int, Text)
 commit client CommitOptions{..} = do
     let args = buildArgs "commit"
-            [ ("message", commitMessage)
+            [ ("message", Just commitMessage)
             , ("logfile", commitLogfile)
             , ("addremove", boolFlag commitAddRemove)
             , ("close-branch", boolFlag commitCloseBranch)

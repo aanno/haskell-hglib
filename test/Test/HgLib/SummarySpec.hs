@@ -23,7 +23,8 @@ spec = describe "Summary" $ do
       
       -- Create and commit a file
       appendFile "a" "a"
-      (rev, node) <- C.commit client (C.defaultCommitOptions { C.commitAddRemove = True })
+      let options = mkTestCommitOptions "msg2"
+      (rev, node) <- C.commit client (options { C.commitAddRemove = True })
       
       summary <- C.summary client []
       -- Check SummaryInfo fields
@@ -37,7 +38,8 @@ spec = describe "Summary" $ do
       
       -- Create and commit a file
       appendFile "a" "a"
-      (rev, node) <- C.commit client (C.defaultCommitOptions { C.commitAddRemove = True })
+      let options = mkTestCommitOptions "msg1"
+      (rev, node) <- C.commit client ( options { C.commitAddRemove = True })
       
       -- Modify the file
       appendFile "a" "b"

@@ -27,8 +27,9 @@ spec = describe "Commit" $ do
       let client = btClient bt
       
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True })
       
       case result of
         Right (rev, node) -> do
@@ -45,8 +46,9 @@ spec = describe "Commit" $ do
       let client = btClient bt
       
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "", C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True, C.commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail
@@ -58,22 +60,25 @@ spec = describe "Commit" $ do
       
       -- Create initial commit
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
           -- Create new branch
           C.branch client (Just "foo") []
           commonAppendFile "a" "a"
+          let options = mkTestCommitOptions "second"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-            C.commit client (C.defaultCommitOptions { C.commitMessage = Just "second" })
+            C.commit client options
           
           case result2 of
             Right (rev1, node1) -> do
               -- Close branch
+              let options = mkTestCommitOptions "closing foo"
               result3 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-                C.commit client (C.defaultCommitOptions { C.commitCloseBranch = True, C.commitMessage = Just "closing foo" })
+                C.commit client (options { C.commitCloseBranch = True })
               
               case result3 of
                 Right (revClose, nodeClose) -> do
@@ -94,15 +99,17 @@ spec = describe "Commit" $ do
       let client = btClient bt
       
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
           -- Amend the commit
           commonAppendFile "a" "a"
+          let options = mkTestCommitOptions "amended"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-            C.commit client (C.defaultCommitOptions { C.commitAmend = True, C.commitMessage = Just "amended" })
+            C.commit client (options { C.commitAmend = True })
           
           case result2 of
             Right (rev1, node1) -> do
@@ -140,8 +147,9 @@ spec = describe "Commit" $ do
       let client = btClient bt
       
       commonAppendFile "a" "a"
+      let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "", C.commitMessage = Just "first" })
+        C.commit client (options { C.commitAddRemove = True, C.commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail

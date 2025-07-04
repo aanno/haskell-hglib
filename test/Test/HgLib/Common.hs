@@ -10,6 +10,7 @@ module Test.HgLib.Common
     , commonRemoveFile
     , hspec
     , nonInteractiveConfig
+    , mkTestCommitOptions
     ) where
 
 import Control.Exception (bracket, finally)
@@ -37,15 +38,14 @@ data BaseTest = BaseTest
     , btTempDir :: FilePath
     } deriving (Show)
 
--- nonInteractiveConfig = defaultConfig 
---     { configEditor = Just "true"
---     , configNonInteractive = True  -- if this option exists
---     }
-
 nonInteractiveConfig :: HgConfig
 nonInteractiveConfig = defaultConfig {
     hgConfigs = ["ui.editor=true", "ui.interactive=false", "ui.hgeditor=true"]
 }
+
+-- could be changed later to pass a state for commit message names
+mkTestCommitOptions :: String -> C.CommitOptions
+mkTestCommitOptions = C.mkDefaultCommitOptions
 
 -- | Setup a test repository and run tests
 withTestRepo :: (BaseTest -> IO a) -> IO a

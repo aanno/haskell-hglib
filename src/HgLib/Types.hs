@@ -79,7 +79,8 @@ data HgConfig = HgConfig
     } deriving stock (Show, Eq, Generic)
 
 -- `--logfile` is supported on:
--- * commit
+-- * commit - Attention: abort: cannot specify both --message and --logfile, 
+--            hence logfile is unsupported!
 -- * backout
 -- * import
 -- * amend
@@ -96,8 +97,7 @@ data HgConfig = HgConfig
 
 debugChannelCommands :: [ByteString]
 debugChannelCommands = [
-    "commit"
-    , "backout"
+    "backout"
     , "import"
     , "amend"
     , "close-head"
