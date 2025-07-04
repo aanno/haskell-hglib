@@ -16,7 +16,7 @@ import Language.Python.Version3 (parseModule)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.IO (stderr, stdout)
-import Data.Char (toUpper)
+import Data.Char (toUpper, toLower)
 import System.FilePath (takeBaseName)
 
 import Logging
@@ -224,8 +224,9 @@ generateHaskellModule filePath (Module stmts) =
       moduleName = moduleNameFromClassName expectedClassName ++ "Spec" -- e.g., SummarySpec
       classStmt = L.find (\case
                             Class (Ident name _) _ _ _ 
-                              -> name == expectedClassName
+                              -> map toLower name == map toLower expectedClassName
                             _ -> False) stmts
+      classNames = [name | Class (Ident name _) _ _ _ <- stmts]
       testMethods = case classStmt of
                       Just (Class _ _ body _) -> extractTestMethodsFromSuite body
                       _ -> []
