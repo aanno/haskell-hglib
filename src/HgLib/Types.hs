@@ -34,8 +34,8 @@ module HgLib.Types
     ) where
 
 import Control.Exception (Exception)
-import Data.Aeson (FromJSON(..), ToJSON(..), withObject, (.:), object, (.=))
-import Data.ByteString (ByteString)
+import Data.Aeson (FromJSON(..), ToJSON(..), withObject, (.:), object, (.=), eitherDecodeStrict)
+import Data.ByteString (ByteString, pack)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -276,14 +276,12 @@ data SummaryInfo = SummaryInfo
     } deriving stock (Show, Eq, Generic)
 
 -- | Parse a revision from a text representation
+-- | Parse a single revision from a JSON Text (array of objects).
 parseRevision :: Text -> Maybe Revision
-parseRevision text = 
-    -- This would parse various revision formats like:
-    -- "123:abcdef123456" 
-    -- "abcdef123456"
-    -- "tip"
-    -- etc.
-    Nothing  -- TODO: Implement proper parsing
+parseRevision t =
+    case eitherDecodeStrict (BS8.pack $ T.unpack t) of
+        Right (rev:_) -> Just rev
+        _             -> Nothing
 
 -- | Format a revision for display (short form)
 formatRevision :: Revision -> Text
