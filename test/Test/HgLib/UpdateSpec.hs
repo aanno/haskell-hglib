@@ -37,7 +37,7 @@ spec = describe "Update" $ do
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      -- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Call {ca <op> -- TODO: client method status() `shouldBe` True
+      ("'M'", "'a'") <op> -- TODO: client method status() `shouldBe` True
 
   it "test_merge" $ do
     withTestRepo $ \bt -> do
@@ -56,7 +56,7 @@ spec = describe "Update" $ do
       m `shouldBe` 1
       r `shouldBe` 0
       ur `shouldBe` 0
-      -- TODO: complex assertEqual - -- TODO: client method status() should equal [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      -- TODO: complex assertEqual - -- TODO: client method status() should equal [("'M'", "'a'")]
 
   it "test_tip" $ do
     withTestRepo $ \bt -> do
@@ -96,5 +96,6 @@ spec = describe "Update" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
+      pendingWith "Test not implemented yet"
 
 

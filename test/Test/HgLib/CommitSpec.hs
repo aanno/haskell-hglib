@@ -43,8 +43,8 @@ spec = describe "Commit" $ do
       (rev1, node1) <- C.commit client mkTestCommitOptions "'second'"
       revclose <- C.commit client (mkTestCommitOptions "'closing foo'" { C.commitCloseBranch = True })
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
-      C.branches client [] `shouldBe` [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
-      C.branches client ["--closed"] `shouldBe` [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot, -- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
+      C.branches client [] `shouldBe` [(branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      C.branches client ["--closed"] `shouldBe` [(branchName revclose, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
 
   it "should handle message and logfile conflicts" $ do
     withTestRepo $ \bt -> do
@@ -58,16 +58,16 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
-      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now() -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just now.isoformat("' '").encode("'latin-1'") })
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
       now `shouldBe` revDate C.tip client
 
   it "should amend previous commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
-      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now() -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just now.isoformat("' '").encode("'latin-1'") })
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
       now `shouldBe` revDate C.tip client
       commonAppendFile "'a'" "'a'"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "default" { C.commitAmend = True })

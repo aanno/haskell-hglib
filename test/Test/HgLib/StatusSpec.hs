@@ -22,6 +22,7 @@ spec = describe "Status" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: complex assertEqual - -- TODO: client method status() should equal []
+      pendingWith "Test not implemented yet"
 
   it "test_one_of_each" $ do
     withTestRepo $ \bt -> do

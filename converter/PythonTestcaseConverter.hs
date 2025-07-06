@@ -75,11 +75,17 @@ generateHaskellTest :: String -> SuiteSpan -> String
 generateHaskellTest testName body = 
   let testDesc = pythonToHaskellIdent testName
       bodyLines = convertSuite body
+      -- Ensure test bodies are not empty and don't end with just declarations
+      finalBody = if null bodyLines || all isDeclaration bodyLines
+                 then bodyLines ++ ["pendingWith \"Test not implemented yet\""]
+                 else bodyLines
   in unlines $
     [ "  it \"" ++ testDesc ++ "\" $ do"
     , "    withTestRepo $ \\bt -> do"
     , "      let client = btClient bt"
-    ] ++ map ("      " ++) bodyLines
+    ] ++ map ("      " ++) finalBody
+  where
+    isDeclaration line = "let " `isPrefixOf` line || "-- " `isPrefixOf` line
 
 -- | Convert Python suite to Haskell lines
 convertSuite :: SuiteSpan -> [String]
@@ -222,14 +228,14 @@ convertStatement stmt = case stmt of
           ["pendingWith \"phase not supported\""]
         _ -> ["-- TODO: raise " ++ take 30 (show expr)]
   
-  -- Handle len() function calls in assertions
+  -- Handle len() function calls in assertions  
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
     [ArgExpr expected _, ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _] _) _ ->
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
-         then ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
-         else ["length <$> " ++ listStr ++ " >>= (`shouldBe` " ++ convertExpr expected ++ ")"]
+         then ["do", "  result <- " ++ listStr, "  length result `shouldBe` " ++ convertExpr expected]
+         else ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
   
   -- Handle reversed len() function calls in assertions
   StmtExpr (Call 
@@ -237,8 +243,8 @@ convertStatement stmt = case stmt of
     [ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _, ArgExpr expected _] _) _ ->
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
-         then ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
-         else ["length <$> " ++ listStr ++ " >>= (`shouldBe` " ++ convertExpr expected ++ ")"]
+         then ["do", "  result <- " ++ listStr, "  length result `shouldBe` " ++ convertExpr expected]
+         else ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
   
   -- Default case
   _ -> ["-- TODO: " ++ take 80 (show stmt)]
@@ -301,7 +307,10 @@ convertBranchesArgs args =
 -- | Convert log arguments
 convertLogArgs :: [ArgumentSpan] -> String
 convertLogArgs [] = "[]"
-convertLogArgs args = "[" ++ intercalate ", " (map convertArg args) ++ "]"
+convertLogArgs args = 
+  case args of
+    [ArgExpr nodeList _] -> "[" ++ convertExpr nodeList ++ "]"
+    _ -> "[" ++ intercalate ", " (map convertArg args) ++ "]"
 
 -- | Convert if statement
 convertIfStatement :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> [String]
@@ -351,17 +360,17 @@ buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
-      updates = concatMap formatUpdate opts
-  in "(" ++ base ++ updates ++ ")"
+      updates = intercalate " " $ map formatUpdate opts
+  in "(" ++ base ++ " " ++ updates ++ ")"
   where
     formatUpdate (key, value) = case key of
-      "addremove" -> " { C.commitAddRemove = " ++ value ++ " }"
-      "user" -> " { C.commitUser = Just " ++ value ++ " }"
-      "date" -> " { C.commitDate = Just " ++ value ++ " }"
-      "closebranch" -> " { C.commitCloseBranch = " ++ value ++ " }"
-      "amend" -> " { C.commitAmend = " ++ value ++ " }"
-      "logfile" -> " { C.commitLogFile = Just " ++ value ++ " }"
-      _ -> " -- TODO: " ++ key ++ " = " ++ value
+      "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
+      "user" -> "{ C.commitUser = Just " ++ value ++ " }"
+      "date" -> "{ C.commitDate = Just " ++ value ++ " }"
+      "closebranch" -> "{ C.commitCloseBranch = " ++ value ++ " }"
+      "amend" -> "{ C.commitAmend = " ++ value ++ " }"
+      "logfile" -> "{ C.commitLogFile = Just " ++ value ++ " }"
+      _ -> "-- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -376,10 +385,14 @@ extractKeywordArgs = mapMaybe extractOpt
       Just (name, convertExpr expr)
     extractOpt _ = Nothing
 
--- | Convert argument
+-- | Convert argument to handle keyword args better
 convertArg :: ArgumentSpan -> String
 convertArg (ArgExpr expr _) = convertExpr expr
-convertArg (ArgKeyword (Ident name _) expr _) = name ++ "=" ++ convertExpr expr
+convertArg (ArgKeyword (Ident name _) expr _) = 
+  case name of
+    "files" -> convertExpr expr  -- For C.log files=["a"] -> just ["a"]
+    "closed" -> convertExpr expr  -- For C.branches closed=True -> just True
+    _ -> name ++ "=" ++ convertExpr expr
 convertArg _ = "-- TODO: arg"
 
 -- | Convert Python expression to Haskell
@@ -387,7 +400,7 @@ convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
   Int i _ _ -> show i
-  Strings [s] _ -> "\"" ++ s ++ "\""  -- Simple string conversion
+  Strings [s] _ -> "\"" ++ s ++ "\""  -- Simple string conversion without extra quotes
   Bool b _ -> show b
   Tuple exprs _ -> "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
   List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
@@ -407,18 +420,17 @@ convertExpr expr = case expr of
   -- Handle self.client.method() calls
   Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) args _ ->
     convertClientMethod method args
-  -- Handle method calls on expressions
+  -- Handle method calls on expressions - simplified to avoid complex parsing
   Call (Dot expr (Ident method _) _) args _ -> 
-    let baseExpr = convertExpr expr
-    in if "-- TODO:" `isPrefixOf` baseExpr
-       then "-- TODO: method call " ++ baseExpr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
-       else baseExpr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+    "-- TODO: method call " ++ convertExpr expr ++ "." ++ method ++ "(...)"
   -- Handle attribute access like rev.author
   Dot expr (Ident attr _) _ -> 
     let baseExpr = convertExpr expr
     in if baseExpr == "self.client"
        then "-- TODO: client." ++ attr
        else convertAttributeAccess baseExpr attr
+  -- Handle parenthesized expressions
+  Paren expr _ -> convertExpr expr
   _ -> "-- TODO: expr " ++ take 50 (show expr)
 
 -- | Convert client method calls
