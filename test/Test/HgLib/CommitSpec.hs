@@ -40,11 +40,12 @@ spec = describe "Commit" $ do
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first") { C.commitAddRemove = True }
       C.branch client (Just "foo") []
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client mkTestCommitOptions "second"
+      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       revclose <- C.commit client (mkTestCommitOptions "closing foo") { C.commitCloseBranch = True }
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
-      C.branches client [] `shouldBe` [-- TODO: complex tuple]
-      C.branches client ["--closed"] `shouldBe` [-- TODO: complex tuple, -- TODO: complex tuple]
+      -- TODO: complex assertEqual
+      -- TODO: complex assertEqual
+      return ()
 
   it "should handle message and logfile conflicts" $ do
     withTestRepo $ \bt -> do
@@ -79,7 +80,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client mkTestCommitOptions "fail\0-A"
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "fail\0-A")
       result `shouldSatisfy` isLeft
       0 `shouldBe` length C.log_ client [] C.defaultLogOptions
 

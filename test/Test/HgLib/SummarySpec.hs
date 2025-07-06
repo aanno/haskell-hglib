@@ -101,7 +101,7 @@ spec = describe "Summary" $ do
       commonAppendFile "a" "a"
       (rev0, node) <- C.commit client (mkTestCommitOptions "first") { C.commitAddRemove = True }
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client mkTestCommitOptions "second"
+      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       commonAppendFile "b" "a"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "third") { C.commitAddRemove = True }

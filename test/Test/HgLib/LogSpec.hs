@@ -24,7 +24,7 @@ spec = describe "Log" $ do
       commonAppendFile "a" "a"
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first") { C.commitAddRemove = True }
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client mkTestCommitOptions "second"
+      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       revs <- C.log_ client [] C.defaultLogOptions
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       length revs == 2 `shouldBe` True

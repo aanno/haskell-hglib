@@ -126,7 +126,9 @@ convertStatement stmt = case stmt of
           expectedStr = convertExpr expected
       in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr
          then ["-- TODO: complex assertEqual"]
-         else [actualStr ++ " `shouldBe` " ++ expectedStr]
+         else if "complex" `isInfixOf` actualStr || "complex" `isInfixOf` expectedStr
+              then ["-- TODO: complex assertEqual"]
+              else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
   StmtExpr (Call 
@@ -369,7 +371,7 @@ convertCommitArgs args =
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
   in if null opts
-     then "mkTestCommitOptions " ++ message
+     then "(mkTestCommitOptions " ++ message ++ ")"
      else buildCommitOptions message opts
 
 -- | Add option to commit options
@@ -403,7 +405,7 @@ buildCommitOptions baseMsg opts =
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
 convertSummaryArgs [] = "[]"
-convertSummaryArgs args = "-- TODO: summary args"
+convertSummaryArgs args = "[" ++ intercalate ", " (map convertArg args) ++ "]"
 
 -- | Extract keyword arguments
 extractKeywordArgs :: [ArgumentSpan] -> [(String, String)]
