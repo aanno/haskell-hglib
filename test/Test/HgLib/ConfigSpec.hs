@@ -5,7 +5,7 @@ module Test.HgLib.ConfigSpec (spec) where
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..))
+import HgLib.Types (SummaryInfo(..), Revision(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time

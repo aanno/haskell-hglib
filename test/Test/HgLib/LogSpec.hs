@@ -5,7 +5,7 @@ module Test.HgLib.LogSpec (spec) where
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..))
+import HgLib.Types (SummaryInfo(..), Revision(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -28,7 +28,7 @@ spec = describe "Log" $ do
       revs <- C.log_ client [] C.defaultLogOptions
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       length revs == 2 `shouldBe` True
-      revNode revs !! 1 `shouldBe` node1
+      revNode (revs !! 1) `shouldBe` node1
       revs !! 0 `shouldBe` C.log_ client ["0"] C.defaultLogOptions !! 0
       C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client -- TODO: log with options C.defaultLogOptions
       C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client -- TODO: log with options C.defaultLogOptions
@@ -40,7 +40,7 @@ spec = describe "Log" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
-      revRev revs !! 0 `shouldBe` "0"
+      revRev (revs !! 0) `shouldBe` "0"
 
   it "test_empty_short_option" $ do
     withTestRepo $ \bt -> do
@@ -49,7 +49,7 @@ spec = describe "Log" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
-      revRev revs !! 0 `shouldBe` "0"
+      revRev (revs !! 0) `shouldBe` "0"
 
   it "test_null_byte" $ do
     withTestRepo $ \bt -> do
@@ -58,6 +58,6 @@ spec = describe "Log" $ do
       -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
-      revDesc revs !! 0 `shouldBe` "some message\0more stuff"
+      revDesc (revs !! 0) `shouldBe` "some message\0more stuff"
 
 

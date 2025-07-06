@@ -381,22 +381,22 @@ addOption base (key, value) = case key of
   "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
   _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
 
--- | Build commit options properly with parentheses
+-- | Build commit options properly
 buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
-      updates = foldl (\acc (key, value) -> updateRecord acc key value) base opts
-  in "(" ++ updates ++ ")"
+      updates = map formatUpdate opts
+  in "(" ++ base ++ " " ++ intercalate " " updates ++ ")"
   where
-    updateRecord currentRecord key value = case key of
-      "addremove" -> currentRecord ++ " { C.commitAddRemove = " ++ value ++ " }"
-      "user" -> currentRecord ++ " { C.commitUser = Just " ++ value ++ " }"
-      "date" -> currentRecord ++ " { C.commitDate = Just " ++ value ++ " }"
-      "closebranch" -> currentRecord ++ " { C.commitCloseBranch = " ++ value ++ " }"
-      "amend" -> currentRecord ++ " { C.commitAmend = " ++ value ++ " }"
-      "logfile" -> currentRecord ++ " { C.commitLogFile = Just " ++ value ++ " }"
-      _ -> currentRecord ++ " -- TODO: " ++ key ++ " = " ++ value
+    formatUpdate (key, value) = case key of
+      "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
+      "user" -> "{ C.commitUser = Just " ++ value ++ " }"
+      "date" -> "{ C.commitDate = Just " ++ value ++ " }"
+      "closebranch" -> "{ C.commitCloseBranch = " ++ value ++ " }"
+      "amend" -> "{ C.commitAmend = " ++ value ++ " }"
+      "logfile" -> "{ C.commitLogFile = Just " ++ value ++ " }"
+      _ -> "-- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -429,11 +429,11 @@ convertExpr expr = case expr of
   Strings [s] _ -> "\"" ++ stripQuotes s ++ "\""  -- Strip extra quotes
   Bool b _ -> show b
   Tuple exprs _ -> 
-    if length exprs > 3 || any isComplexExpr exprs
+    if length exprs > 2 || any isComplexExpr exprs
     then "-- TODO: complex tuple"
     else "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
   List exprs _ -> 
-    if length exprs > 5 || any isComplexExpr exprs
+    if length exprs > 3 || any isComplexExpr exprs
     then "-- TODO: complex list"
     else "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
   Dictionary items _ -> "-- TODO: dict"
@@ -522,12 +522,12 @@ convertUpdateArgs args =
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String
 convertAttributeAccess baseExpr attr = case attr of
-  "author" -> "revAuthor " ++ baseExpr
-  "desc" -> "revDesc " ++ baseExpr
-  "date" -> "revDate " ++ baseExpr
-  "node" -> "revNode " ++ baseExpr
-  "rev" -> "revRev " ++ baseExpr
-  "branch" -> "branchName " ++ baseExpr  -- for branch info
+  "author" -> "revAuthor (" ++ baseExpr ++ ")"
+  "desc" -> "revDesc (" ++ baseExpr ++ ")"
+  "date" -> "revDate (" ++ baseExpr ++ ")"
+  "node" -> "revNode (" ++ baseExpr ++ ")"
+  "rev" -> "revRev (" ++ baseExpr ++ ")"
+  "branch" -> "branchName (" ++ baseExpr ++ ")"  -- for branch info
   _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
 
 extractTestMethods :: StatementSpan -> [String]
@@ -571,7 +571,7 @@ generateHaskellModule filePath (Module stmts) =
       , "import Test.Hspec"
       , "import Test.HgLib.Common"
       , "import qualified HgLib.Commands as C"
-      , "import HgLib.Types (SummaryInfo(..))"
+      , "import HgLib.Types (SummaryInfo(..), Revision(..))"
       , "import Data.Text (Text)"
       , "import qualified Data.Text as T"
       , "import Data.Time"

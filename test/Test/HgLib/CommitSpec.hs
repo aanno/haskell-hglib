@@ -5,7 +5,7 @@ module Test.HgLib.CommitSpec (spec) where
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..))
+import HgLib.Types (SummaryInfo(..), Revision(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -24,7 +24,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitUser = Just "foo" })
       rev <- head <$> C.log_ client [node] C.defaultLogOptions
-      revAuthor rev `shouldBe` "foo"
+      revAuthor (rev) `shouldBe` "foo"
 
   it "should fail with empty user" $ do
     withTestRepo $ \bt -> do
@@ -60,7 +60,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
-      now `shouldBe` revDate C.tip client
+      now `shouldBe` revDate (C.tip client)
 
   it "should amend previous commit" $ do
     withTestRepo $ \bt -> do
@@ -68,10 +68,10 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
-      now `shouldBe` revDate C.tip client
+      now `shouldBe` revDate (C.tip client)
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "default" { C.commitAmend = True })
-      now `shouldBe` revDate C.tip client
+      now `shouldBe` revDate (C.tip client)
       node0 `shouldNotBe` node1
       1 `shouldBe` length C.log_ client [] C.defaultLogOptions
 

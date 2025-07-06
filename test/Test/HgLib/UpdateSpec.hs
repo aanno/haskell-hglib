@@ -5,7 +5,7 @@ module Test.HgLib.UpdateSpec (spec) where
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..))
+import HgLib.Types (SummaryInfo(..), Revision(..))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -70,7 +70,7 @@ spec = describe "Update" $ do
       (rev2, node2) <- C.commit client mkTestCommitOptions "new head"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      revNode -- TODO: subscript `shouldBe` node2
+      revNode (-- TODO: subscript) `shouldBe` node2
 
   it "test_check_clean" $ do
     withTestRepo $ \bt -> do
