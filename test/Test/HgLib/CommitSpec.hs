@@ -23,8 +23,8 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
       (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitUser = Just "'foo'" })
-      -- TODO: head assignment from -- TODO: client method log(node)
-      rev.author `shouldBe` "'foo'"
+      rev <- head <$> C.log_ client [node] C.defaultLogOptions
+      revAuthor rev `shouldBe` "'foo'"
 
   it "should fail with empty user" $ do
     withTestRepo $ \bt -> do
@@ -40,11 +40,11 @@ spec = describe "Commit" $ do
       (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
       C.branch client (Just "'foo'") []
       commonAppendFile "'a'" "'a'"
-      (rev1, node1) <- C.commit client (mkTestCommitOptions "'second'")
+      (rev1, node1) <- C.commit client mkTestCommitOptions "'second'"
       revclose <- C.commit client (mkTestCommitOptions "'closing foo'" { C.commitCloseBranch = True })
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
-      -- TODO: complex assertEqual - -- TODO: client method branches() should equal [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
-      -- TODO: complex assertEqual - -- TODO: client method branches(closed=True) should equal [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot, -- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
+      C.branches client [] `shouldBe` [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
+      C.branches client ["--closed"] `shouldBe` [-- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot, -- TODO: expr Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
 
   it "should handle message and logfile conflicts" $ do
     withTestRepo $ \bt -> do
@@ -58,29 +58,29 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
-      now <- return -- TODO: method call datetime.datetime.now() -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat("' '").encode("'latin-1'") })
-      -- TODO: complex assertEqual - now should equal -- TODO: attr access -- TODO: client method tip().date
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now() -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just now.isoformat("' '").encode("'latin-1'") })
+      now `shouldBe` revDate C.tip client
 
   it "should amend previous commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
-      now <- return -- TODO: method call datetime.datetime.now() -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat("' '").encode("'latin-1'") })
-      -- TODO: complex assertEqual - now should equal -- TODO: attr access -- TODO: client method tip().date
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now() -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just now.isoformat("' '").encode("'latin-1'") })
+      now `shouldBe` revDate C.tip client
       commonAppendFile "'a'" "'a'"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "default" { C.commitAmend = True })
-      -- TODO: complex assertEqual - now should equal -- TODO: attr access -- TODO: client method tip().date
+      now `shouldBe` revDate C.tip client
       node0 `shouldNotBe` node1
-      1 `shouldBe` length -- TODO: client method log()
+      1 `shouldBe` length C.log_ client [] C.defaultLogOptions
 
   it "should prevent null injection" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "'a'" "'a'"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ -- TODO: client method commit("'fail\0-A'")
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client mkTestCommitOptions "'fail\0-A'"
       result `shouldSatisfy` isLeft
-      0 `shouldBe` length -- TODO: client method log()
+      0 `shouldBe` length C.log_ client [] C.defaultLogOptions
 
 

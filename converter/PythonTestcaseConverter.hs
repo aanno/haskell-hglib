@@ -144,8 +144,8 @@ convertStatement stmt = case stmt of
     [Var (Ident var _) _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "log" _) _) args _) _ ->
       case args of
-        [ArgExpr nodeExpr _] -> [var ++ " <- C.log_ client [" ++ convertExpr nodeExpr ++ "] C.defaultLogOptions"]
         [] -> [var ++ " <- C.log_ client [] C.defaultLogOptions"]
+        [ArgExpr nodeExpr _] -> [var ++ " <- C.log_ client [" ++ convertExpr nodeExpr ++ "] C.defaultLogOptions"]
         _ -> [var ++ " <- C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"]
   
   -- Handle self.client.branches assignment
@@ -168,14 +168,16 @@ convertStatement stmt = case stmt of
         [ArgExpr branchName _] -> ["C.branch client (Just " ++ convertExpr branchName ++ ") []"]
         _ -> ["C.branch client Nothing []"]
   
-  -- Handle variable assignment from indexing
+  -- Handle variable assignment from indexing (e.g., rev = self.client.log(node)[0])
   Assign 
     [Var (Ident var _) _]
     (Subscript listExpr (Int 0 _ _) _) _ ->
       let listStr = convertExpr listExpr
-      in if "-- TODO:" `isPrefixOf` listStr
-         then ["-- TODO: head assignment from " ++ listStr]
-         else [var ++ " <- head <$> " ++ listStr]
+      in if "C.log_" `isInfixOf` listStr
+         then [var ++ " <- head <$> " ++ listStr]
+         else if "-- TODO:" `isPrefixOf` listStr
+              then ["-- TODO: head assignment from " ++ listStr]
+              else [var ++ " <- return $ head " ++ listStr]
   
   -- Handle multiple variable assignment from self.client.log
   Assign 
@@ -224,13 +226,19 @@ convertStatement stmt = case stmt of
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
     [ArgExpr expected _, ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _] _) _ ->
-      ["length " ++ convertExpr listExpr ++ " `shouldBe` " ++ convertExpr expected]
+      let listStr = convertExpr listExpr
+      in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
+         then ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
+         else ["length <$> " ++ listStr ++ " >>= (`shouldBe` " ++ convertExpr expected ++ ")"]
   
   -- Handle reversed len() function calls in assertions
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
     [ArgExpr (Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _) _, ArgExpr expected _] _) _ ->
-      ["length " ++ convertExpr listExpr ++ " `shouldBe` " ++ convertExpr expected]
+      let listStr = convertExpr listExpr
+      in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
+         then ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
+         else ["length <$> " ++ listStr ++ " >>= (`shouldBe` " ++ convertExpr expected ++ ")"]
   
   -- Default case
   _ -> ["-- TODO: " ++ take 80 (show stmt)]
@@ -241,6 +249,17 @@ convertAssertRaises args = case args of
   -- Handle self.assertRaises(exception, self.client.method, arg1, arg2, ...)
   (ArgExpr exceptionType _):(ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _):methodArgs ->
     let methodCall = "C." ++ method ++ " client " ++ convertMethodArgs method methodArgs
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+        "result `shouldSatisfy` isLeft"]
+  -- Handle self.assertRaises(ValueError, self.client.commit, message, logfile=file) - simplified
+  [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _, ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3] ->
+    let commitArgs = [ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3]
+        methodCall = "C." ++ method ++ " client " ++ convertCommitArgs commitArgs
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+        "result `shouldSatisfy` isLeft"]
+  -- Handle self.assertRaises(ValueError, self.client.commit)
+  [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _] ->
+    let methodCall = "C." ++ method ++ " client C.defaultCommitOptions"
     in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(exception, lambda: expr)
@@ -329,10 +348,20 @@ addOption base (key, value) = case key of
 
 -- | Build commit options properly with parentheses
 buildCommitOptions :: String -> [(String, String)] -> String
+buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
-      withOpts = foldl addOption base opts
-  in "(" ++ withOpts ++ ")"
+      updates = concatMap formatUpdate opts
+  in "(" ++ base ++ updates ++ ")"
+  where
+    formatUpdate (key, value) = case key of
+      "addremove" -> " { C.commitAddRemove = " ++ value ++ " }"
+      "user" -> " { C.commitUser = Just " ++ value ++ " }"
+      "date" -> " { C.commitDate = Just " ++ value ++ " }"
+      "closebranch" -> " { C.commitCloseBranch = " ++ value ++ " }"
+      "amend" -> " { C.commitAmend = " ++ value ++ " }"
+      "logfile" -> " { C.commitLogFile = Just " ++ value ++ " }"
+      _ -> " -- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -358,7 +387,7 @@ convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
   Int i _ _ -> show i
-  Strings [s] _ -> "\"" ++ s ++ "\""  -- Remove extra quotes
+  Strings [s] _ -> "\"" ++ s ++ "\""  -- Simple string conversion
   Bool b _ -> show b
   Tuple exprs _ -> "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
   List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
@@ -375,20 +404,45 @@ convertExpr expr = case expr of
         _ -> convertExpr left ++ " <op> " ++ convertExpr right
   Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> "\"" ++ s ++ "\""
   Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _ -> "length " ++ convertExpr listExpr
+  -- Handle self.client.method() calls
+  Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) args _ ->
+    convertClientMethod method args
+  -- Handle method calls on expressions
   Call (Dot expr (Ident method _) _) args _ -> 
     let baseExpr = convertExpr expr
-        methodCall = method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
-    in if baseExpr == "self.client"
-       then "-- TODO: client method " ++ methodCall
-       else "-- TODO: method call " ++ baseExpr ++ "." ++ methodCall
+    in if "-- TODO:" `isPrefixOf` baseExpr
+       then "-- TODO: method call " ++ baseExpr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+       else baseExpr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+  -- Handle attribute access like rev.author
   Dot expr (Ident attr _) _ -> 
     let baseExpr = convertExpr expr
     in if baseExpr == "self.client"
        then "-- TODO: client." ++ attr
-       else if "-- TODO:" `isPrefixOf` baseExpr
-            then "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
-            else baseExpr ++ "." ++ attr
+       else convertAttributeAccess baseExpr attr
   _ -> "-- TODO: expr " ++ take 50 (show expr)
+
+-- | Convert client method calls
+convertClientMethod :: String -> [ArgumentSpan] -> String
+convertClientMethod method args = case method of
+  "commit" -> "C.commit client " ++ convertCommitArgs args
+  "log" -> "C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"
+  "branches" -> "C.branches client " ++ convertBranchesArgs args  
+  "tip" -> "C.tip client"
+  "branch" -> case args of
+    [ArgExpr branchName _] -> "C.branch client (Just " ++ convertExpr branchName ++ ") []"
+    _ -> "C.branch client Nothing []"
+  _ -> "-- TODO: client method " ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+
+-- | Convert attribute access to Haskell record accessors
+convertAttributeAccess :: String -> String -> String
+convertAttributeAccess baseExpr attr = case attr of
+  "author" -> "revAuthor " ++ baseExpr
+  "desc" -> "revDesc " ++ baseExpr
+  "date" -> "revDate " ++ baseExpr
+  "node" -> "revNode " ++ baseExpr
+  "rev" -> "revRev " ++ baseExpr
+  "branch" -> "branchName " ++ baseExpr  -- for branch info
+  _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
 
 extractTestMethods :: StatementSpan -> [String]
 extractTestMethods (Class _ _ body _) = mapMaybe convertTestMethod body
