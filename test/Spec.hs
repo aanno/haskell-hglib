@@ -16,6 +16,7 @@ import qualified Test.HgLib.MyStatusSpec as MyStatus
 import qualified Test.HgLib.MyLogSpec as MyLog
 import qualified Test.HgLib.MyUpdateSpec as MyUpdate
 import qualified Test.HgLib.MyConfigSpec as MyConfig
+import qualified Test.HgLib.CommitSpec as Commit
 -- import qualified Test.HgLib.MyUpdateSpec as MyUpdate
 -- import qualified Test.HgLib.TagsSpec as Tags
 -- import qualified Test.HgLib.ResolveSpec as Resolve
@@ -96,8 +97,3 @@ main = hspec $ around_ logging $ do
     -- Bookmarks.spec
     -- Annotate.spec
     -- Client.spec
-
-
-
-
-

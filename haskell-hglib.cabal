@@ -127,7 +127,7 @@ test-suite haskell-hglib-test
   other-modules:
       Test.HgLib.CommitSpec
       Test.HgLib.Common
-      Test.HgLib.ConvertedCommitSpec
+      Test.HgLib.MyCommitSpec
       Test.HgLib.MyConfigSpec
       Test.HgLib.MyLogSpec
       Test.HgLib.MyStatusSpec
