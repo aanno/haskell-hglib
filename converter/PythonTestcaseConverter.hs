@@ -87,19 +87,26 @@ generateHaskellTest testName body =
     ensureProperTestEnding lines
       | null lines = ["pendingWith \"Empty test body\""]
       | all isDeclarationOrComment lines = lines ++ ["pendingWith \"Test not implemented yet\""]
-      | not (null lines) && isAssignment (last lines) = lines ++ ["return ()"]
+      | endsWithAssignment lines = lines ++ ["return ()"]
       | otherwise = lines
     
     isDeclarationOrComment line = 
-      "let " `isPrefixOf` stripSpaces line || 
-      "-- " `isPrefixOf` stripSpaces line || 
-      null (stripSpaces line)
-    
-    isAssignment line = 
       let stripped = stripSpaces line
-      in " <- " `isInfixOf` stripped && 
+      in "let " `isPrefixOf` stripped || 
+         "-- " `isPrefixOf` stripped || 
+         null stripped
+    
+    -- Check if the test ends with an assignment, ignoring trailing comments
+    endsWithAssignment lines =
+      let nonCommentLines = filter (not . isDeclarationOrComment) lines
+      in not (null nonCommentLines) && isAssignmentLine (last nonCommentLines)
+    
+    -- Simplified assignment detection
+    isAssignmentLine line = 
+      let stripped = stripSpaces line
+      in (" <- " `isInfixOf` stripped) && 
          not ("shouldBe" `isInfixOf` stripped) && 
-         not ("-- TODO:" `isPrefixOf` stripped) &&
+         not ("-- " `isPrefixOf` stripped) &&
          not ("pendingWith" `isInfixOf` stripped)
     
     stripSpaces = dropWhile (== ' ')

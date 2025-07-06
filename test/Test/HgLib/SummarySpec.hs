@@ -33,6 +33,7 @@ spec = describe "Summary" $ do
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
       -- TODO: complex assertEqual
+      return ()
 
   it "should detect dirty working directory" $ do
     withTestRepo $ \bt -> do
@@ -108,5 +109,6 @@ spec = describe "Summary" $ do
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
       -- TODO: complex assertEqual
+      return ()
 
 
