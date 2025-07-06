@@ -91,10 +91,12 @@ generateHaskellTest testName body =
       | otherwise = lines
     
     isDeclarationOrComment line = 
-      "let " `isPrefixOf` line || "-- " `isPrefixOf` line
+      "let " `isPrefixOf` line || "-- " `isPrefixOf` line || null (strip line)
     
     isAssignment line = 
-      " <- " `isInfixOf` line && not ("shouldBe" `isInfixOf` line)
+      " <- " `isInfixOf` line && not ("shouldBe" `isInfixOf` line) && not ("-- TODO:" `isPrefixOf` line)
+    
+    strip = dropWhile (== ' ')
 
 -- | Convert Python suite to Haskell lines
 convertSuite :: SuiteSpan -> [String]
@@ -301,6 +303,7 @@ convertMethodArgs method args = case method of
   "commit" -> convertCommitArgs args
   "log" -> convertLogArgs args
   "branches" -> convertBranchesArgs args
+  "update" -> convertUpdateArgs args
   _ -> intercalate " " (map convertArg args)
 
 -- | Convert branches arguments
@@ -466,10 +469,26 @@ convertClientMethod method args = case method of
   "log" -> "C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"
+  "update" -> "C.update client " ++ convertUpdateArgs args
   "branch" -> case args of
     [ArgExpr branchName _] -> "C.branch client (Just " ++ convertExpr branchName ++ ") []"
     _ -> "C.branch client Nothing []"
   _ -> "-- TODO: client method " ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+
+-- | Convert update arguments
+convertUpdateArgs :: [ArgumentSpan] -> String
+convertUpdateArgs [] = "C.defaultUpdateOptions"
+convertUpdateArgs args = 
+  let opts = extractKeywordArgs args
+      buildOptions base [] = base
+      buildOptions base ((key, value):rest) = 
+        let updated = case key of
+              "clean" -> base ++ " { C.updateClean = " ++ value ++ " }"
+              "check" -> base ++ " { C.updateCheck = " ++ value ++ " }"
+              "rev" -> base ++ " { C.updateRev = Just " ++ value ++ " }"
+              _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
+        in buildOptions updated rest
+  in "(" ++ buildOptions "C.defaultUpdateOptions" opts ++ ")"
 
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String

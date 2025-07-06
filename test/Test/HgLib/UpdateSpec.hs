@@ -75,7 +75,7 @@ spec = describe "Update" $ do
   it "test_check_clean" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.update client clean=True check=True
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.update client (C.defaultUpdateOptions { C.updateClean = True } { C.updateCheck = True })
       result `shouldSatisfy` isLeft
 
   it "test_clean" $ do
@@ -83,7 +83,7 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
       commonAppendFile "a" "b"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.update client check=True
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.update client (C.defaultUpdateOptions { C.updateCheck = True })
       result `shouldSatisfy` isLeft
       -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
       u `shouldBe` 1
