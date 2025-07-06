@@ -10,9 +10,6 @@ import qualified Data.List as L
 import Data.Maybe (mapMaybe, fromMaybe, isJust)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Language.Python.Common.AST
-import Language.Python.Common.SrcLocation
-import Language.Python.Version3 (parseModule)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.IO (stderr, stdout)
@@ -20,6 +17,11 @@ import Data.Char (toUpper, toLower)
 import System.FilePath (takeBaseName)
 
 import Logging
+
+-- Import the language-python modules only for the converter
+import Language.Python.Common.AST
+import Language.Python.Common.SrcLocation
+import Language.Python.Version3 (parseModule)
 
 -- | Parse a Python file
 parsePythonFile :: FilePath -> IO (ModuleSpan)
@@ -86,11 +88,15 @@ convertSuite stmts = concatMap convertStatement stmts
 -- | Convert a single Python statement to Haskell
 convertStatement :: StatementSpan -> [String]
 convertStatement stmt = case stmt of
-  -- Handle self.assertEqual
+  -- Handle self.assertEqual with complex expressions
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "assertEqual" _) _) 
     [ArgExpr actual _, ArgExpr expected _] _) _ ->
-      [convertExpr actual ++ " `shouldBe` " ++ convertExpr expected]
+      let actualStr = convertExpr actual
+          expectedStr = convertExpr expected
+      in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr
+         then ["-- TODO: complex assertEqual - " ++ actualStr ++ " should equal " ++ expectedStr]
+         else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
   StmtExpr (Call 
@@ -166,7 +172,10 @@ convertStatement stmt = case stmt of
   Assign 
     [Var (Ident var _) _]
     (Subscript listExpr (Int 0 _ _) _) _ ->
-      [var ++ " <- head <$> " ++ convertExpr listExpr]
+      let listStr = convertExpr listExpr
+      in if "-- TODO:" `isPrefixOf` listStr
+         then ["-- TODO: head assignment from " ++ listStr]
+         else [var ++ " <- head <$> " ++ listStr]
   
   -- Handle multiple variable assignment from self.client.log
   Assign 
@@ -186,7 +195,7 @@ convertStatement stmt = case stmt of
   Assign 
     [Var (Ident var _) _]
     (Call (Dot varExpr (Ident "replace" _) _) args _) _ ->
-      [var ++ " <- return " ++ convertExpr varExpr ++ " -- TODO: handle replace"]
+      [var ++ " <- return " ++ convertExpr varExpr ++ " -- TODO: handle replace with " ++ show (length args) ++ " args"]
   
   -- Handle self.client.summary()
   Assign 
@@ -229,15 +238,22 @@ convertStatement stmt = case stmt of
 -- | Convert assertRaises calls
 convertAssertRaises :: [ArgumentSpan] -> [String]
 convertAssertRaises args = case args of
+  -- Handle self.assertRaises(exception, self.client.method, arg1, arg2, ...)
+  (ArgExpr exceptionType _):(ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _):methodArgs ->
+    let methodCall = "C." ++ method ++ " client " ++ convertMethodArgs method methodArgs
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+        "result `shouldSatisfy` isLeft"]
+  -- Handle self.assertRaises(exception, lambda: expr)
+  [ArgExpr exceptionType _, ArgExpr (Lambda _ expr _) _] ->
+    let lambdaBody = convertExpr expr
+    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ lambdaBody,
+        "result `shouldSatisfy` isLeft"]
+  -- Handle other patterns
   [ArgExpr exceptionType _, ArgExpr (Call func funcArgs _) _] ->
     let funcCall = convertFunctionCall func funcArgs
     in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ funcCall,
         "result `shouldSatisfy` isLeft"]
-  [ArgExpr exceptionType _, ArgExpr func _, ArgExpr arg _] ->
-    let funcCall = convertExpr func ++ " " ++ convertExpr arg
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ funcCall,
-        "result `shouldSatisfy` isLeft"]
-  _ -> ["-- TODO: assertRaises with " ++ show (length args) ++ " args"]
+  _ -> ["-- TODO: assertRaises pattern not implemented"]
 
 -- | Convert function calls
 convertFunctionCall :: ExprSpan -> [ArgumentSpan] -> String
@@ -298,8 +314,7 @@ convertCommitArgs args =
       message = case args of
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
-      buildOptions = foldl addOption ("mkTestCommitOptions " ++ message) opts
-  in "(" ++ buildOptions ++ ")"
+  in buildCommitOptions message opts
 
 -- | Add option to commit options
 addOption :: String -> (String, String) -> String
@@ -311,6 +326,13 @@ addOption base (key, value) = case key of
   "amend" -> base ++ " { C.commitAmend = " ++ value ++ " }"
   "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
   _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
+
+-- | Build commit options properly with parentheses
+buildCommitOptions :: String -> [(String, String)] -> String
+buildCommitOptions baseMsg opts = 
+  let base = "mkTestCommitOptions " ++ baseMsg
+      withOpts = foldl addOption base opts
+  in "(" ++ withOpts ++ ")"
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -336,21 +358,36 @@ convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
   Int i _ _ -> show i
-  Strings [s] _ -> show s
+  Strings [s] _ -> "\"" ++ s ++ "\""  -- Remove extra quotes
   Bool b _ -> show b
   Tuple exprs _ -> "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
   List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
   Dictionary items _ -> "-- TODO: dict"
-  Subscript e idx _ -> convertExpr e ++ "[" ++ convertExpr idx ++ "]"
+  Subscript e idx _ -> 
+    let baseExpr = convertExpr e
+        indexExpr = convertExpr idx
+    in if "-- TODO:" `isPrefixOf` baseExpr
+       then "-- TODO: subscript " ++ baseExpr ++ "[" ++ indexExpr ++ "]"
+       else baseExpr ++ " !! " ++ indexExpr
   BinaryOp op left right _ -> 
       case op of
         Equality _ -> convertExpr left ++ " == " ++ convertExpr right
         _ -> convertExpr left ++ " <op> " ++ convertExpr right
-  Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> show s
+  Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> "\"" ++ s ++ "\""
   Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _ -> "length " ++ convertExpr listExpr
   Call (Dot expr (Ident method _) _) args _ -> 
-    convertExpr expr ++ "." ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
-  Dot expr (Ident attr _) _ -> convertExpr expr ++ "." ++ attr
+    let baseExpr = convertExpr expr
+        methodCall = method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
+    in if baseExpr == "self.client"
+       then "-- TODO: client method " ++ methodCall
+       else "-- TODO: method call " ++ baseExpr ++ "." ++ methodCall
+  Dot expr (Ident attr _) _ -> 
+    let baseExpr = convertExpr expr
+    in if baseExpr == "self.client"
+       then "-- TODO: client." ++ attr
+       else if "-- TODO:" `isPrefixOf` baseExpr
+            then "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
+            else baseExpr ++ "." ++ attr
   _ -> "-- TODO: expr " ++ take 50 (show expr)
 
 extractTestMethods :: StatementSpan -> [String]
