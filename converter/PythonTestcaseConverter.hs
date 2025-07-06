@@ -124,11 +124,11 @@ convertStatement stmt = case stmt of
     [ArgExpr actual _, ArgExpr expected _] _) _ ->
       let actualStr = convertExpr actual
           expectedStr = convertExpr expected
-      in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr
+      in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr ||
+            "complex" `isInfixOf` actualStr || "complex" `isInfixOf` expectedStr ||
+            "C.log_" `isInfixOf` actualStr || "C.log_" `isInfixOf` expectedStr
          then ["-- TODO: complex assertEqual"]
-         else if "complex" `isInfixOf` actualStr || "complex" `isInfixOf` expectedStr
-              then ["-- TODO: complex assertEqual"]
-              else [actualStr ++ " `shouldBe` " ++ expectedStr]
+         else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
   StmtExpr (Call 
@@ -391,7 +391,7 @@ buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
       updates = map formatUpdate opts
-  in "(" ++ base ++ ")" ++ concatMap (" " ++) updates
+  in "(" ++ base ++ " " ++ intercalate " " updates ++ ")"
   where
     formatUpdate (key, value) = case key of
       "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
