@@ -22,16 +22,16 @@ spec = describe "Config" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "config", ident_anno
-      ("'section'", "'key'", "'value'") <op> -- TODO: client method config() `shouldBe` True
+      ("section", "key", "value") <op> -- TODO: client method config() `shouldBe` True
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.config client ["'a.b'", "'foo'"]
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.config client ["a.b", "foo"]
       result `shouldSatisfy` isLeft
 
   it "test_show_source" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "config", ident_anno
-      (-- TODO: method call -- TODO: attr access os.path.abspath(...) <op> "':2'", "'section'", "'key'", "'value'") <op> config `shouldBe` True
+      (-- TODO: method call -- TODO: attr access os.path.abspath(...) <op> ":2", "section", "key", "value") <op> config `shouldBe` True
 
 

@@ -75,17 +75,26 @@ generateHaskellTest :: String -> SuiteSpan -> String
 generateHaskellTest testName body = 
   let testDesc = pythonToHaskellIdent testName
       bodyLines = convertSuite body
-      -- Ensure test bodies are not empty and don't end with just declarations
-      finalBody = if null bodyLines || all isDeclaration bodyLines
-                 then bodyLines ++ ["pendingWith \"Test not implemented yet\""]
-                 else bodyLines
+      -- Ensure test bodies don't end with assignments and have proper final expressions
+      finalBody = ensureProperTestEnding bodyLines
   in unlines $
     [ "  it \"" ++ testDesc ++ "\" $ do"
     , "    withTestRepo $ \\bt -> do"
     , "      let client = btClient bt"
     ] ++ map ("      " ++) finalBody
   where
-    isDeclaration line = "let " `isPrefixOf` line || "-- " `isPrefixOf` line
+    ensureProperTestEnding [] = ["pendingWith \"Empty test body\""]
+    ensureProperTestEnding lines
+      | null lines = ["pendingWith \"Empty test body\""]
+      | all isDeclarationOrComment lines = lines ++ ["pendingWith \"Test not implemented yet\""]
+      | isAssignment (last lines) = lines ++ ["return ()"]
+      | otherwise = lines
+    
+    isDeclarationOrComment line = 
+      "let " `isPrefixOf` line || "-- " `isPrefixOf` line
+    
+    isAssignment line = 
+      " <- " `isInfixOf` line && not ("shouldBe" `isInfixOf` line)
 
 -- | Convert Python suite to Haskell lines
 convertSuite :: SuiteSpan -> [String]
@@ -126,10 +135,9 @@ convertStatement stmt = case stmt of
   StmtExpr (Call 
     (Dot (Var (Ident "self" _) _) (Ident "append" _) _) 
     [ArgExpr file _, ArgExpr content _] _) _ ->
-      case (file, content) of
-        (Strings [fileStr] _, Strings [contentStr] _) ->
-          ["commonAppendFile \"" ++ fileStr ++ "\" \"" ++ contentStr ++ "\""]
-        _ -> ["commonAppendFile " ++ convertExpr file ++ " " ++ convertExpr content]
+      let fileStr = extractStringContent file
+          contentStr = extractStringContent content
+      in ["commonAppendFile " ++ fileStr ++ " " ++ contentStr]
   
   -- Handle self.client.commit with tuple assignment
   Assign 
@@ -400,7 +408,7 @@ convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
   Int i _ _ -> show i
-  Strings [s] _ -> "\"" ++ s ++ "\""  -- Simple string conversion without extra quotes
+  Strings [s] _ -> "\"" ++ stripQuotes s ++ "\""  -- Strip extra quotes
   Bool b _ -> show b
   Tuple exprs _ -> "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
   List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
@@ -415,7 +423,8 @@ convertExpr expr = case expr of
       case op of
         Equality _ -> convertExpr left ++ " == " ++ convertExpr right
         _ -> convertExpr left ++ " <op> " ++ convertExpr right
-  Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> "\"" ++ s ++ "\""
+  -- Handle b('string') calls - extract just the string content
+  Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> "\"" ++ stripQuotes s ++ "\""
   Call (Var (Ident "len" _) _) [ArgExpr listExpr _] _ -> "length " ++ convertExpr listExpr
   -- Handle self.client.method() calls
   Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) args _ ->
@@ -432,6 +441,23 @@ convertExpr expr = case expr of
   -- Handle parenthesized expressions
   Paren expr _ -> convertExpr expr
   _ -> "-- TODO: expr " ++ take 50 (show expr)
+  where
+    stripQuotes s 
+      | length s >= 2 && head s == '\'' && last s == '\'' = init (tail s)
+      | length s >= 2 && head s == '"' && last s == '"' = init (tail s)
+      | otherwise = s
+
+-- | Extract string content, handling b('string') calls and direct strings
+extractStringContent :: ExprSpan -> String
+extractStringContent expr = case expr of
+  Strings [s] _ -> "\"" ++ stripQuotes s ++ "\""
+  Call (Var (Ident "b" _) _) [ArgExpr (Strings [s] _) _] _ -> "\"" ++ stripQuotes s ++ "\""
+  _ -> convertExpr expr
+  where
+    stripQuotes s 
+      | length s >= 2 && head s == '\'' && last s == '\'' = init (tail s)
+      | length s >= 2 && head s == '"' && last s == '"' = init (tail s)
+      | otherwise = s
 
 -- | Convert client method calls
 convertClientMethod :: String -> [ArgumentSpan] -> String

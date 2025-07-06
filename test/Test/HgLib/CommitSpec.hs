@@ -21,27 +21,27 @@ spec = describe "Commit" $ do
   it "should handle commit with custom user" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitUser = Just "'foo'" })
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitUser = Just "foo" })
       rev <- head <$> C.log_ client [node] C.defaultLogOptions
-      revAuthor rev `shouldBe` "'foo'"
+      revAuthor rev `shouldBe` "foo"
 
   it "should fail with empty user" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "'first'" { C.commitUser = Just "''" })
+      commonAppendFile "a" "a"
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "first" { C.commitUser = Just "" })
       result `shouldSatisfy` isLeft
 
   it "should close branch" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
-      C.branch client (Just "'foo'") []
-      commonAppendFile "'a'" "'a'"
-      (rev1, node1) <- C.commit client mkTestCommitOptions "'second'"
-      revclose <- C.commit client (mkTestCommitOptions "'closing foo'" { C.commitCloseBranch = True })
+      commonAppendFile "a" "a"
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
+      C.branch client (Just "foo") []
+      commonAppendFile "a" "a"
+      (rev1, node1) <- C.commit client mkTestCommitOptions "second"
+      revclose <- C.commit client (mkTestCommitOptions "closing foo" { C.commitCloseBranch = True })
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
       C.branches client [] `shouldBe` [(branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
       C.branches client ["--closed"] `shouldBe` [(branchName revclose, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
@@ -49,7 +49,7 @@ spec = describe "Commit" $ do
   it "should handle message and logfile conflicts" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "'foo'" { C.commitLogFile = Just "'bar'" })
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "foo" { C.commitLogFile = Just "bar" })
       result `shouldSatisfy` isLeft
       result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client C.defaultCommitOptions
       result `shouldSatisfy` isLeft
@@ -57,19 +57,19 @@ spec = describe "Commit" $ do
   it "should handle custom date" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
       now `shouldBe` revDate C.tip client
 
   it "should amend previous commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
+      (rev0, node0) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
       now `shouldBe` revDate C.tip client
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "default" { C.commitAmend = True })
       now `shouldBe` revDate C.tip client
       node0 `shouldNotBe` node1
@@ -78,8 +78,8 @@ spec = describe "Commit" $ do
   it "should prevent null injection" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client mkTestCommitOptions "'fail\0-A'"
+      commonAppendFile "a" "a"
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client mkTestCommitOptions "fail\0-A"
       result `shouldSatisfy` isLeft
       0 `shouldBe` length C.log_ client [] C.defaultLogOptions
 

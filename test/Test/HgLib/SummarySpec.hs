@@ -28,8 +28,8 @@ spec = describe "Summary" $ do
   it "should handle basic repository with one commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
       -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
@@ -37,9 +37,9 @@ spec = describe "Summary" $ do
   it "should detect dirty working directory" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
       -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
@@ -48,18 +48,18 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       e <- C.summary client []
-      e !! "'commit'" `shouldBe` True
+      e !! "commit" `shouldBe` True
 
   it "should handle update" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- Dictionary assignment for d omitted
@@ -69,13 +69,13 @@ spec = describe "Summary" $ do
   it "should handle remote" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "other", ident_annot
       -- Dictionary assignment for d omitted
       -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
-      commonAppendFile "'a'" "'a'"
+      commonAppendFile "a" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
@@ -86,7 +86,7 @@ spec = describe "Summary" $ do
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
       -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
-      commonAppendFile "'other/a'" "'a'"
+      commonAppendFile "other/a" "a"
       -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
@@ -97,13 +97,13 @@ spec = describe "Summary" $ do
   it "should handle two parents" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'a'" "'a'"
-      (rev0, node) <- C.commit client (mkTestCommitOptions "'first'" { C.commitAddRemove = True })
-      commonAppendFile "'a'" "'a'"
-      (rev1, node1) <- C.commit client mkTestCommitOptions "'second'"
+      commonAppendFile "a" "a"
+      (rev0, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
+      commonAppendFile "a" "a"
+      (rev1, node1) <- C.commit client mkTestCommitOptions "second"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      commonAppendFile "'b'" "'a'"
-      (rev2, node2) <- C.commit client (mkTestCommitOptions "'third'" { C.commitAddRemove = True })
+      commonAppendFile "b" "a"
+      (rev2, node2) <- C.commit client (mkTestCommitOptions "third" { C.commitAddRemove = True })
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =

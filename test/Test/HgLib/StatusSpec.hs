@@ -27,15 +27,15 @@ spec = describe "Status" $ do
   it "test_one_of_each" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'.hgignore'" "'ignored'"
-      commonAppendFile "'ignored'" "'a'"
-      commonAppendFile "'clean'" "'a'"
-      commonAppendFile "'modified'" "'a'"
-      commonAppendFile "'removed'" "'a'"
-      commonAppendFile "'missing'" "'a'"
+      commonAppendFile ".hgignore" "ignored"
+      commonAppendFile "ignored" "a"
+      commonAppendFile "clean" "a"
+      commonAppendFile "modified" "a"
+      commonAppendFile "removed" "a"
+      commonAppendFile "missing" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      commonAppendFile "'modified'" "'a'"
-      commonAppendFile "'added'" "'a'"
+      commonAppendFile "modified" "a"
+      commonAppendFile "added" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
@@ -47,7 +47,7 @@ spec = describe "Status" $ do
   it "test_copy" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'source'" "'a'"
+      commonAppendFile "source" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
@@ -56,7 +56,7 @@ spec = describe "Status" $ do
   it "test_copy_origin_space" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "'s ource'" "'a'"
+      commonAppendFile "s ource" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
