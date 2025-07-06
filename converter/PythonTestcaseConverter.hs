@@ -161,7 +161,7 @@ convertStatement stmt = case stmt of
     [Tuple [Var (Ident rev _) _, Var (Ident node _) _] _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
       let commitArgs = convertCommitArgs args
-      in ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client $ " ++ commitArgs]
+      in ["(" ++ rev ++ ", " ++ node ++ ") <- ( C.commit client $ " ++ commitArgs ++ " )"]
   
   -- Handle self.client.commit with single variable assignment
   Assign 
@@ -498,7 +498,7 @@ extractStringContent expr = case expr of
 -- | Convert client method calls
 convertClientMethod :: String -> [ArgumentSpan] -> String
 convertClientMethod method args = case method of
-  "commit" -> "C.commit client " ++ convertCommitArgs args
+  "commit" -> "C.commit client $ " ++ convertCommitArgs args
   "log" -> "C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"

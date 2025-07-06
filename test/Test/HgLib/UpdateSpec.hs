@@ -43,7 +43,7 @@ spec = describe "Update" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "\n\n\n\nb"
-      (rev2, node2) <- C.commit client $ C.mkDefaultCommitOptions "third"
+      (rev2, node2) <- ( C.commit client $ C.mkDefaultCommitOptions "third" )
       commonAppendFile "a" "b"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
@@ -67,7 +67,7 @@ spec = describe "Update" $ do
       -- TODO: complex assertEqual
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       commonAppendFile "a" "b"
-      (rev2, node2) <- C.commit client $ C.mkDefaultCommitOptions "new head"
+      (rev2, node2) <- ( C.commit client $ C.mkDefaultCommitOptions "new head" )
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       revNode (-- TODO: subscript) `shouldBe` node2

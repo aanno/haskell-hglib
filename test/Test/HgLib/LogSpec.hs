@@ -22,9 +22,9 @@ spec = describe "Log" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev0, node0) <- ( C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } )
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client $ C.mkDefaultCommitOptions "second"
+      (rev1, node1) <- ( C.commit client $ C.mkDefaultCommitOptions "second" )
       revs <- C.log_ client [] C.defaultLogOptions
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       length revs == 2 `shouldBe` True
