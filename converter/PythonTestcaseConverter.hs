@@ -87,16 +87,22 @@ generateHaskellTest testName body =
     ensureProperTestEnding lines
       | null lines = ["pendingWith \"Empty test body\""]
       | all isDeclarationOrComment lines = lines ++ ["pendingWith \"Test not implemented yet\""]
-      | isAssignment (last lines) = lines ++ ["return ()"]
+      | not (null lines) && isAssignment (last lines) = lines ++ ["return ()"]
       | otherwise = lines
     
     isDeclarationOrComment line = 
-      "let " `isPrefixOf` line || "-- " `isPrefixOf` line || null (strip line)
+      "let " `isPrefixOf` stripSpaces line || 
+      "-- " `isPrefixOf` stripSpaces line || 
+      null (stripSpaces line)
     
     isAssignment line = 
-      " <- " `isInfixOf` line && not ("shouldBe" `isInfixOf` line) && not ("-- TODO:" `isPrefixOf` line)
+      let stripped = stripSpaces line
+      in " <- " `isInfixOf` stripped && 
+         not ("shouldBe" `isInfixOf` stripped) && 
+         not ("-- TODO:" `isPrefixOf` stripped) &&
+         not ("pendingWith" `isInfixOf` stripped)
     
-    strip = dropWhile (== ' ')
+    stripSpaces = dropWhile (== ' ')
 
 -- | Convert Python suite to Haskell lines
 convertSuite :: SuiteSpan -> [String]
