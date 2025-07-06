@@ -11,6 +11,7 @@ module Test.HgLib.Common
     , hspec
     , nonInteractiveConfig
     , mkTestCommitOptions
+    , mkUpdateableCommitOptions
     ) where
 
 import Control.Exception (bracket, finally)
@@ -43,12 +44,13 @@ nonInteractiveConfig = defaultConfig {
     hgConfigs = ["ui.editor=true", "ui.interactive=false", "ui.hgeditor=true"]
 }
 
-mkUpdateableCommitOptions :: String -> (C.CommitOptions -> C.CommitOptions) -> C.CommitOptions
-mkUpdateableCommitOptions msg updateFn = updateFn (C.defaultCommitOptions { C.commitMessage = msg })
-
+-- Use the exported constructor directly for simple cases
 mkTestCommitOptions :: String -> C.CommitOptions  
-mkTestCommitOptions msg = C.defaultCommitOptions { C.commitMessage = msg }
+mkTestCommitOptions = C.mkDefaultCommitOptions
 
+-- For updateable cases
+mkUpdateableCommitOptions :: String -> (C.CommitOptions -> C.CommitOptions) -> C.CommitOptions
+mkUpdateableCommitOptions msg updateFn = updateFn (C.mkDefaultCommitOptions msg)
 
 -- | Setup a test repository and run tests
 withTestRepo :: (BaseTest -> IO a) -> IO a

@@ -161,14 +161,14 @@ convertStatement stmt = case stmt of
     [Tuple [Var (Ident rev _) _, Var (Ident node _) _] _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
       let commitArgs = convertCommitArgs args
-      in ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client " ++ commitArgs]
+      in ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client $ " ++ commitArgs]
   
   -- Handle self.client.commit with single variable assignment
   Assign 
     [Var (Ident var _) _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
       let commitArgs = convertCommitArgs args
-      in [var ++ " <- C.commit client " ++ commitArgs]
+      in [var ++ " <- C.commit client $ " ++ commitArgs]
   
   -- Handle self.client.log assignment
   Assign 
@@ -364,14 +364,14 @@ convertVersionCheck op parts =
 
 -- | Convert commit arguments
 convertCommitArgs :: [ArgumentSpan] -> String
-convertCommitArgs [] = "C.defaultCommitOptions"
+convertCommitArgs [] = "-- ERROR: commit needs message"
 convertCommitArgs args = 
   let opts = extractKeywordArgs args
       message = case args of
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
   in if null opts
-     then "(mkTestCommitOptions " ++ message ++ ")"
+     then "C.mkDefaultCommitOptions " ++ message
      else buildCommitOptions message opts
 
 -- | Add option to commit options

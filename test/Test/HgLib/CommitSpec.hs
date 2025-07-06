@@ -22,7 +22,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitUser = Just "foo" }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitUser = Just "foo" }
       rev <- head <$> C.log_ client [node] C.defaultLogOptions
       revAuthor (rev) `shouldBe` "foo"
 
@@ -37,11 +37,11 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev0, node0) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       C.branch client (Just "foo") []
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
-      revclose <- C.commit client mkUpdateableCommitOptions "closing foo" $ \opts -> opts  { C.commitCloseBranch = True }
+      (rev1, node1) <- C.commit client $ C.mkDefaultCommitOptions "second"
+      revclose <- C.commit client $ mkUpdateableCommitOptions "closing foo" $ \opts -> opts  { C.commitCloseBranch = True }
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
       -- TODO: complex assertEqual
       -- TODO: complex assertEqual
@@ -52,7 +52,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client mkUpdateableCommitOptions "foo" $ \opts -> opts  { C.commitLogFile = Just "bar" }
       result `shouldSatisfy` isLeft
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client C.defaultCommitOptions
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client -- ERROR: commit needs message
       result `shouldSatisfy` isLeft
 
   it "should handle custom date" $ do
@@ -60,7 +60,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) }
+      (rev0, node0) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) }
       now `shouldBe` revDate (C.tip client)
 
   it "should amend previous commit" $ do
@@ -68,10 +68,10 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) }
+      (rev0, node0) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) }
       now `shouldBe` revDate (C.tip client)
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client mkUpdateableCommitOptions "default" $ \opts -> opts  { C.commitAmend = True }
+      (rev1, node1) <- C.commit client $ mkUpdateableCommitOptions "default" $ \opts -> opts  { C.commitAmend = True }
       now `shouldBe` revDate (C.tip client)
       node0 `shouldNotBe` node1
       -- TODO: complex assertEqual
@@ -80,7 +80,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client (mkTestCommitOptions "fail\0-A")
+      result <- (try :: IO a -> IO (Either SomeException a)) $ C.commit client C.mkDefaultCommitOptions "fail\0-A"
       result `shouldSatisfy` isLeft
       -- TODO: complex assertEqual
 

@@ -29,7 +29,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
       -- TODO: complex assertEqual
@@ -39,7 +39,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       commonAppendFile "a" "a"
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
@@ -50,7 +50,7 @@ spec = describe "Summary" $ do
       let client = btClient bt
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       e <- C.summary client []
       e !! "commit" `shouldBe` True
@@ -59,7 +59,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       commonAppendFile "a" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
@@ -71,7 +71,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "other", ident_annot
       -- Dictionary assignment for d omitted
@@ -99,12 +99,12 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node) <- C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev0, node) <- C.commit client $ mkUpdateableCommitOptions "first" $ \opts -> opts  { C.commitAddRemove = True }
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
+      (rev1, node1) <- C.commit client $ C.mkDefaultCommitOptions "second"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       commonAppendFile "b" "a"
-      (rev2, node2) <- C.commit client mkUpdateableCommitOptions "third" $ \opts -> opts  { C.commitAddRemove = True }
+      (rev2, node2) <- C.commit client $ mkUpdateableCommitOptions "third" $ \opts -> opts  { C.commitAddRemove = True }
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
