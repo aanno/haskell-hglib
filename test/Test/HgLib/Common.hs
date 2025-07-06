@@ -43,9 +43,12 @@ nonInteractiveConfig = defaultConfig {
     hgConfigs = ["ui.editor=true", "ui.interactive=false", "ui.hgeditor=true"]
 }
 
--- could be changed later to pass a state for commit message names
-mkTestCommitOptions :: String -> C.CommitOptions
-mkTestCommitOptions = C.mkDefaultCommitOptions
+mkUpdateableCommitOptions :: String -> (C.CommitOptions -> C.CommitOptions) -> C.CommitOptions
+mkUpdateableCommitOptions msg updateFn = updateFn (C.defaultCommitOptions { C.commitMessage = msg })
+
+mkTestCommitOptions :: String -> C.CommitOptions  
+mkTestCommitOptions msg = C.defaultCommitOptions { C.commitMessage = msg }
+
 
 -- | Setup a test repository and run tests
 withTestRepo :: (BaseTest -> IO a) -> IO a

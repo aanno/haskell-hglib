@@ -385,13 +385,13 @@ addOption base (key, value) = case key of
   "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
   _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
 
--- | Build commit options properly
+-- | Build commit options using $ operator
 buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
-  let base = "mkTestCommitOptions " ++ baseMsg
+  let base = "mkUpdateableCommitOptions " ++ baseMsg
       updates = map formatUpdate opts
-  in "(" ++ base ++ " " ++ intercalate " " updates ++ ")"
+  in base ++ " $ \\opts -> opts " ++ concatMap (" " ++) updates
   where
     formatUpdate (key, value) = case key of
       "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
