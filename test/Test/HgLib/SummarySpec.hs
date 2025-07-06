@@ -22,7 +22,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- Dictionary assignment for d omitted
-      -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
+      -- TODO: complex assertEqual
       pendingWith "Test not implemented yet"
 
   it "should handle basic repository with one commit" $ do
@@ -32,7 +32,7 @@ spec = describe "Summary" $ do
       (rev, node) <- C.commit client (mkTestCommitOptions "first" { C.commitAddRemove = True })
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
-      -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
+      -- TODO: complex assertEqual
 
   it "should detect dirty working directory" $ do
     withTestRepo $ \bt -> do
@@ -42,7 +42,7 @@ spec = describe "Summary" $ do
       commonAppendFile "a" "a"
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
-      -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
+      -- TODO: complex assertEqual
 
   it "should handle secret commit clean" $ do
     withTestRepo $ \bt -> do
@@ -64,7 +64,7 @@ spec = describe "Summary" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
-      -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
+      -- TODO: complex assertEqual
 
   it "should handle remote" $ do
     withTestRepo $ \bt -> do
@@ -74,25 +74,25 @@ spec = describe "Summary" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "other", ident_annot
       -- Dictionary assignment for d omitted
-      -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
+      -- TODO: complex assertEqual
       commonAppendFile "a" "a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
-      -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
+      -- TODO: complex assertEqual
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
-      -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
+      -- TODO: complex assertEqual
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
-      -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
+      -- TODO: complex assertEqual
       commonAppendFile "other/a" "a"
       -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: if statement with condition: BinaryOp {operator = LessThan {op_annot = SpanPoin
       -- TODO: Assign {assign_to = [Subscript {subscriptee = Var {var_ident = Ident {ident_stri
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
-      -- TODO: complex assertEqual - -- TODO: method call other.summary(...) should equal d
+      -- TODO: complex assertEqual
 
   it "should handle two parents" $ do
     withTestRepo $ \bt -> do
@@ -107,6 +107,6 @@ spec = describe "Summary" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- Dictionary assignment for d omitted
       -- TODO: if statement with condition: BinaryOp {operator = GreaterThanEquals {op_annot =
-      -- TODO: complex assertEqual - -- TODO: client method summary() should equal d
+      -- TODO: complex assertEqual
 
 

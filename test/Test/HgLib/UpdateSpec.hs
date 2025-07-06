@@ -37,7 +37,7 @@ spec = describe "Update" $ do
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      ("M", "a") <op> -- TODO: client method status() `shouldBe` True
+      -- TODO: complex tuple <op> -- TODO: client method status() `shouldBe` True
 
   it "test_merge" $ do
     withTestRepo $ \bt -> do
@@ -56,7 +56,7 @@ spec = describe "Update" $ do
       m `shouldBe` 1
       r `shouldBe` 0
       ur `shouldBe` 0
-      -- TODO: complex assertEqual - -- TODO: client method status() should equal [("M", "a")]
+      -- TODO: complex assertEqual
 
   it "test_tip" $ do
     withTestRepo $ \bt -> do
@@ -64,13 +64,13 @@ spec = describe "Update" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
       u `shouldBe` 1
-      -- TODO: complex assertEqual - revNode -- TODO: subscript -- TODO: client method parents()[0] should equal -- TODO: attr access self.node1
+      -- TODO: complex assertEqual
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client mkTestCommitOptions "new head"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      revNode -- TODO: subscript -- TODO: client method parents()[0] `shouldBe` node2
+      revNode -- TODO: subscript `shouldBe` node2
 
   it "test_check_clean" $ do
     withTestRepo $ \bt -> do

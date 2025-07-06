@@ -43,8 +43,8 @@ spec = describe "Commit" $ do
       (rev1, node1) <- C.commit client mkTestCommitOptions "second"
       revclose <- C.commit client (mkTestCommitOptions "closing foo" { C.commitCloseBranch = True })
       [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
-      C.branches client [] `shouldBe` [(branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
-      C.branches client ["--closed"] `shouldBe` [(branchName revclose, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (branchName rev0, -- TODO: expr Call {call_fun = Var {var_ident = Ident {ident_str, -- TODO: expr SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      C.branches client [] `shouldBe` [-- TODO: complex tuple]
+      C.branches client ["--closed"] `shouldBe` [-- TODO: complex tuple, -- TODO: complex tuple]
 
   it "should handle message and logfile conflicts" $ do
     withTestRepo $ \bt -> do

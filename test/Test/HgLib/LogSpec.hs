@@ -30,15 +30,15 @@ spec = describe "Log" $ do
       length revs == 2 `shouldBe` True
       revNode revs !! 1 `shouldBe` node1
       revs !! 0 `shouldBe` C.log_ client ["0"] C.defaultLogOptions !! 0
-      C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client [["a"]] C.defaultLogOptions
-      C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client [hidden=True] C.defaultLogOptions
+      C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client -- TODO: log with options C.defaultLogOptions
+      C.log_ client [] C.defaultLogOptions `shouldBe` C.log_ client -- TODO: log with options C.defaultLogOptions
 
   it "test_dash_in_filename" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "-a" "-a"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      revs <- C.log_ client [["-a"]] C.defaultLogOptions
+      revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
       revRev revs !! 0 `shouldBe` "0"
 
@@ -47,7 +47,7 @@ spec = describe "Log" $ do
       let client = btClient bt
       commonAppendFile "foobar" "foobar"
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      revs <- C.log_ client [keyword="", ["foobar"]] C.defaultLogOptions
+      revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
       revRev revs !! 0 `shouldBe` "0"
 
@@ -57,7 +57,7 @@ spec = describe "Log" $ do
       commonAppendFile "a" "a"
       -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      revs <- C.log_ client [revrange="."] C.defaultLogOptions
+      revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       revDesc revs !! 0 `shouldBe` "some message\0more stuff"
 
 

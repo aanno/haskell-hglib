@@ -112,7 +112,7 @@ convertStatement stmt = case stmt of
       let actualStr = convertExpr actual
           expectedStr = convertExpr expected
       in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr
-         then ["-- TODO: complex assertEqual - " ++ actualStr ++ " should equal " ++ expectedStr]
+         then ["-- TODO: complex assertEqual"]
          else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
@@ -319,9 +319,11 @@ convertBranchesArgs args =
 convertLogArgs :: [ArgumentSpan] -> String
 convertLogArgs [] = "[]"
 convertLogArgs args = 
-  case args of
-    [ArgExpr nodeList _] -> "[" ++ convertExpr nodeList ++ "]"
-    _ -> "[" ++ intercalate ", " (map convertArg args) ++ "]"
+  let nonKeywordArgs = [convertExpr expr | ArgExpr expr _ <- args]
+      keywordOpts = extractKeywordArgs args
+  in if null keywordOpts
+     then "[" ++ intercalate ", " nonKeywordArgs ++ "]"
+     else "-- TODO: log with options"
 
 -- | Convert if statement
 convertIfStatement :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> [String]
@@ -371,17 +373,17 @@ buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
-      updates = intercalate " " $ map formatUpdate opts
-  in "(" ++ base ++ " " ++ updates ++ ")"
+      updates = foldl (\acc (key, value) -> updateRecord acc key value) base opts
+  in "(" ++ updates ++ ")"
   where
-    formatUpdate (key, value) = case key of
-      "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
-      "user" -> "{ C.commitUser = Just " ++ value ++ " }"
-      "date" -> "{ C.commitDate = Just " ++ value ++ " }"
-      "closebranch" -> "{ C.commitCloseBranch = " ++ value ++ " }"
-      "amend" -> "{ C.commitAmend = " ++ value ++ " }"
-      "logfile" -> "{ C.commitLogFile = Just " ++ value ++ " }"
-      _ -> "-- TODO: " ++ key ++ " = " ++ value
+    updateRecord currentRecord key value = case key of
+      "addremove" -> currentRecord ++ " { C.commitAddRemove = " ++ value ++ " }"
+      "user" -> currentRecord ++ " { C.commitUser = Just " ++ value ++ " }"
+      "date" -> currentRecord ++ " { C.commitDate = Just " ++ value ++ " }"
+      "closebranch" -> currentRecord ++ " { C.commitCloseBranch = " ++ value ++ " }"
+      "amend" -> currentRecord ++ " { C.commitAmend = " ++ value ++ " }"
+      "logfile" -> currentRecord ++ " { C.commitLogFile = Just " ++ value ++ " }"
+      _ -> currentRecord ++ " -- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -413,14 +415,20 @@ convertExpr expr = case expr of
   Int i _ _ -> show i
   Strings [s] _ -> "\"" ++ stripQuotes s ++ "\""  -- Strip extra quotes
   Bool b _ -> show b
-  Tuple exprs _ -> "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
-  List exprs _ -> "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
+  Tuple exprs _ -> 
+    if length exprs > 3 || any isComplexExpr exprs
+    then "-- TODO: complex tuple"
+    else "(" ++ intercalate ", " (map convertExpr exprs) ++ ")"
+  List exprs _ -> 
+    if length exprs > 5 || any isComplexExpr exprs
+    then "-- TODO: complex list"
+    else "[" ++ intercalate ", " (map convertExpr exprs) ++ "]"
   Dictionary items _ -> "-- TODO: dict"
   Subscript e idx _ -> 
     let baseExpr = convertExpr e
         indexExpr = convertExpr idx
     in if "-- TODO:" `isPrefixOf` baseExpr
-       then "-- TODO: subscript " ++ baseExpr ++ "[" ++ indexExpr ++ "]"
+       then "-- TODO: subscript"
        else baseExpr ++ " !! " ++ indexExpr
   BinaryOp op left right _ -> 
       case op of
@@ -443,12 +451,20 @@ convertExpr expr = case expr of
        else convertAttributeAccess baseExpr attr
   -- Handle parenthesized expressions
   Paren expr _ -> convertExpr expr
-  _ -> "-- TODO: expr " ++ take 50 (show expr)
+  -- Handle sliced expressions - typically too complex
+  SlicedExpr _ _ _ -> "-- TODO: slice"
+  _ -> "-- TODO: expr"
   where
     stripQuotes s 
       | length s >= 2 && head s == '\'' && last s == '\'' = init (tail s)
       | length s >= 2 && head s == '"' && last s == '"' = init (tail s)
       | otherwise = s
+    
+    isComplexExpr e = case e of
+      Call _ _ _ -> True
+      Dot _ _ _ -> True
+      SlicedExpr _ _ _ -> True
+      _ -> False
 
 -- | Extract string content, handling b('string') calls and direct strings
 extractStringContent :: ExprSpan -> String

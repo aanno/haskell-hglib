@@ -21,7 +21,7 @@ spec = describe "Status" $ do
   it "should handle empty repository" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: complex assertEqual - -- TODO: client method status() should equal []
+      -- TODO: complex assertEqual
       pendingWith "Test not implemented yet"
 
   it "test_one_of_each" $ do
@@ -51,7 +51,7 @@ spec = describe "Status" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
-      -- TODO: complex assertEqual - -- TODO: client method status(copies=True) should equal l
+      -- TODO: complex assertEqual
 
   it "test_copy_origin_space" $ do
     withTestRepo $ \bt -> do
@@ -60,6 +60,6 @@ spec = describe "Status" $ do
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
       -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
-      -- TODO: complex assertEqual - -- TODO: client method status(copies=True) should equal l
+      -- TODO: complex assertEqual
 
 
