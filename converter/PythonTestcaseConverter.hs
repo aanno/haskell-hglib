@@ -368,7 +368,9 @@ convertCommitArgs args =
       message = case args of
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
-  in buildCommitOptions message opts
+  in if null opts
+     then "mkTestCommitOptions " ++ message
+     else buildCommitOptions message opts
 
 -- | Add option to commit options
 addOption :: String -> (String, String) -> String
@@ -387,7 +389,7 @@ buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkTestCommitOptions " ++ baseMsg
       updates = map formatUpdate opts
-  in "(" ++ base ++ " " ++ intercalate " " updates ++ ")"
+  in "(" ++ base ++ ")" ++ concatMap (" " ++) updates
   where
     formatUpdate (key, value) = case key of
       "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
@@ -396,7 +398,7 @@ buildCommitOptions baseMsg opts =
       "closebranch" -> "{ C.commitCloseBranch = " ++ value ++ " }"
       "amend" -> "{ C.commitAmend = " ++ value ++ " }"
       "logfile" -> "{ C.commitLogFile = Just " ++ value ++ " }"
-      _ -> "-- TODO: " ++ key ++ " = " ++ value
+      _ -> "{ -- TODO: " ++ key ++ " = " ++ value ++ " }"
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
