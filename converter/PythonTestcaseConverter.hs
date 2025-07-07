@@ -172,6 +172,8 @@ convertStatement stmt = case stmt of
          then [todoWithContext "complex assertEqual" stmt]
          else if "C.status" `isInfixOf` actualStr || "C.status" `isInfixOf` expectedStr
               then ["do", "  statusResult <- " ++ actualStr, "  statusResult `shouldBe` " ++ expectedStr]
+         else if needsMonadicBinding actualStr || needsMonadicBinding expectedStr
+              then convertMonadicAssertion actualStr expectedStr
               else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
@@ -594,6 +596,23 @@ convertWithStatement [(Call (Var (Ident "open" _) _) [ArgExpr filename _, ArgExp
   ["-- TODO: with open(" ++ convertExpr filename ++ ", " ++ convertExpr mode ++ ") as " ++ var ++ ":"] ++ map ("--   " ++) (convertSuite body)
 convertWithStatement context body =
   ["-- TODO: with statement with " ++ show (length context) ++ " context items"] ++ map ("--   " ++) (convertSuite body)
+
+-- | Check if expression needs monadic binding (IO context)
+needsMonadicBinding :: String -> Bool
+needsMonadicBinding expr = any (`isInfixOf` expr) monadicMethods
+  where
+    monadicMethods = ["C.parents", "C.tip", "C.log_", "C.status", "C.branches", "C.summary"]
+
+-- | Convert monadic assertion (when one or both sides need IO binding)
+convertMonadicAssertion :: String -> String -> [String]
+convertMonadicAssertion actualStr expectedStr
+  | needsMonadicBinding actualStr && needsMonadicBinding expectedStr =
+      ["do", "  actualResult <- " ++ actualStr, "  expectedResult <- " ++ expectedStr, "  actualResult `shouldBe` expectedResult"]
+  | needsMonadicBinding actualStr =
+      ["do", "  actualResult <- " ++ actualStr, "  actualResult `shouldBe` " ++ expectedStr]  
+  | needsMonadicBinding expectedStr =
+      ["do", "  expectedResult <- " ++ expectedStr, "  " ++ actualStr ++ " `shouldBe` expectedResult"]
+  | otherwise = [actualStr ++ " `shouldBe` " ++ expectedStr]
 convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
@@ -635,6 +654,8 @@ convertExpr expr = case expr of
     let baseExpr = convertExpr expr
     in if baseExpr == "self.client"
        then "-- TODO: client." ++ attr
+       else if baseExpr == "self"
+            then convertSelfAttributeAccess attr
        else if "!!" `isInfixOf` baseExpr
             then -- Handle patterns like revs !! 0, need to wrap in parentheses
                  convertAttributeAccess ("(" ++ baseExpr ++ ")") attr
@@ -704,6 +725,15 @@ convertAttributeAccess baseExpr attr = case attr of
   "rev" -> "show (revRev (" ++ baseExpr ++ "))"  -- Convert Int to String
   "branch" -> "branchName (" ++ baseExpr ++ ")"  -- for branch info
   _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
+
+-- | Convert self attribute access (like self.rev0)
+convertSelfAttributeAccess :: String -> String
+convertSelfAttributeAccess attr = case attr of
+  "rev0" -> "show rev0"  -- Convert Int to String for update calls
+  "rev1" -> "show rev1"
+  "node0" -> "node0"
+  "node1" -> "node1"
+  _ -> "-- TODO: self." ++ attr ++ " access"
 
 -- | Check if this is SummaryInfo field access based on field name
 isSummaryContext :: String -> String -> Bool

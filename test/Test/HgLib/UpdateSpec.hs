@@ -22,8 +22,7 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: self.rev0 access not converted
-      (u, m, r, ur) <- C.update client Nothing []
+      (u, m, r, ur) <- C.update client (Just show rev0) []
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -32,8 +31,7 @@ spec = describe "Update" $ do
   it "test_unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: self.rev0 access not converted
-      _ <- C.update client Nothing []
+      _ <- C.update client (Just show rev0) []
       commonAppendFile "a" "b"
       (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 0
@@ -65,19 +63,20 @@ spec = describe "Update" $ do
   it "test_tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: self.rev0 access not converted
-      _ <- C.update client Nothing []
+      _ <- C.update client (Just show rev0) []
       (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 1
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: self.rev0 access not converted
-      _ <- C.update client Nothing []
+      do
+        actualResult <- TE.decodeUtf8 (revNode ((C.parents client [] !! 0)))
+        actualResult `shouldBe` node1
+      _ <- C.update client (Just show rev0) []
       commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "new head")
-      -- TODO: self.rev0 access not converted
+      _ <- C.update client (Just show rev0) []
       _ <- C.update client Nothing []
-      _ <- C.update client Nothing []
-      TE.decodeUtf8 (revNode ((C.parents client [] !! 0))) `shouldBe` node2
+      do
+        actualResult <- TE.decodeUtf8 (revNode ((C.parents client [] !! 0)))
+        actualResult `shouldBe` node2
 
   it "test_check_clean" $
     withTestRepo $ \bt -> do

@@ -63,7 +63,9 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now (AST: Dot {dot_expr = Var {var_ident = Ident {ident_string = "date...) -- TODO: handle replace with 1 args
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove, date
-      now `shouldBe` revDate (C.tip client)
+      do
+        expectedResult <- revDate (C.tip client)
+        now `shouldBe` expectedResult
 
   it "should amend previous commit" $
     withTestRepo $ \bt -> do
@@ -71,10 +73,14 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now (AST: Dot {dot_expr = Var {var_ident = Ident {ident_string = "date...) -- TODO: handle replace with 1 args
       (rev0, node0) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove, date
-      now `shouldBe` revDate (C.tip client)
+      do
+        expectedResult <- revDate (C.tip client)
+        now `shouldBe` expectedResult
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "default") -- TODO: options amend
-      now `shouldBe` revDate (C.tip client)
+      do
+        expectedResult <- revDate (C.tip client)
+        now `shouldBe` expectedResult
       node0 `shouldNotBe` node1
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
