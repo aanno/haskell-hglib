@@ -131,7 +131,8 @@ generateHaskellTest testName body =
     -- Check if the test ends with an assignment, ignoring trailing comments
     endsWithAssignment lines =
       let nonCommentLines = filter (not . isDeclarationOrComment) lines
-      in not (null nonCommentLines) && isAssignmentLine (last nonCommentLines)
+          nonTodoLines = filter (not . ("-- TODO:" `isPrefixOf`)) nonCommentLines
+      in not (null nonTodoLines) && isAssignmentLine (last nonTodoLines)
     
     -- Simplified assignment detection
     isAssignmentLine line = 
@@ -139,7 +140,8 @@ generateHaskellTest testName body =
       in (" <- " `isInfixOf` stripped) && 
          not ("shouldBe" `isInfixOf` stripped) && 
          not ("-- " `isPrefixOf` stripped) &&
-         not ("pendingWith" `isInfixOf` stripped)
+         not ("pendingWith" `isInfixOf` stripped) &&
+         not ("return" `isInfixOf` stripped)
     
     stripSpaces = dropWhile (== ' ')
 
@@ -259,7 +261,7 @@ convertStatement stmt = case stmt of
       in if "C.log_" `isInfixOf` listStr
          then [var ++ " <- (!! 0) <$> " ++ listStr]
          else if "-- TODO:" `isPrefixOf` listStr
-              then [todoWithContext ("head assignment from " ++ listStr) stmt]
+              then ["-- " ++ var ++ " <- " ++ listStr ++ " -- subscript TODO"]
               else [var ++ " <- return $ " ++ listStr ++ " !! 0"]
   
   -- Handle multiple variable assignment from self.client.log
@@ -333,18 +335,24 @@ convertAssertRaises args = case args of
   -- Handle self.assertRaises(exception, self.client.method, arg1, arg2, ...)
   (ArgExpr exceptionType _):(ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _):methodArgs ->
     let methodCall = "C." ++ method ++ " client " ++ convertMethodArgs method methodArgs
-    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
+        tryType = getTryTypeForMethod method
+    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit, message, logfile=file) - simplified
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _, ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3] ->
     let commitArgs = [ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3]
         methodCall = "C." ++ method ++ " client (" ++ convertCommitArgs commitArgs ++ ")"
-    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
+        tryType = getTryTypeForMethod method
+    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit)
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _] ->
-    let methodCall = "C." ++ method ++ " client (mkTestCommitOptions \"test\")"
-    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
+    let methodCall = case method of
+                       "commit" -> "C." ++ method ++ " client (mkTestCommitOptions \"test\")"
+                       "config" -> "C." ++ method ++ " client [] []"
+                       _ -> "C." ++ method ++ " client"
+        tryType = getTryTypeForMethod method
+    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(exception, lambda: expr)
   [ArgExpr exceptionType _, ArgExpr (Lambda _ expr _) _] ->
@@ -357,6 +365,16 @@ convertAssertRaises args = case args of
     in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ funcCall,
         "result `shouldSatisfy` isLeft"]
   _ -> ["-- TODO: assertRaises pattern not implemented"]
+
+-- | Get appropriate try type for method
+getTryTypeForMethod :: String -> String
+getTryTypeForMethod method = case method of
+  "commit" -> "IO (Int, Text)"
+  "config" -> "IO [(Text, Text, Text)]"
+  "log" -> "IO [Revision]"
+  "branches" -> "IO [BranchInfo]" 
+  "summary" -> "IO SummaryInfo"
+  _ -> "IO (Int, Text)"  -- default fallback
 
 -- | Convert function calls
 convertFunctionCall :: ExprSpan -> [ArgumentSpan] -> String
@@ -524,7 +542,7 @@ convertExpr expr = case expr of
     let baseExpr = convertExpr e
         indexExpr = convertExpr idx
     in if "-- TODO:" `isPrefixOf` baseExpr
-       then "-- TODO: subscript"
+       then "undefined {- TODO: subscript -}"  -- Use valid syntax
        else if isSummaryContext baseExpr indexExpr
             then convertSummaryFieldAccess baseExpr indexExpr
             else baseExpr ++ " !! " ++ indexExpr
@@ -586,7 +604,7 @@ convertClientMethod method args = case method of
   "log" -> "C.log_ client [] C.defaultLogOptions"  -- Fix: always provide required args
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"
-  "update" -> "C.update client " ++ convertUpdateArgs args
+  "update" -> "-- TODO: C.update not implemented yet"  -- Fix: update options don't exist
   "config" -> "C.config client [] []"  -- Fix: provide required args
   "branch" -> case args of
     [ArgExpr branchName _] -> "C.branch client (Just " ++ convertExpr branchName ++ ") []"
@@ -595,18 +613,10 @@ convertClientMethod method args = case method of
 
 -- | Convert update arguments
 convertUpdateArgs :: [ArgumentSpan] -> String
-convertUpdateArgs [] = "C.defaultUpdateOptions"
+convertUpdateArgs [] = "C.defaultLogOptions"  -- Fallback since UpdateOptions doesn't exist yet
 convertUpdateArgs args = 
   let opts = extractKeywordArgs args
-      buildOptions base [] = base
-      buildOptions base ((key, value):rest) = 
-        let updated = case key of
-              "clean" -> base ++ " { C.updateClean = " ++ value ++ " }"
-              "check" -> base ++ " { C.updateCheck = " ++ value ++ " }"
-              "rev" -> base ++ " { C.updateRev = Just " ++ value ++ " }"
-              _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
-        in buildOptions updated rest
-  in "(" ++ buildOptions "C.defaultUpdateOptions" opts ++ ")"
+  in "C.defaultLogOptions -- TODO: UpdateOptions not implemented, got " ++ show (map fst opts)
 
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String

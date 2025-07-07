@@ -71,12 +71,12 @@ spec = describe "Update" $ do
       (rev2, node2) <- C.commit client (mkTestCommitOptions "new head")
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      TE.decodeUtf8 (revNode (-- TODO: subscript)) `shouldBe` node2
+      TE.decodeUtf8 (revNode (undefined {- TODO: subscript -})) `shouldBe` node2
 
   it "test_check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client (C.defaultUpdateOptions { C.updateClean = True } { C.updateCheck = True })
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
       result `shouldSatisfy` isLeft
 
   it "test_clean" $
@@ -84,7 +84,7 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
       commonAppendFile "a" "b"
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client (C.defaultUpdateOptions { C.updateCheck = True })
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["check"]
       result `shouldSatisfy` isLeft
       -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 1

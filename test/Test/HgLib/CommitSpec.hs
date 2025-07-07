@@ -31,7 +31,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitUser = Just "" }
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.commit client mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitUser = Just "" }
       result `shouldSatisfy` isLeft
 
   it "should close branch" $
@@ -52,9 +52,9 @@ spec = describe "Commit" $ do
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.commit client mkUpdateableCommitOptions "foo" $ \opts -> opts { C.commitLogFile = Just "bar" }
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.commit client mkUpdateableCommitOptions "foo" $ \opts -> opts { C.commitLogFile = Just "bar" }
       result `shouldSatisfy` isLeft
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.commit client mkTestCommitOptions "default"
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.commit client mkTestCommitOptions "default"
       result `shouldSatisfy` isLeft
 
   it "should handle custom date" $
