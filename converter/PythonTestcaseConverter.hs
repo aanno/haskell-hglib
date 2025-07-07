@@ -202,15 +202,23 @@ convertStatement stmt = case stmt of
   Assign 
     [Tuple [Var (Ident rev _) _, Var (Ident node _) _] _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ -> do
-      let commitArgs = convertCommitArgs args
-      ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client (" ++ commitArgs ++ ")"]
+      let (commitArgs, todoComment) = convertCommitArgsWithTodo args
+          baseLine = "(" ++ rev ++ ", " ++ node ++ ") <- C.commit client (" ++ commitArgs ++ ")"
+          finalLine = case todoComment of
+                        Nothing -> baseLine
+                        Just todo -> baseLine ++ " " ++ todo
+      [finalLine]
   
   -- Handle self.client.commit with single variable assignment
   Assign 
     [Var (Ident var _) _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
-      let commitArgs = convertCommitArgs args
-      in [var ++ " <- C.commit client $ " ++ commitArgs]
+      let (commitArgs, todoComment) = convertCommitArgsWithTodo args
+          baseLine = var ++ " <- C.commit client (" ++ commitArgs ++ ")"
+          finalLine = case todoComment of
+                        Nothing -> baseLine
+                        Just todo -> baseLine ++ " " ++ todo
+      in [finalLine]
   
   -- Handle self.client.log assignment - fix missing arguments
   Assign 
@@ -417,9 +425,9 @@ convertFunctionCall func args = case func of
 -- | Convert method arguments based on method name
 convertMethodArgs :: String -> [ArgumentSpan] -> String
 convertMethodArgs method args = case method of
-  "commit" -> convertCommitArgs args
-  "config" -> if null args then "[] []" else "-- TODO: config with args"
-  "log" -> convertLogArgs args
+  "commit" -> "(" ++ convertCommitArgs args ++ ")"
+  "config" -> "[] [] -- TODO: config with args"
+  "log" -> "[] C.defaultLogOptions"
   "branches" -> convertBranchesArgs args
   "update" -> convertUpdateArgs args
   _ -> intercalate " " (map convertArg args)
@@ -484,17 +492,23 @@ convertVersionCheck op parts =
     GreaterThanEquals _ -> "clientVersion >= " ++ version
     _ -> "True"
 
--- | Convert commit arguments
-convertCommitArgs :: [ArgumentSpan] -> String
-convertCommitArgs [] = "mkTestCommitOptions \"default\""
-convertCommitArgs args = 
+-- | Convert commit arguments and return (cleanArgs, todoComment)
+convertCommitArgsWithTodo :: [ArgumentSpan] -> (String, Maybe String)
+convertCommitArgsWithTodo [] = ("mkTestCommitOptions \"default\"", Nothing)
+convertCommitArgsWithTodo args = 
   let opts = extractKeywordArgs args
       message = case args of
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
-  in if null opts
-     then "mkTestCommitOptions " ++ message
-     else buildCommitOptions message opts
+      cleanArgs = "mkTestCommitOptions " ++ message
+      todoComment = if null opts 
+                   then Nothing 
+                   else Just ("-- TODO: options " ++ intercalate ", " (map fst opts))
+  in (cleanArgs, todoComment)
+
+-- | Convert commit arguments (legacy function for backward compatibility)
+convertCommitArgs :: [ArgumentSpan] -> String
+convertCommitArgs args = fst (convertCommitArgsWithTodo args)
 
 -- | Add option to commit options
 addOption :: String -> (String, String) -> String
@@ -620,7 +634,7 @@ extractStringContent expr = case expr of
 -- | Convert client method calls
 convertClientMethod :: String -> [ArgumentSpan] -> String
 convertClientMethod method args = case method of
-  "commit" -> "C.commit client $ " ++ convertCommitArgs args
+  "commit" -> "C.commit client (" ++ convertCommitArgs args ++ ")"
   "log" -> "C.log_ client [] C.defaultLogOptions"  -- Fix: always provide required args
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"

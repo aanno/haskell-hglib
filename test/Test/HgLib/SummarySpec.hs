@@ -30,7 +30,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       -- Dictionary assignment for d omitted
       -- TODO: if statement with complex condition
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
@@ -40,7 +40,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       commonAppendFile "a" "a"
       -- Dictionary assignment for d omitted
       -- TODO: if statement with complex condition
@@ -51,7 +51,7 @@ spec = describe "Summary" $ do
       let client = btClient bt
       -- TODO: if statement with complex condition
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       e <- C.summary client []
       summaryCommitClean e `shouldBe` True
@@ -60,7 +60,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       commonAppendFile "a" "a"
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
@@ -72,7 +72,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- Dictionary assignment for d omitted
@@ -100,12 +100,12 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node) <- C.commit client (mkTestCommitOptions "first" -- TODO: options addremove)
+      (rev0, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "b" "a"
-      (rev2, node2) <- C.commit client (mkTestCommitOptions "third" -- TODO: options addremove)
+      (rev2, node2) <- C.commit client (mkTestCommitOptions "third") -- TODO: options addremove
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- Dictionary assignment for d omitted
       -- TODO: if statement with complex condition

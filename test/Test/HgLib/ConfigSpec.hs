@@ -26,7 +26,7 @@ spec = describe "Config" $ do
       -- TODO: complex tuple <op> C.config client [] [] `shouldBe` True
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      result <- (try :: IO [(Text, Text, Text)] -> IO (Either SomeException [(Text, Text, Text)])) $ C.config client -- TODO: config with args
+      result <- (try :: IO [(Text, Text, Text)] -> IO (Either SomeException [(Text, Text, Text)])) $ C.config client [] [] -- TODO: config with args
       result `shouldSatisfy` isLeft
 
   it "test_show_source" $
