@@ -20,6 +20,11 @@
 snapshot:
   url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/23/26.yaml
 
+# hint: tested with:
+# ghc 9.8.4
+# stack 3.3.1
+# cabal 3.12.1.0
+
 # User packages to be built.
 # Various formats can be used as shown in the example below.
 #
@@ -47,11 +52,11 @@ extra-deps:
 - haskell-dap-0.0.16.0@sha256:5ee4fba7ce1b8220f486a5251a941e6cd739ab2330e8f25efc5af553a4e1c61d,944
 # python converter only
 # - language-python-0.5.8@sha256:4fa7b1d963d30e06f8173c264629cd7bf5cae968e16d5c9b25bcd7378ab18e08,2565
-# - git: https://github.com/bjpop/language-python.git
-#   # commit: master
-#   commit: 9fa3c8b258c05d388a0cbb4e69c639bd9fddfdbb
-#   subdirs:
-#     - language-python
+- git: https://github.com/bjpop/language-python.git
+  # commit: master
+  commit: 9fa3c8b258c05d388a0cbb4e69c639bd9fddfdbb
+  subdirs:
+    - language-python
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
@@ -78,4 +83,4 @@ extra-deps:
 # compiler-check: newer-minor
 
 # needed for language-python
-# allow-newer: true
+allow-newer: true

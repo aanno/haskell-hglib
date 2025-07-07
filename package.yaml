@@ -71,16 +71,16 @@ executables:
     - streamly-core >= 0.2.3
     # NOT used here - but needed because of an stack bug
     # - language-python >= 0.6.0
-  # python-testcase-converter-exe:
-  #   main:                PythonTestcaseConverter.hs
-  #   source-dirs:         converter
-  #   ghc-options:
-  #   - -threaded
-  #   - -rtsopts
-  #   - -with-rtsopts=-N
-  #   dependencies:
-  #   - haskell-hglib
-  #   - language-python >= 0.6.0
+  python-testcase-converter-exe:
+    main:                PythonTestcaseConverter.hs
+    source-dirs:         converter
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-hglib
+    - language-python >= 0.6.0
     # - language-python >= 0.5.8
 
 tests:
