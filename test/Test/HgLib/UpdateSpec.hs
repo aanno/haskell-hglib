@@ -22,7 +22,7 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      updateResult <- C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got []
+      updateResult <- C.update client Nothing [] -- TODO: UpdateOptions not implemented, got []
       let u = updateUpdatedCount updateResult
       let m = updateModifiedCount updateResult
       let r = updateRemovedCount updateResult
@@ -37,7 +37,7 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "a" "b"
-      updateResult <- C.update client C.defaultLogOptions
+      updateResult <- C.update client Nothing []
       let u = updateUpdatedCount updateResult
       let m = updateModifiedCount updateResult
       let r = updateRemovedCount updateResult
@@ -60,7 +60,7 @@ spec = describe "Update" $ do
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      updateResult <- C.update client C.defaultLogOptions
+      updateResult <- C.update client Nothing []
       let u = updateUpdatedCount updateResult
       let m = updateModifiedCount updateResult
       let r = updateRemovedCount updateResult
@@ -75,7 +75,7 @@ spec = describe "Update" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      updateResult <- C.update client C.defaultLogOptions
+      updateResult <- C.update client Nothing []
       let u = updateUpdatedCount updateResult
       let m = updateModifiedCount updateResult
       let r = updateRemovedCount updateResult
@@ -92,7 +92,7 @@ spec = describe "Update" $ do
   it "test_check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
+      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["clean","check"]
       result `shouldSatisfy` isLeft
 
   it "test_clean" $
@@ -100,9 +100,9 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
       commonAppendFile "a" "b"
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["check"]
+      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["check"]
       result `shouldSatisfy` isLeft
-      updateResult <- C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean"]
+      updateResult <- C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["clean"]
       let u = updateUpdatedCount updateResult
       let m = updateModifiedCount updateResult
       let r = updateRemovedCount updateResult

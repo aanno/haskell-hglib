@@ -49,8 +49,16 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+# - -O2
 # - -fprint-potential-instances
-- -O2
+# silence a bit for development
+- -Wno-unused-matches
+- -Wno-unused-imports
+- -Wno-unused-top-binds
+- -Wno-unused-local-binds
+- -Wno-orphans
+- -Wno-partial-fields
+- -Wno-unused-do-bind
 
 library:
   source-dirs: src

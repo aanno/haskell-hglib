@@ -404,7 +404,7 @@ getTryTypeForMethod method = case method of
   "log" -> "IO [Revision] -> IO (Either SomeException [Revision])"
   "branches" -> "IO [BranchInfo] -> IO (Either SomeException [BranchInfo])" 
   "summary" -> "IO SummaryInfo -> IO (Either SomeException SummaryInfo)"
-  "update" -> "IO (Int, Text) -> IO (Either SomeException (Int, Text))"
+  "update" -> "IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))"  -- Fix: correct return type
   _ -> "IO (Int, Text) -> IO (Either SomeException (Int, Text))"  -- default fallback
 
 -- | Convert function calls
@@ -511,8 +511,7 @@ addOption base (key, value) = case key of
 buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
-  let base = "mkTestCommitOptions " ++ baseMsg
-  in "(" ++ base ++ ") -- TODO: options " ++ intercalate ", " (map fst opts)
+  "mkTestCommitOptions " ++ baseMsg ++ " -- TODO: options " ++ intercalate ", " (map fst opts)
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -625,7 +624,7 @@ convertClientMethod method args = case method of
   "log" -> "C.log_ client [] C.defaultLogOptions"  -- Fix: always provide required args
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"
-  "update" -> "-- TODO: C.update not implemented yet"  -- Fix: update options don't exist
+  "update" -> "C.update client Nothing []"  -- Fix: use proper update arguments
   "config" -> "C.config client [] []"  -- Fix: provide required args
   "branch" -> case args of
     [ArgExpr branchName _] -> "C.branch client (Just " ++ convertExpr branchName ++ ") []"
@@ -634,10 +633,10 @@ convertClientMethod method args = case method of
 
 -- | Convert update arguments
 convertUpdateArgs :: [ArgumentSpan] -> String
-convertUpdateArgs [] = "C.defaultLogOptions"  -- Fallback since UpdateOptions doesn't exist yet
+convertUpdateArgs [] = "Nothing []"  -- Fix: use proper update arguments (Maybe String, [String])
 convertUpdateArgs args = 
   let opts = extractKeywordArgs args
-  in "C.defaultLogOptions -- TODO: UpdateOptions not implemented, got " ++ show (map fst opts)
+  in "Nothing [] -- TODO: UpdateOptions not implemented, got " ++ show (map fst opts)
 
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String
