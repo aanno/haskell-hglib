@@ -91,7 +91,7 @@ spec = describe "Update" $ do
       -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
 
   it "test_basic_plain" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)

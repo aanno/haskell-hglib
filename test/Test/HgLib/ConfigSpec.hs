@@ -23,7 +23,7 @@ spec = describe "Config" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: complex tuple <op> -- TODO: client method config() `shouldBe` True
+      -- TODO: complex tuple <op> C.config client [] [] `shouldBe` True
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.config client -- TODO: complex list

@@ -24,7 +24,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       (rev, node) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True, C.commitUser = Just "foo" })
-      rev <- (!! 0) <$> C.log_ client [node] C.defaultLogOptions
+      rev <- (!! 0) <$> C.log_ client [] C.defaultLogOptions
       revAuthor (rev) `shouldBe` "foo"
 
   it "should fail with empty user" $

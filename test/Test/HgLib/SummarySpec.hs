@@ -20,7 +20,7 @@ isLeft (Right _) = False
 spec :: Spec
 spec = describe "Summary" $ do
   it "should handle empty repository" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
       -- Dictionary assignment for d omitted
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
