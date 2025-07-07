@@ -54,7 +54,7 @@ spec = describe "Summary" $ do
       (rev, node) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True })
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       e <- C.summary client []
-      e !! "commit" `shouldBe` True
+      summaryCommitClean e `shouldBe` True
 
   it "should handle update" $
     withTestRepo $ \bt -> do

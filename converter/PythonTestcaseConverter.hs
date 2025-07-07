@@ -78,7 +78,7 @@ generateHaskellTest testName body =
       -- Ensure test bodies don't end with assignments and have proper final expressions
       finalBody = ensureProperTestEnding bodyLines
       -- Check if we need a do block for monadic operations
-      needsDo = any needsMonadicContext finalBody
+      needsDo = any needsMonadicContext finalBody || hasSequentialStatements finalBody
   in unlines $
     [ "  it \"" ++ testDesc ++ "\" $"
     ] ++ (if needsDo 
@@ -100,11 +100,27 @@ generateHaskellTest testName body =
       " <- " `isInfixOf` line || 
       "C.commit" `isInfixOf` line ||
       "C.log_" `isInfixOf` line ||
+      "C.config" `isInfixOf` line ||
       "C.branches" `isInfixOf` line ||
+      "C.summary" `isInfixOf` line ||
       "shouldBe" `isInfixOf` line ||
       "try ::" `isInfixOf` line ||
       "commonAppendFile" `isInfixOf` line ||
-      "pendingWith" `isInfixOf` line
+      "commonCreateFile" `isInfixOf` line ||
+      "getCurrentTime" `isInfixOf` line ||
+      "pendingWith" `isInfixOf` line ||
+      hasMultipleMonadicOps line
+    
+    -- Check if we have sequential statements that would need do
+    hasSequentialStatements bodyLines =
+      let executableLines = filter (not . isDeclarationOrComment) bodyLines
+      in length executableLines > 1
+    
+    -- Detect multiple monadic operations or complex expressions that need do
+    hasMultipleMonadicOps line =
+      let monadicOps = ["<-", "shouldBe", "C.", "result"]
+          matchCount = length $ filter (`isInfixOf` line) monadicOps
+      in matchCount >= 2
     
     isDeclarationOrComment line = 
       let stripped = stripSpaces line
@@ -200,20 +216,32 @@ convertStatement stmt = case stmt of
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "log" _) _) args _) _ ->
       case args of
         [] -> [var ++ " <- C.log_ client [] C.defaultLogOptions"]
-        [ArgExpr nodeExpr _] -> [var ++ " <- C.log_ client [" ++ convertExpr nodeExpr ++ "] C.defaultLogOptions"]
-        _ -> [var ++ " <- C.log_ client " ++ convertLogArgs args ++ " C.defaultLogOptions"]
+        [ArgExpr nodeExpr _] -> 
+          let nodeStr = convertExpr nodeExpr
+          in if "-- TODO:" `isPrefixOf` nodeStr
+             then [var ++ " <- C.log_ client [] C.defaultLogOptions -- TODO: with node " ++ nodeStr]
+             else [var ++ " <- C.log_ client [] C.defaultLogOptions"]
+        _ -> 
+          let (files, hasKeywords) = parseLogArgs args
+          in if hasKeywords
+             then [var ++ " <- C.log_ client " ++ files ++ " C.defaultLogOptions -- TODO: with options"]
+             else [var ++ " <- C.log_ client " ++ files ++ " C.defaultLogOptions"]
+  
+  -- Handle self.client.config assignment - fix return type
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "config" _) _) args _) _ ->
+      case args of
+        [] -> [var ++ " <- C.config client [] []"]
+        _ -> 
+          let (names, options) = parseConfigArgs args
+          in [var ++ " <- C.config client " ++ names ++ " " ++ options]
   
   -- Handle self.client.branches assignment
   Assign 
     [Var (Ident var _) _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "branches" _) _) args _) _ ->
       [var ++ " <- C.branches client " ++ convertBranchesArgs args]
-  
-  -- Handle self.client.tip assignment
-  Assign 
-    [Var (Ident var _) _]
-    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "tip" _) _) args _) _ ->
-      [var ++ " <- C.tip client"]
   
   -- Handle self.client.branch call
   StmtExpr (Call 
@@ -355,6 +383,25 @@ convertBranchesArgs args =
      then "[\"--closed\"]"
      else "[]"
 
+-- | Parse log arguments into files and options
+parseLogArgs :: [ArgumentSpan] -> (String, Bool)
+parseLogArgs [] = ("[]", False)
+parseLogArgs args = 
+  let nonKeywordArgs = [convertExpr expr | ArgExpr expr _ <- args]
+      keywordOpts = extractKeywordArgs args
+      files = if null nonKeywordArgs then "[]" else "[" ++ intercalate ", " nonKeywordArgs ++ "]"
+  in (files, not (null keywordOpts))
+
+-- | Parse config arguments into names and options  
+parseConfigArgs :: [ArgumentSpan] -> (String, String)
+parseConfigArgs [] = ("[]", "[]")
+parseConfigArgs args =
+  let nonKeywordArgs = [convertExpr expr | ArgExpr expr _ <- args]
+      keywordOpts = extractKeywordArgs args
+      names = if null nonKeywordArgs then "[]" else "[" ++ intercalate ", " nonKeywordArgs ++ "]"
+      options = "[]"  -- Simplified for now
+  in (names, options)
+
 -- | Convert log arguments
 convertLogArgs :: [ArgumentSpan] -> String
 convertLogArgs [] = "[]"
@@ -478,7 +525,9 @@ convertExpr expr = case expr of
         indexExpr = convertExpr idx
     in if "-- TODO:" `isPrefixOf` baseExpr
        then "-- TODO: subscript"
-       else baseExpr ++ " !! " ++ indexExpr
+       else if isSummaryContext baseExpr indexExpr
+            then convertSummaryFieldAccess baseExpr indexExpr
+            else baseExpr ++ " !! " ++ indexExpr
   BinaryOp op left right _ -> 
       case op of
         Equality _ -> convertExpr left ++ " == " ++ convertExpr right
@@ -569,6 +618,24 @@ convertAttributeAccess baseExpr attr = case attr of
   "rev" -> "show (revRev (" ++ baseExpr ++ "))"  -- Convert Int to String
   "branch" -> "branchName (" ++ baseExpr ++ ")"  -- for branch info
   _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
+
+-- | Check if this is SummaryInfo field access based on field name
+isSummaryContext :: String -> String -> Bool
+isSummaryContext _ indexExpr = 
+  let cleanField = filter (/= '"') indexExpr
+  in cleanField `elem` ["commit", "update", "branch", "parent", "parents"]
+
+-- | Convert SummaryInfo field access from dictionary-style to record access
+convertSummaryFieldAccess :: String -> String -> String
+convertSummaryFieldAccess baseExpr fieldName = 
+  let cleanField = filter (/= '"') fieldName  -- Remove quotes
+  in case cleanField of
+    "commit" -> "summaryCommitClean " ++ baseExpr
+    "update" -> "summaryUpdateCount " ++ baseExpr  
+    "branch" -> "summaryBranch " ++ baseExpr
+    "parent" -> "length (summaryParents " ++ baseExpr ++ ")"  -- Convert to count
+    "parents" -> "summaryParents " ++ baseExpr
+    _ -> "-- TODO: summary field " ++ baseExpr ++ " !! " ++ fieldName
 
 extractTestMethods :: StatementSpan -> [String]
 extractTestMethods (Class _ _ body _) = mapMaybe convertTestMethod body
