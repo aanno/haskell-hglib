@@ -20,9 +20,9 @@ isLeft (Right _) = False
 spec :: Spec
 spec = describe "Status" $ do
   it "should handle empty repository" $
-    withTestRepo $ \bt -> do
+    withTestRepo $ \bt ->
       let client = btClient bt
-      -- TODO: complex assertEqual
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       pendingWith "Test not implemented yet"
 
   it "test_one_of_each" $
@@ -34,33 +34,33 @@ spec = describe "Status" $ do
       commonAppendFile "modified" "a"
       commonAppendFile "removed" "a"
       commonAppendFile "missing" "a"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "modified" "a"
       commonAppendFile "added" "a"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "st", ident_annot = 
-      -- TODO: For {for_targets = [Var {var_ident = Ident {ident_string = "i", ident_annot = Sp
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: statement not implemented (AST: For {for_targets = [Var {var_ident = Ident {ident_string = "...)
 
   it "test_copy" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "source" "a"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
-      -- TODO: complex assertEqual
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
   it "test_copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "s ource" "a"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "l", ident_annot = S
-      -- TODO: complex assertEqual
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
 

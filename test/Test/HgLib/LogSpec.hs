@@ -27,38 +27,38 @@ spec = describe "Log" $ do
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       revs <- C.log_ client [] C.defaultLogOptions
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       length revs == 2 `shouldBe` True
-      TE.decodeUtf8 (revNode revs !! 1) `shouldBe` node1
-      -- TODO: complex assertEqual
-      -- TODO: complex assertEqual
-      -- TODO: complex assertEqual
+      TE.decodeUtf8 (revNode ((revs !! 1))) `shouldBe` node1
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
   it "test_dash_in_filename" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "-a" "-a"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
-      show (revRev revs !! 0) `shouldBe` "0"
+      show (revRev ((revs !! 0))) `shouldBe` "0"
 
   it "test_empty_short_option" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "foobar" "foobar"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
       length revs == 1 `shouldBe` True
-      show (revRev revs !! 0) `shouldBe` "0"
+      show (revRev ((revs !! 0))) `shouldBe` "0"
 
   it "test_null_byte" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
+      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       revs <- C.log_ client -- TODO: log with options C.defaultLogOptions
-      revDesc revs !! 0 `shouldBe` "some message\0more stuff"
+      revDesc ((revs !! 0)) `shouldBe` "some message\0more stuff"
 
 

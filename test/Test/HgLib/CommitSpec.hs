@@ -23,9 +23,9 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True } { C.commitUser = Just "foo" })
-      rev <- head <$> C.log_ client [node] C.defaultLogOptions
-      revAuthor rev `shouldBe` "foo"
+      (rev, node) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True, C.commitUser = Just "foo" })
+      rev <- (!! 0) <$> C.log_ client [node] C.defaultLogOptions
+      revAuthor (rev) `shouldBe` "foo"
 
   it "should fail with empty user" $
     withTestRepo $ \bt -> do
@@ -43,9 +43,10 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
       revclose <- C.commit client $ mkUpdateableCommitOptions "closing foo" $ \opts -> opts { C.commitCloseBranch = True }
-      [rev0, rev1, revclose] <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
-      -- TODO: complex assertEqual
-      -- TODO: complex assertEqual
+      logResult <- C.log_ client [[node0, node1, revclose !! 1]] C.defaultLogOptions
+      let [rev0, rev1, revclose] = logResult
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       return ()
 
   it "should handle message and logfile conflicts" $
@@ -60,22 +61,22 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
-      now `shouldBe` revDate C.tip client
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now (AST: Dot {dot_expr = Var {var_ident = Ident {ident_string = "date...) -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True, C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat (AST: Var {var_ident = Ident {ident_string = "now", ident_annot = ...).encode (AST: Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {ide...) })
+      now `shouldBe` revDate (C.tip client)
 
   it "should amend previous commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now(...) -- TODO: handle replace with 1 args
-      (rev0, node0) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True } { C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat(...).encode(...) })
-      now `shouldBe` revDate C.tip client
+      now <- return -- TODO: method call -- TODO: attr access datetime.datetime.now (AST: Dot {dot_expr = Var {var_ident = Ident {ident_string = "date...) -- TODO: handle replace with 1 args
+      (rev0, node0) <- C.commit client (mkUpdateableCommitOptions "first" $ \opts -> opts { C.commitAddRemove = True, C.commitDate = Just -- TODO: method call -- TODO: method call now.isoformat (AST: Var {var_ident = Ident {ident_string = "now", ident_annot = ...).encode (AST: Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {ide...) })
+      now `shouldBe` revDate (C.tip client)
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkUpdateableCommitOptions "default" $ \opts -> opts { C.commitAmend = True })
-      now `shouldBe` revDate C.tip client
+      now `shouldBe` revDate (C.tip client)
       node0 `shouldNotBe` node1
-      -- TODO: complex assertEqual
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
   it "should prevent null injection" $
     withTestRepo $ \bt -> do
@@ -83,6 +84,6 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.commit client $ mkTestCommitOptions "fail\0-A"
       result `shouldSatisfy` isLeft
-      -- TODO: complex assertEqual
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
 

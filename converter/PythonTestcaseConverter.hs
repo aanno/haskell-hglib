@@ -77,11 +77,17 @@ generateHaskellTest testName body =
       bodyLines = convertSuite body
       -- Ensure test bodies don't end with assignments and have proper final expressions
       finalBody = ensureProperTestEnding bodyLines
+      -- Check if we need a do block for monadic operations
+      needsDo = any needsMonadicContext finalBody
   in unlines $
     [ "  it \"" ++ testDesc ++ "\" $"
-    , "    withTestRepo $ \\bt -> do"
-    , "      let client = btClient bt"
-    ] ++ map ("      " ++) finalBody
+    ] ++ (if needsDo 
+          then [ "    withTestRepo $ \\bt -> do"
+               , "      let client = btClient bt"
+               ] ++ map ("      " ++) finalBody
+          else [ "    withTestRepo $ \\bt ->"
+               , "      let client = btClient bt"
+               ] ++ map ("      " ++) finalBody)
   where
     ensureProperTestEnding [] = ["pendingWith \"Empty test body\""]
     ensureProperTestEnding lines
@@ -89,6 +95,15 @@ generateHaskellTest testName body =
       | all isDeclarationOrComment lines = lines ++ ["pendingWith \"Test not implemented yet\""]
       | endsWithAssignment lines = lines ++ ["return ()"]
       | otherwise = lines
+    
+    needsMonadicContext line = 
+      " <- " `isInfixOf` line || 
+      "C.commit" `isInfixOf` line ||
+      "C.log_" `isInfixOf` line ||
+      "C.branches" `isInfixOf` line ||
+      "shouldBe" `isInfixOf` line ||
+      "try ::" `isInfixOf` line ||
+      "commonAppendFile" `isInfixOf` line
     
     isDeclarationOrComment line = 
       let stripped = stripSpaces line
@@ -127,7 +142,7 @@ convertStatement stmt = case stmt of
       in if "-- TODO:" `isPrefixOf` actualStr || "-- TODO:" `isPrefixOf` expectedStr ||
             "complex" `isInfixOf` actualStr || "complex" `isInfixOf` expectedStr ||
             "C.log_" `isInfixOf` actualStr || "C.log_" `isInfixOf` expectedStr
-         then ["-- TODO: complex assertEqual"]
+         then [todoWithContext "complex assertEqual" stmt]
          else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
@@ -205,10 +220,10 @@ convertStatement stmt = case stmt of
     (Subscript listExpr (Int 0 _ _) _) _ ->
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr
-         then [var ++ " <- head <$> " ++ listStr]
+         then [var ++ " <- (!! 0) <$> " ++ listStr]
          else if "-- TODO:" `isPrefixOf` listStr
-              then ["-- TODO: head assignment from " ++ listStr]
-              else [var ++ " <- return $ head " ++ listStr]
+              then [todoWithContext ("head assignment from " ++ listStr) stmt]
+              else [var ++ " <- return $ " ++ listStr ++ " !! 0"]
   
   -- Handle multiple variable assignment from self.client.log
   Assign 
@@ -216,7 +231,8 @@ convertStatement stmt = case stmt of
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "log" _) _) args _) _ ->
       let varNames = [name | Var (Ident name _) _ <- vars]
           logArgs = convertLogArgs args
-      in ["[" ++ intercalate ", " varNames ++ "] <- C.log_ client " ++ logArgs ++ " C.defaultLogOptions"]
+      in ["logResult <- C.log_ client " ++ logArgs ++ " C.defaultLogOptions",
+          "let [" ++ intercalate ", " varNames ++ "] = logResult"]
   
   -- Handle datetime.datetime.now assignment
   Assign 
@@ -251,7 +267,7 @@ convertStatement stmt = case stmt of
       case expr of
         Call (Dot (Var (Ident "unittest" _) _) (Ident "SkipTest" _) _) _ _ ->
           ["pendingWith \"phase not supported\""]
-        _ -> ["-- TODO: raise " ++ take 30 (show expr)]
+        _ -> [todoWithContext "raise statement" stmt]
   
   -- Handle len() function calls in assertions  
   StmtExpr (Call 
@@ -260,7 +276,7 @@ convertStatement stmt = case stmt of
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
          then ["do", "  result <- " ++ listStr, "  length result `shouldBe` " ++ convertExpr expected]
-         else ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
+         else ["length (" ++ listStr ++ ") `shouldBe` " ++ convertExpr expected]
   
   -- Handle reversed len() function calls in assertions
   StmtExpr (Call 
@@ -269,10 +285,10 @@ convertStatement stmt = case stmt of
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr || "C.branches" `isInfixOf` listStr
          then ["do", "  result <- " ++ listStr, "  length result `shouldBe` " ++ convertExpr expected]
-         else ["length " ++ listStr ++ " `shouldBe` " ++ convertExpr expected]
+         else ["length (" ++ listStr ++ ") `shouldBe` " ++ convertExpr expected]
   
   -- Default case
-  _ -> ["-- TODO: " ++ take 80 (show stmt)]
+  _ -> [todoWithContext "statement not implemented" stmt]
 
 -- | Convert assertRaises calls
 convertAssertRaises :: [ArgumentSpan] -> [String]
@@ -349,7 +365,7 @@ convertIfStatement [(cond, thenSuite)] elseSuite =
       let versionCheck = convertVersionCheck op versionParts
       in ["when " ++ versionCheck ++ " $ do"] ++ 
          map ("  " ++) (convertSuite thenSuite)
-    _ -> ["-- TODO: if statement with condition: " ++ take 50 (show cond)]
+    _ -> ["-- TODO: if statement with complex condition"]
 convertIfStatement _ _ = ["-- TODO: complex if statement"]
 
 -- | Convert version check
@@ -385,22 +401,23 @@ addOption base (key, value) = case key of
   "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
   _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
 
--- | Build commit options using $ operator
+-- | Build commit options - properly format single record update
 buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkUpdateableCommitOptions " ++ baseMsg
-      updates = map formatUpdate opts
-  in base ++ " $ \\opts -> opts " ++ intercalate " " updates
+      fieldUpdates = map formatField opts
+      allFields = intercalate ", " fieldUpdates
+  in base ++ " $ \\opts -> opts { " ++ allFields ++ " }"
   where
-    formatUpdate (key, value) = case key of
-      "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
-      "user" -> "{ C.commitUser = Just " ++ value ++ " }"
-      "date" -> "{ C.commitDate = Just " ++ value ++ " }"
-      "closebranch" -> "{ C.commitCloseBranch = " ++ value ++ " }"
-      "amend" -> "{ C.commitAmend = " ++ value ++ " }"
-      "logfile" -> "{ C.commitLogFile = Just " ++ value ++ " }"
-      _ -> "{ -- TODO: " ++ key ++ " = " ++ value ++ " }"
+    formatField (key, value) = case key of
+      "addremove" -> "C.commitAddRemove = " ++ value
+      "user" -> "C.commitUser = Just " ++ value
+      "date" -> "C.commitDate = Just " ++ value
+      "closebranch" -> "C.commitCloseBranch = " ++ value
+      "amend" -> "C.commitAmend = " ++ value
+      "logfile" -> "C.commitLogFile = Just " ++ value
+      _ -> "-- TODO: " ++ key ++ " = " ++ value
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String
@@ -425,7 +442,13 @@ convertArg (ArgKeyword (Ident name _) expr _) =
     _ -> name ++ "=" ++ convertExpr expr
 convertArg _ = "-- TODO: arg"
 
--- | Convert Python expression to Haskell
+-- | Create TODO comment with AST context
+todoWithContext :: String -> StatementSpan -> String
+todoWithContext msg stmt = "-- TODO: " ++ msg ++ " (AST: " ++ take 60 (show stmt) ++ "...)"
+
+-- | Create TODO comment with expression AST context  
+todoExprWithContext :: String -> ExprSpan -> String
+todoExprWithContext msg expr = "-- TODO: " ++ msg ++ " (AST: " ++ take 60 (show expr) ++ "...)"
 convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
@@ -459,18 +482,21 @@ convertExpr expr = case expr of
     convertClientMethod method args
   -- Handle method calls on expressions - simplified to avoid complex parsing
   Call (Dot expr (Ident method _) _) args _ -> 
-    "-- TODO: method call " ++ convertExpr expr ++ "." ++ method ++ "(...)"
+    todoExprWithContext ("method call " ++ convertExpr expr ++ "." ++ method) expr
   -- Handle attribute access like rev.author
   Dot expr (Ident attr _) _ -> 
     let baseExpr = convertExpr expr
     in if baseExpr == "self.client"
        then "-- TODO: client." ++ attr
-       else convertAttributeAccess baseExpr attr
+       else if "!!" `isInfixOf` baseExpr
+            then -- Handle patterns like revs !! 0, need to wrap in parentheses
+                 convertAttributeAccess ("(" ++ baseExpr ++ ")") attr
+            else convertAttributeAccess baseExpr attr
   -- Handle parenthesized expressions
   Paren expr _ -> convertExpr expr
   -- Handle sliced expressions - typically too complex
   SlicedExpr _ _ _ -> "-- TODO: slice"
-  _ -> "-- TODO: expr"
+  _ -> todoExprWithContext "expression not implemented" expr
   where
     stripQuotes s 
       | length s >= 2 && head s == '\'' && last s == '\'' = init (tail s)
@@ -526,12 +552,12 @@ convertUpdateArgs args =
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String
 convertAttributeAccess baseExpr attr = case attr of
-  "author" -> "revAuthor " ++ baseExpr
-  "desc" -> "revDesc " ++ baseExpr
-  "date" -> "revDate " ++ baseExpr
-  "node" -> "TE.decodeUtf8 (revNode " ++ baseExpr ++ ")"  -- Convert ByteString to Text
-  "rev" -> "show (revRev " ++ baseExpr ++ ")"  -- Convert Int to String
-  "branch" -> "branchName " ++ baseExpr  -- for branch info
+  "author" -> "revAuthor (" ++ baseExpr ++ ")"
+  "desc" -> "revDesc (" ++ baseExpr ++ ")"
+  "date" -> "revDate (" ++ baseExpr ++ ")"
+  "node" -> "TE.decodeUtf8 (revNode (" ++ baseExpr ++ "))"  -- Convert ByteString to Text
+  "rev" -> "show (revRev (" ++ baseExpr ++ "))"  -- Convert Int to String
+  "branch" -> "branchName (" ++ baseExpr ++ ")"  -- for branch info
   _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
 
 extractTestMethods :: StatementSpan -> [String]

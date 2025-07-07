@@ -22,7 +22,7 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -31,9 +31,9 @@ spec = describe "Update" $ do
   it "test_unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "a" "b"
-      -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 0
       m `shouldBe` 0
       r `shouldBe` 0
@@ -46,32 +46,32 @@ spec = describe "Update" $ do
       commonAppendFile "a" "\n\n\n\nb"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "third")
       commonAppendFile "a" "b"
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "f", ident_annot = S
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 0
       m `shouldBe` 1
       r `shouldBe` 0
       ur `shouldBe` 0
-      -- TODO: complex assertEqual
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
   it "test_tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 1
-      -- TODO: complex assertEqual
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
+      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "new head")
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {dot_expr = Var {var_
-      TE.decodeUtf8 (revNode -- TODO: subscript) `shouldBe` node2
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      TE.decodeUtf8 (revNode (-- TODO: subscript)) `shouldBe` node2
 
   it "test_check_clean" $
     withTestRepo $ \bt -> do
@@ -82,21 +82,21 @@ spec = describe "Update" $ do
   it "test_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
+      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
       commonAppendFile "a" "b"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client (C.defaultUpdateOptions { C.updateCheck = True })
       result `shouldSatisfy` isLeft
-      -- TODO: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = Ident {ident_string 
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
       u `shouldBe` 1
-      -- TODO: With {with_context = [(Call {call_fun = Var {var_ident = Ident {ident_string = "
+      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
 
   it "test_basic_plain" $
-    withTestRepo $ \bt -> do
+    withTestRepo $ \bt ->
       let client = btClient bt
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "f", ident_annot = S
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       pendingWith "Test not implemented yet"
 
 

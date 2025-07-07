@@ -22,17 +22,17 @@ spec = describe "Config" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "config", ident_anno
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- TODO: complex tuple <op> -- TODO: client method config() `shouldBe` True
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
-      -- TODO: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {var_ident = Ident {i
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.config client -- TODO: complex list
       result `shouldSatisfy` isLeft
 
   it "test_show_source" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Assign {assign_to = [Var {var_ident = Ident {ident_string = "config", ident_anno
+      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- TODO: complex tuple <op> config `shouldBe` True
       pendingWith "Test not implemented yet"
 
