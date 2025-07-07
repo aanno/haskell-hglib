@@ -7,6 +7,73 @@
 * The goal is a full blown port, with all tests running successful.
 * The code is public on github at `aanno/haskell-hglib` .
 
+## Project setup
+
+Project is at `/stratis/home/tpasch/dev/scm/aanno/github/haskell-hglib` on host
+and opened with vs code and a dev container. If possible, you should _primary_ use vs code MCP.
+
+In vs code you will find the project at `/workspaces/ghc` because of dev container usage.
+
+You should always read Claude.md in project first.
+
+Currently, we fix the converter a bit.
+
+Full test cycle is (in a vs code terminal):
+
+```bash
+stack build && ./scripts/convert-tests.sh && stack test
+```
+
+But you could also execute this 3 command sequentially.
+
+### State
+
+* The converter should build and run without problems.
+* The converted test cases has 2 types of problems:
+  + Problem that originates from missing features in the converter.
+  + Problem arising from things so far not implemented in haskell-hglib itself.
+
+When we work on the converter, we will ignore problems with the implementation.
+This means we will _not_ fix implementation problems in the converter.
+
+When we work on the implementation, we want to fixed problems that has been
+revealed by the generated tests.
+
+#### Examples
+
+This is an error because test convertion is incomplete.
+We ignore this kind of error (as we rather try to translate more of the AST structure).
+
+```
+/workspaces/ghc/test/Test/HgLib/UpdateSpec.hs:67:7: error: [GHC-88464]
+    Variable not in scope: u
+   |        
+67 |       u `shouldBe` 1
+   |       ^
+```
+
+This is an error within the converter that should be fixed:
+
+```
+/workspaces/ghc/test/Test/HgLib/UpdateSpec.hs:79:47: error: [GHC-83865]
+    • Expected kind ‘* -> *’,
+        but ‘Either SomeException IO’ has kind ‘*’
+    • In the first argument of ‘IO’, namely
+        ‘(Either SomeException IO (Int, Text))’
+      In an expression type signature:
+        IO (Int, Text) -> IO (Either SomeException IO (Int, Text))
+      In the first argument of ‘($)’, namely
+        ‘(try ::
+            IO (Int, Text) -> IO (Either SomeException IO (Int, Text)))’
+   |        
+79 |       result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
+   |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+```
+
+At the end of the line, there is a TODO from a missing feature in the converter. 
+We address this as well, but normally after fixing errors.
+
 ## Test converter
 
 * There is a Haskell tool `converter/PythonTestcaseConverter.hs` that parses 
@@ -33,8 +100,12 @@
 
 On the commit example, that means:
 
-And this is because defaultCommitOptions are not exported! And I did this on purpose. The problem is that hg commit always needs an commit message (it's mandatory!). 
+And this is because defaultCommitOptions are not exported! And I did this on purpose. 
+The problem is that hg commit always needs an commit message (it's mandatory!). 
 
-Because of this I decided that, instead of exporting defaultCommitOptions there is an exported function `mkDefaultCommitOptions :: String -> CommitOptions` that takes the commit message!
+Because of this I decided that, instead of exporting defaultCommitOptions there is an exported 
+function `mkDefaultCommitOptions :: String -> CommitOptions` that takes the commit message!
 
-This should be an general pattern for the library: If a hg command requires mandantory options, we don't export a 'default', but a construct that takes that mandatory arguments.
+This should be an general pattern for the library: If a hg command requires mandantory options, 
+we don't export a 'default', but a construct that takes that mandatory arguments.
+
