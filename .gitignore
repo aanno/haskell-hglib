@@ -1,5 +1,6 @@
 .stack-work/
 *~
+*.log
 /profiling
 *.o
 *.hi

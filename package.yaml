@@ -65,8 +65,12 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - haskell-hglib
+    - async
+    - aeson
+    - streamly >= 0.10.1
+    - streamly-core >= 0.2.3
     # NOT used here - but needed because of an stack bug
-    - language-python >= 0.6.0
+    # - language-python >= 0.6.0
   python-testcase-converter-exe:
     main:                PythonTestcaseConverter.hs
     source-dirs:         converter
@@ -77,6 +81,7 @@ executables:
     dependencies:
     - haskell-hglib
     - language-python >= 0.6.0
+    # - language-python >= 0.5.8
 
 tests:
   haskell-hglib-test:
@@ -94,3 +99,5 @@ tests:
     - directory
     - process
     - time
+    # NOT used here - but needed because of an stack bug
+    # - language-python >= 0.6.0

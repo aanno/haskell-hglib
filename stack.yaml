@@ -20,6 +20,11 @@
 snapshot:
   url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/23/26.yaml
 
+# hint: tested with:
+# ghc 9.8.4
+# stack 3.3.1
+# cabal 3.12.1.0
+
 # User packages to be built.
 # Various formats can be used as shown in the example below.
 #
@@ -75,7 +80,7 @@ extra-deps:
 # extra-lib-dirs: [/path/to/dir]
 #
 # Allow a newer minor version of GHC than the snapshot specifies
-compiler-check: newer-minor
+# compiler-check: newer-minor
 
 # needed for language-python
 allow-newer: true
