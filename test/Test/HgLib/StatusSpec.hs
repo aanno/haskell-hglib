@@ -22,8 +22,9 @@ spec = describe "Status" $ do
   it "should handle empty repository" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      pendingWith "Test not implemented yet"
+      do
+        statusResult <- C.status client C.defaultStatusOptions
+        statusResult `shouldBe` []
 
   it "test_one_of_each" $
     withTestRepo $ \bt -> do
@@ -34,7 +35,7 @@ spec = describe "Status" $ do
       commonAppendFile "modified" "a"
       commonAppendFile "removed" "a"
       commonAppendFile "missing" "a"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.commit client (mkTestCommitOptions "first")
       commonAppendFile "modified" "a"
       commonAppendFile "added" "a"
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
@@ -49,18 +50,22 @@ spec = describe "Status" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "source" "a"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.commit client (mkTestCommitOptions "first")
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      do
+        statusResult <- C.status client C.defaultStatusOptions
+        statusResult `shouldBe` l
 
   it "test_copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "s ource" "a"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.commit client (mkTestCommitOptions "first")
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      do
+        statusResult <- C.status client C.defaultStatusOptions
+        statusResult `shouldBe` l
 
 

@@ -62,11 +62,12 @@ spec = describe "Summary" $ do
       commonAppendFile "a" "a"
       (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       commonAppendFile "a" "a"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.commit client (mkTestCommitOptions "second")
+      _ <- C.update client (Just 0) []
       -- Dictionary assignment for d omitted
       -- TODO: if statement with complex condition
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      return ()
 
   it "should handle remote" $
     withTestRepo $ \bt -> do
@@ -78,7 +79,7 @@ spec = describe "Summary" $ do
       -- Dictionary assignment for d omitted
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       commonAppendFile "a" "a"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.commit client (mkTestCommitOptions "second")
       -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
@@ -103,7 +104,7 @@ spec = describe "Summary" $ do
       (rev0, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      _ <- C.update client (Just rev0) []
       commonAppendFile "b" "a"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "third") -- TODO: options addremove
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)

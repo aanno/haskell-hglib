@@ -22,11 +22,8 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      updateResult <- C.update client Nothing [] -- TODO: UpdateOptions not implemented, got []
-      let u = updateUpdatedCount updateResult
-      let m = updateModifiedCount updateResult
-      let r = updateRemovedCount updateResult
-      let ur = updateUnresolvedCount updateResult
+      -- TODO: self.rev0 access not converted
+      (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -35,18 +32,15 @@ spec = describe "Update" $ do
   it "test_unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: self.rev0 access not converted
+      _ <- C.update client Nothing []
       commonAppendFile "a" "b"
-      updateResult <- C.update client Nothing []
-      let u = updateUpdatedCount updateResult
-      let m = updateModifiedCount updateResult
-      let r = updateRemovedCount updateResult
-      let ur = updateUnresolvedCount updateResult
+      (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 0
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      -- TODO: complex tuple <op> -- TODO: client method status() `shouldBe` True
+      -- TODO: complex tuple <op> C.status client C.defaultStatusOptions `shouldBe` True
 
   it "test_merge" $
     withTestRepo $ \bt -> do
@@ -54,17 +48,14 @@ spec = describe "Update" $ do
       commonAppendFile "a" "\n\n\n\nb"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "third")
       commonAppendFile "a" "b"
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      updateResult <- C.update client Nothing []
-      let u = updateUpdatedCount updateResult
-      let m = updateModifiedCount updateResult
-      let r = updateRemovedCount updateResult
-      let ur = updateUnresolvedCount updateResult
+      _ <- C.commit client (mkTestCommitOptions "fourth")
+      _ <- C.update client (Just rev2) []
+      -- TODO: with statement with 1 context items
+      --   -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
+      -- TODO: f = open("a", "wb")
+      -- TODO: file write f.write("a" <op> -- TODO: method call old.encode (AST: Var {var_ident = Ident {ident_string = "old", ident_annot = ...))
+      -- TODO: file close f.close()
+      (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 0
       m `shouldBe` 1
       r `shouldBe` 0
@@ -74,48 +65,45 @@ spec = describe "Update" $ do
   it "test_tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      updateResult <- C.update client Nothing []
-      let u = updateUpdatedCount updateResult
-      let m = updateModifiedCount updateResult
-      let r = updateRemovedCount updateResult
-      let ur = updateUnresolvedCount updateResult
+      -- TODO: self.rev0 access not converted
+      _ <- C.update client Nothing []
+      (u, m, r, ur) <- C.update client Nothing []
       u `shouldBe` 1
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
+      -- TODO: self.rev0 access not converted
+      _ <- C.update client Nothing []
       commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client (mkTestCommitOptions "new head")
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      TE.decodeUtf8 (revNode (undefined {- TODO: subscript -})) `shouldBe` node2
+      -- TODO: self.rev0 access not converted
+      _ <- C.update client Nothing []
+      _ <- C.update client Nothing []
+      TE.decodeUtf8 (revNode ((C.parents client [] !! 0))) `shouldBe` node2
 
   it "test_check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["clean","check"]
+      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing ["--clean", "--check"] -- TODO: UpdateOptions not implemented, got ["clean","check"]
       result `shouldSatisfy` isLeft
 
   it "test_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
+      -- TODO: with statement with 1 context items
+      --   -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       commonAppendFile "a" "b"
-      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["check"]
+      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing ["--check"] -- TODO: UpdateOptions not implemented, got ["check"]
       result `shouldSatisfy` isLeft
-      updateResult <- C.update client Nothing [] -- TODO: UpdateOptions not implemented, got ["clean"]
-      let u = updateUpdatedCount updateResult
-      let m = updateModifiedCount updateResult
-      let r = updateRemovedCount updateResult
-      let ur = updateUnresolvedCount updateResult
+      (u, m, r, ur) <- C.update client Nothing ["--clean"] -- TODO: UpdateOptions not implemented, got ["clean"]
       u `shouldBe` 1
-      -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
+      -- TODO: with statement with 1 context items
+      --   -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
 
   it "test_basic_plain" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: f = open(".hg/hgrc", "a")
+      -- TODO: file write f.write("[defaults]\nupdate=-v\n")
+      -- TODO: file close f.close()
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       pendingWith "Test not implemented yet"
 

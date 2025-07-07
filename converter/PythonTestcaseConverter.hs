@@ -170,7 +170,9 @@ convertStatement stmt = case stmt of
             "complex" `isInfixOf` actualStr || "complex" `isInfixOf` expectedStr ||
             "C.log_" `isInfixOf` actualStr || "C.log_" `isInfixOf` expectedStr
          then [todoWithContext "complex assertEqual" stmt]
-         else [actualStr ++ " `shouldBe` " ++ expectedStr]
+         else if "C.status" `isInfixOf` actualStr || "C.status" `isInfixOf` expectedStr
+              then ["do", "  statusResult <- " ++ actualStr, "  statusResult `shouldBe` " ++ expectedStr]
+              else [actualStr ++ " `shouldBe` " ++ expectedStr]
   
   -- Handle self.assertTrue
   StmtExpr (Call 
@@ -276,7 +278,7 @@ convertStatement stmt = case stmt of
               "let " ++ ur ++ " = summaryUnresolvedCount summaryResult"]
            _ -> ["-- TODO: summary tuple assignment with " ++ show (length varNames) ++ " variables"]
   
-  -- Handle update tuple assignment - FIXED: Generate proper variable bindings  
+  -- Handle update tuple assignment - FIXED: Use tuple destructuring since update returns (Int,Int,Int,Int)
   Assign 
     [Tuple vars _]
     (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "update" _) _) args _) _ ->
@@ -284,11 +286,7 @@ convertStatement stmt = case stmt of
           updateArgs = convertUpdateArgs args
       in case varNames of
            [u, m, r, ur] -> 
-             ["updateResult <- C.update client " ++ updateArgs,
-              "let " ++ u ++ " = updateUpdatedCount updateResult",
-              "let " ++ m ++ " = updateModifiedCount updateResult", 
-              "let " ++ r ++ " = updateRemovedCount updateResult",
-              "let " ++ ur ++ " = updateUnresolvedCount updateResult"]
+             ["(" ++ u ++ ", " ++ m ++ ", " ++ r ++ ", " ++ ur ++ ") <- C.update client " ++ updateArgs]
            _ -> ["-- TODO: update tuple assignment with " ++ show (length varNames) ++ " variables"]
   
   -- Handle variable assignment from indexing (e.g., rev = self.client.log(node)[0])
@@ -298,6 +296,8 @@ convertStatement stmt = case stmt of
       let listStr = convertExpr listExpr
       in if "C.log_" `isInfixOf` listStr
          then [var ++ " <- (!! 0) <$> " ++ listStr]
+         else if "C.parents" `isInfixOf` listStr
+              then [var ++ " <- (!! 0) <$> " ++ listStr]
          else if "-- TODO:" `isPrefixOf` listStr
               then ["-- " ++ var ++ " <- " ++ listStr ++ " -- subscript TODO"]
               else [var ++ " <- return $ " ++ listStr ++ " !! 0"]
@@ -334,6 +334,32 @@ convertStatement stmt = case stmt of
     [Var (Ident var _) _]
     (Dictionary items _) _ ->
       ["-- Dictionary assignment for " ++ var ++ " omitted"]
+  
+  -- Handle with open() statements
+  With context body _ ->
+      convertWithStatement context body
+  
+  -- Handle file assignment (f = open('file', 'wb'))
+  Assign 
+    [Var (Ident var _) _]
+    (Call (Var (Ident "open" _) _) [ArgExpr filename _, ArgExpr mode _] _) _ ->
+      ["-- TODO: " ++ var ++ " = open(" ++ convertExpr filename ++ ", " ++ convertExpr mode ++ ")"]
+  
+  -- Handle file write operations
+  StmtExpr (Call (Dot (Var (Ident varName _) _) (Ident "write" _) _) [ArgExpr content _] _) _ ->
+      ["-- TODO: file write " ++ varName ++ ".write(" ++ convertExpr content ++ ")"]
+  
+  -- Handle file close operations
+  StmtExpr (Call (Dot (Var (Ident varName _) _) (Ident "close" _) _) [] _) _ ->
+      ["-- TODO: file close " ++ varName ++ ".close()"]
+  
+  -- Handle standalone self.client.update() calls
+  StmtExpr (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "update" _) _) args _) _ ->
+      ["_ <- C.update client " ++ convertUpdateArgs args]
+  
+  -- Handle standalone self.client.commit() calls
+  StmtExpr (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
+      ["_ <- C.commit client (" ++ convertCommitArgs args ++ ")"]
   
   -- Handle if statements
   Conditional clauses elseSuite _ ->
@@ -557,6 +583,17 @@ todoWithContext msg stmt = "-- TODO: " ++ msg ++ " (AST: " ++ take 60 (show stmt
 -- | Create TODO comment with expression AST context  
 todoExprWithContext :: String -> ExprSpan -> String
 todoExprWithContext msg expr = "-- TODO: " ++ msg ++ " (AST: " ++ take 60 (show expr) ++ "...)"
+
+-- | Convert with statements (file operations)
+convertWithStatement :: [(ExprSpan, Maybe ExprSpan)] -> SuiteSpan -> [String]
+convertWithStatement [(Call (Var (Ident "open" _) _) [ArgExpr filename _] _, Nothing)] body =
+  ["-- TODO: with open(" ++ convertExpr filename ++ ") as f:"] ++ map ("--   " ++) (convertSuite body)
+convertWithStatement [(Call (Var (Ident "open" _) _) [ArgExpr filename _, ArgExpr mode _] _, Nothing)] body =
+  ["-- TODO: with open(" ++ convertExpr filename ++ ", " ++ convertExpr mode ++ ") as f:"] ++ map ("--   " ++) (convertSuite body)
+convertWithStatement [(Call (Var (Ident "open" _) _) [ArgExpr filename _, ArgExpr mode _] _, Just (Var (Ident var _) _))] body =
+  ["-- TODO: with open(" ++ convertExpr filename ++ ", " ++ convertExpr mode ++ ") as " ++ var ++ ":"] ++ map ("--   " ++) (convertSuite body)
+convertWithStatement context body =
+  ["-- TODO: with statement with " ++ show (length context) ++ " context items"] ++ map ("--   " ++) (convertSuite body)
 convertExpr :: ExprSpan -> String
 convertExpr expr = case expr of
   Var (Ident name _) _ -> name
@@ -638,11 +675,13 @@ convertClientMethod method args = case method of
   "log" -> "C.log_ client [] C.defaultLogOptions"  -- Fix: always provide required args
   "branches" -> "C.branches client " ++ convertBranchesArgs args  
   "tip" -> "C.tip client"
-  "update" -> "C.update client Nothing []"  -- Fix: use proper update arguments
+  "update" -> "C.update client " ++ convertUpdateArgs args  -- Fix: use proper update arguments
   "config" -> "C.config client [] []"  -- Fix: provide required args
   "branch" -> case args of
     [ArgExpr branchName _] -> "C.branch client (Just " ++ convertExpr branchName ++ ") []"
     _ -> "C.branch client Nothing []"
+  "status" -> "C.status client C.defaultStatusOptions"
+  "parents" -> "C.parents client []"
   _ -> "-- TODO: client method " ++ method ++ "(" ++ intercalate ", " (map convertArg args) ++ ")"
 
 -- | Convert update arguments
@@ -650,7 +689,10 @@ convertUpdateArgs :: [ArgumentSpan] -> String
 convertUpdateArgs [] = "Nothing []"  -- Fix: use proper update arguments (Maybe String, [String])
 convertUpdateArgs args = 
   let opts = extractKeywordArgs args
-  in "Nothing [] -- TODO: UpdateOptions not implemented, got " ++ show (map fst opts)
+      nonKeywordArgs = [convertExpr expr | ArgExpr expr _ <- args]
+      rev = if null nonKeywordArgs then "Nothing" else "(Just " ++ head nonKeywordArgs ++ ")"
+      optionList = if null opts then "[]" else "[\"--" ++ intercalate "\", \"--" (map fst opts) ++ "\"]"
+  in rev ++ " " ++ optionList ++ if not (null opts) then " -- TODO: UpdateOptions not implemented, got " ++ show (map fst opts) else ""
 
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String
