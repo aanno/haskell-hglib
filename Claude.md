@@ -89,9 +89,10 @@ We address this as well, but normally after fixing errors.
 ## Implementation patterns
 
 * mercurial commands are documented at https://www.mercurial-scm.org/help/commands
+* There is a local copy of the html pages at `tmp/hgcommands/help/commands/`
 * In your implementation each command gets its own options.
 * The default options for the command should default to the values documented.
-* There are also simplified form of each command that need not options.
+* There are also simplified form of each command that needs no options.
 
 ### Enforce mandartory arguments
 
@@ -101,11 +102,11 @@ We address this as well, but normally after fixing errors.
 On the commit example, that means:
 
 And this is because defaultCommitOptions are not exported! And I did this on purpose. 
-The problem is that hg commit always needs an commit message (it's mandatory!). 
+The problem is that `hg commit` always needs an commit message (it's mandatory!). 
 
 Because of this I decided that, instead of exporting defaultCommitOptions there is an exported 
 function `mkDefaultCommitOptions :: String -> CommitOptions` that takes the commit message!
 
 This should be an general pattern for the library: If a hg command requires mandantory options, 
-we don't export a 'default', but a construct that takes that mandatory arguments.
+we don't export a 'default', but a constructor that takes these mandatory arguments.
 
