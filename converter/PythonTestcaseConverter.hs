@@ -78,7 +78,7 @@ generateHaskellTest testName body =
       -- Ensure test bodies don't end with assignments and have proper final expressions
       finalBody = ensureProperTestEnding bodyLines
   in unlines $
-    [ "  it \"" ++ testDesc ++ "\" $ do"
+    [ "  it \"" ++ testDesc ++ "\" $"
     , "    withTestRepo $ \\bt -> do"
     , "      let client = btClient bt"
     ] ++ map ("      " ++) finalBody
@@ -159,9 +159,9 @@ convertStatement stmt = case stmt of
   -- Handle self.client.commit with tuple assignment
   Assign 
     [Tuple [Var (Ident rev _) _, Var (Ident node _) _] _]
-    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ ->
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "commit" _) _) args _) _ -> do
       let commitArgs = convertCommitArgs args
-      in ["(" ++ rev ++ ", " ++ node ++ ") <- ( C.commit client $ " ++ commitArgs ++ " )"]
+      ["(" ++ rev ++ ", " ++ node ++ ") <- C.commit client (" ++ commitArgs ++ ")"]
   
   -- Handle self.client.commit with single variable assignment
   Assign 
@@ -280,28 +280,28 @@ convertAssertRaises args = case args of
   -- Handle self.assertRaises(exception, self.client.method, arg1, arg2, ...)
   (ArgExpr exceptionType _):(ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _):methodArgs ->
     let methodCall = "C." ++ method ++ " client " ++ convertMethodArgs method methodArgs
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit, message, logfile=file) - simplified
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _, ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3] ->
     let commitArgs = [ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3]
-        methodCall = "C." ++ method ++ " client " ++ convertCommitArgs commitArgs
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+        methodCall = "C." ++ method ++ " client (" ++ convertCommitArgs commitArgs ++ ")"
+    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit)
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _] ->
-    let methodCall = "C." ++ method ++ " client C.defaultCommitOptions"
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ methodCall,
+    let methodCall = "C." ++ method ++ " client (mkTestCommitOptions \"test\")"
+    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(exception, lambda: expr)
   [ArgExpr exceptionType _, ArgExpr (Lambda _ expr _) _] ->
     let lambdaBody = convertExpr expr
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ lambdaBody,
+    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ lambdaBody,
         "result `shouldSatisfy` isLeft"]
   -- Handle other patterns
   [ArgExpr exceptionType _, ArgExpr (Call func funcArgs _) _] ->
     let funcCall = convertFunctionCall func funcArgs
-    in ["result <- (try :: IO a -> IO (Either SomeException a)) $ " ++ funcCall,
+    in ["result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ " ++ funcCall,
         "result `shouldSatisfy` isLeft"]
   _ -> ["-- TODO: assertRaises pattern not implemented"]
 
@@ -364,14 +364,14 @@ convertVersionCheck op parts =
 
 -- | Convert commit arguments
 convertCommitArgs :: [ArgumentSpan] -> String
-convertCommitArgs [] = "-- ERROR: commit needs message"
+convertCommitArgs [] = "mkTestCommitOptions \"default\""
 convertCommitArgs args = 
   let opts = extractKeywordArgs args
       message = case args of
         (ArgExpr msgExpr _):_ -> convertExpr msgExpr
         _ -> "\"default\""
   in if null opts
-     then "C.mkDefaultCommitOptions " ++ message
+     then "mkTestCommitOptions " ++ message
      else buildCommitOptions message opts
 
 -- | Add option to commit options
@@ -391,7 +391,7 @@ buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
   let base = "mkUpdateableCommitOptions " ++ baseMsg
       updates = map formatUpdate opts
-  in base ++ " $ \\opts -> opts " ++ concatMap (" " ++) updates
+  in base ++ " $ \\opts -> opts " ++ intercalate " " updates
   where
     formatUpdate (key, value) = case key of
       "addremove" -> "{ C.commitAddRemove = " ++ value ++ " }"
@@ -526,12 +526,12 @@ convertUpdateArgs args =
 -- | Convert attribute access to Haskell record accessors
 convertAttributeAccess :: String -> String -> String
 convertAttributeAccess baseExpr attr = case attr of
-  "author" -> "revAuthor (" ++ baseExpr ++ ")"
-  "desc" -> "revDesc (" ++ baseExpr ++ ")"
-  "date" -> "revDate (" ++ baseExpr ++ ")"
-  "node" -> "revNode (" ++ baseExpr ++ ")"
-  "rev" -> "revRev (" ++ baseExpr ++ ")"
-  "branch" -> "branchName (" ++ baseExpr ++ ")"  -- for branch info
+  "author" -> "revAuthor " ++ baseExpr
+  "desc" -> "revDesc " ++ baseExpr
+  "date" -> "revDate " ++ baseExpr
+  "node" -> "TE.decodeUtf8 (revNode " ++ baseExpr ++ ")"  -- Convert ByteString to Text
+  "rev" -> "show (revRev " ++ baseExpr ++ ")"  -- Convert Int to String
+  "branch" -> "branchName " ++ baseExpr  -- for branch info
   _ -> "-- TODO: attr access " ++ baseExpr ++ "." ++ attr
 
 extractTestMethods :: StatementSpan -> [String]
@@ -578,6 +578,7 @@ generateHaskellModule filePath (Module stmts) =
       , "import HgLib.Types (SummaryInfo(..), Revision(..))"
       , "import Data.Text (Text)"
       , "import qualified Data.Text as T"
+      , "import qualified Data.Text.Encoding as TE"
       , "import Data.Time"
       , "import Control.Exception (try, SomeException)"
       , ""

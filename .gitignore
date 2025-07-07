@@ -5,6 +5,7 @@
 *.o
 *.hi
 *.prof
+/tmp/
 /*.html
 /haskell
 /dist-newstyle

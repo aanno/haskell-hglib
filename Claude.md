@@ -3,7 +3,7 @@
 ## General
 
 * This is a port of python-hglib from https://repo.mercurial-scm.org/python-hglib to Haskell.
-* You could find a local copy of python-hglib at `/stratis/home/tpasch/dev/scm/github/python-hglib` .
+* You could find a local copy of python-hglib at `tmp/python-hglib` .
 * The goal is a full blown port, with all tests running successful.
 * The code is public on github at `aanno/haskell-hglib` .
 
@@ -11,7 +11,7 @@
 
 * There is a Haskell tool `converter/PythonTestcaseConverter.hs` that parses 
   the python tests to AST and then converts this to Haskell tests.
-* There are python tests at `/stratis/home/tpasch/dev/scm/github/python-hglib/tests/test*.py`
+* There are python tests at `tmp/python-hglib/tests/test*.py`
 * The converter should make haskell test from these. If possible, if we get to 90% or 95%,
   and than have to make some manual adaptions, it ok as well.
 * There are some manual converted tests at `test/Test/HgLib/My*.hs` as reference
