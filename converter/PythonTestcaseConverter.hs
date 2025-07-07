@@ -253,6 +253,36 @@ convertStatement stmt = case stmt of
         [ArgExpr branchName _] -> ["C.branch client (Just " ++ convertExpr branchName ++ ") []"]
         _ -> ["C.branch client Nothing []"]
   
+  -- Handle summary tuple assignment - FIXED: Generate proper variable bindings
+  Assign 
+    [Tuple vars _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "summary" _) _) args _) _ ->
+      let varNames = [name | Var (Ident name _) _ <- vars]
+          summaryArgs = convertSummaryArgs args
+      in case varNames of
+           [u, m, r, ur] -> 
+             ["summaryResult <- C.summary client " ++ summaryArgs,
+              "let " ++ u ++ " = summaryUpdateCount summaryResult",
+              "let " ++ m ++ " = summaryModifiedCount summaryResult", 
+              "let " ++ r ++ " = summaryRemovedCount summaryResult",
+              "let " ++ ur ++ " = summaryUnresolvedCount summaryResult"]
+           _ -> ["-- TODO: summary tuple assignment with " ++ show (length varNames) ++ " variables"]
+  
+  -- Handle update tuple assignment - FIXED: Generate proper variable bindings  
+  Assign 
+    [Tuple vars _]
+    (Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident "update" _) _) args _) _ ->
+      let varNames = [name | Var (Ident name _) _ <- vars]
+          updateArgs = convertUpdateArgs args
+      in case varNames of
+           [u, m, r, ur] -> 
+             ["updateResult <- C.update client " ++ updateArgs,
+              "let " ++ u ++ " = updateUpdatedCount updateResult",
+              "let " ++ m ++ " = updateModifiedCount updateResult", 
+              "let " ++ r ++ " = updateRemovedCount updateResult",
+              "let " ++ ur ++ " = updateUnresolvedCount updateResult"]
+           _ -> ["-- TODO: update tuple assignment with " ++ show (length varNames) ++ " variables"]
+  
   -- Handle variable assignment from indexing (e.g., rev = self.client.log(node)[0])
   Assign 
     [Var (Ident var _) _]
@@ -336,14 +366,14 @@ convertAssertRaises args = case args of
   (ArgExpr exceptionType _):(ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _):methodArgs ->
     let methodCall = "C." ++ method ++ " client " ++ convertMethodArgs method methodArgs
         tryType = getTryTypeForMethod method
-    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
+    in ["result <- (try :: " ++ tryType ++ ") $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit, message, logfile=file) - simplified
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _, ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3] ->
     let commitArgs = [ArgExpr msgArg span1, ArgKeyword (Ident kwName span2) kwValue span3]
         methodCall = "C." ++ method ++ " client (" ++ convertCommitArgs commitArgs ++ ")"
         tryType = getTryTypeForMethod method
-    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
+    in ["result <- (try :: " ++ tryType ++ ") $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(ValueError, self.client.commit)
   [ArgExpr exceptionType _, ArgExpr (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) _] ->
@@ -352,7 +382,7 @@ convertAssertRaises args = case args of
                        "config" -> "C." ++ method ++ " client [] []"
                        _ -> "C." ++ method ++ " client"
         tryType = getTryTypeForMethod method
-    in ["result <- (try :: " ++ tryType ++ " -> IO (Either SomeException " ++ tryType ++ ")) $ " ++ methodCall,
+    in ["result <- (try :: " ++ tryType ++ ") $ " ++ methodCall,
         "result `shouldSatisfy` isLeft"]
   -- Handle self.assertRaises(exception, lambda: expr)
   [ArgExpr exceptionType _, ArgExpr (Lambda _ expr _) _] ->
@@ -369,12 +399,13 @@ convertAssertRaises args = case args of
 -- | Get appropriate try type for method
 getTryTypeForMethod :: String -> String
 getTryTypeForMethod method = case method of
-  "commit" -> "IO (Int, Text)"
-  "config" -> "IO [(Text, Text, Text)]"
-  "log" -> "IO [Revision]"
-  "branches" -> "IO [BranchInfo]" 
-  "summary" -> "IO SummaryInfo"
-  _ -> "IO (Int, Text)"  -- default fallback
+  "commit" -> "IO (Int, Text) -> IO (Either SomeException (Int, Text))"
+  "config" -> "IO [(Text, Text, Text)] -> IO (Either SomeException [(Text, Text, Text)])"
+  "log" -> "IO [Revision] -> IO (Either SomeException [Revision])"
+  "branches" -> "IO [BranchInfo] -> IO (Either SomeException [BranchInfo])" 
+  "summary" -> "IO SummaryInfo -> IO (Either SomeException SummaryInfo)"
+  "update" -> "IO (Int, Text) -> IO (Either SomeException (Int, Text))"
+  _ -> "IO (Int, Text) -> IO (Either SomeException (Int, Text))"  -- default fallback
 
 -- | Convert function calls
 convertFunctionCall :: ExprSpan -> [ArgumentSpan] -> String
@@ -387,6 +418,7 @@ convertFunctionCall func args = case func of
 convertMethodArgs :: String -> [ArgumentSpan] -> String
 convertMethodArgs method args = case method of
   "commit" -> convertCommitArgs args
+  "config" -> if null args then "[] []" else "-- TODO: config with args"
   "log" -> convertLogArgs args
   "branches" -> convertBranchesArgs args
   "update" -> convertUpdateArgs args
@@ -475,23 +507,12 @@ addOption base (key, value) = case key of
   "logfile" -> base ++ " { C.commitLogFile = Just " ++ value ++ " }"
   _ -> base ++ " -- TODO: " ++ key ++ " = " ++ value
 
--- | Build commit options - properly format single record update
+-- | Build commit options - simplified approach for now
 buildCommitOptions :: String -> [(String, String)] -> String
 buildCommitOptions baseMsg [] = "mkTestCommitOptions " ++ baseMsg
 buildCommitOptions baseMsg opts = 
-  let base = "mkUpdateableCommitOptions " ++ baseMsg
-      fieldUpdates = map formatField opts
-      allFields = intercalate ", " fieldUpdates
-  in base ++ " $ \\opts -> opts { " ++ allFields ++ " }"
-  where
-    formatField (key, value) = case key of
-      "addremove" -> "C.commitAddRemove = " ++ value
-      "user" -> "C.commitUser = Just " ++ value
-      "date" -> "C.commitDate = Just " ++ value
-      "closebranch" -> "C.commitCloseBranch = " ++ value
-      "amend" -> "C.commitAmend = " ++ value
-      "logfile" -> "C.commitLogFile = Just " ++ value
-      _ -> "-- TODO: " ++ key ++ " = " ++ value
+  let base = "mkTestCommitOptions " ++ baseMsg
+  in "(" ++ base ++ ") -- TODO: options " ++ intercalate ", " (map fst opts)
 
 -- | Convert summary arguments
 convertSummaryArgs :: [ArgumentSpan] -> String

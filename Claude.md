@@ -1,5 +1,11 @@
 # haskell-hglib hints for Claude.ai
 
+
+* Try paths `/stratis/home/tpasch/dev/scm/aanno/github/haskell-hglib` and `/workspaces/ghc`
+* Don't use filesystem MCP `write_file`
+* Instead use vs code MCP `text_editor`
+* Don't use `copilot_*'. There plain commands as well.
+
 ## General
 
 * This is a port of python-hglib from https://repo.mercurial-scm.org/python-hglib to Haskell.

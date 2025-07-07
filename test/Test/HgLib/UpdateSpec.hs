@@ -22,7 +22,11 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
+      updateResult <- C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got []
+      let u = updateUpdatedCount updateResult
+      let m = updateModifiedCount updateResult
+      let r = updateRemovedCount updateResult
+      let ur = updateUnresolvedCount updateResult
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -33,7 +37,11 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
       commonAppendFile "a" "b"
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
+      updateResult <- C.update client C.defaultLogOptions
+      let u = updateUpdatedCount updateResult
+      let m = updateModifiedCount updateResult
+      let r = updateRemovedCount updateResult
+      let ur = updateUnresolvedCount updateResult
       u `shouldBe` 0
       m `shouldBe` 0
       r `shouldBe` 0
@@ -52,7 +60,11 @@ spec = describe "Update" $ do
       -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
+      updateResult <- C.update client C.defaultLogOptions
+      let u = updateUpdatedCount updateResult
+      let m = updateModifiedCount updateResult
+      let r = updateRemovedCount updateResult
+      let ur = updateUnresolvedCount updateResult
       u `shouldBe` 0
       m `shouldBe` 1
       r `shouldBe` 0
@@ -63,7 +75,11 @@ spec = describe "Update" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
+      updateResult <- C.update client C.defaultLogOptions
+      let u = updateUpdatedCount updateResult
+      let m = updateModifiedCount updateResult
+      let r = updateRemovedCount updateResult
+      let ur = updateUnresolvedCount updateResult
       u `shouldBe` 1
       -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
       -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
@@ -76,7 +92,7 @@ spec = describe "Update" $ do
   it "test_check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
       result `shouldSatisfy` isLeft
 
   it "test_clean" $
@@ -84,9 +100,13 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
       commonAppendFile "a" "b"
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["check"]
+      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["check"]
       result `shouldSatisfy` isLeft
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
+      updateResult <- C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean"]
+      let u = updateUpdatedCount updateResult
+      let m = updateModifiedCount updateResult
+      let r = updateRemovedCount updateResult
+      let ur = updateUnresolvedCount updateResult
       u `shouldBe` 1
       -- TODO: statement not implemented (AST: With {with_context = [(Call {call_fun = Var {var_ident = Ide...)
 
