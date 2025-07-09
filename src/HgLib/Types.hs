@@ -39,6 +39,7 @@ module HgLib.Types
     -- , defaultCommitOptions
     , mkDefaultCommitOptions
     , defaultConfig
+    , defaultConfigOptions
     , defaultConfigWithPath
     , defaultDiffOptions
     , defaultLogOptions

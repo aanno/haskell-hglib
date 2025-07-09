@@ -35,7 +35,7 @@ spec = describe "Config" $ do
         hPutStrLn h "[other]\nother=val"
       closeClient (btClient bt)
       client <- openClient nonInteractiveConfig
-      sectionConfig <- C.config client ["section"] []
+      sectionConfig <- C.config client defaultConfigOptions { configNames = ["section"] }
       all (\(s, _, _) -> s == "section") sectionConfig `shouldBe` True
       closeClient client
     return ()

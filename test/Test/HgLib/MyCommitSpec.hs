@@ -88,7 +88,7 @@ spec = describe "Commit" $ do
                   branchNames `shouldBe` ["default"]
                   
                   -- Check closed branches
-                  allBranches <- C.branches client ["--closed"]
+                  allBranches <- C.branches client (defaultBranchesOptions { branchesClosed = true })
                   length allBranches `shouldBe` 2
                 Left _ -> pendingWith "Close branch commit failed"
             Left _ -> pendingWith "Second commit failed"
