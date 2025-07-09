@@ -659,8 +659,8 @@ convertCommitOption (ArgKeyword (Ident name _) expr _) = do
     "addremove" -> return $ "commitAddRemove = " ++ exprStr
     "user" -> return $ "commitUser = Just " ++ exprStr
     "date" -> return $ "C.commitDate = Just " ++ exprStr
-    "closebranch" -> return $ "C.commitCloseBranch = " ++ exprStr
-    "amend" -> return $ "C.commitAmend = " ++ exprStr
+    "closebranch" -> return $ "commitCloseBranch = " ++ exprStr
+    "amend" -> return $ "commitAmend = " ++ exprStr
     _ -> return $ "-- TODO: unknown commit option " ++ name
 convertCommitOption _ = return ""
 

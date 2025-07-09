@@ -67,7 +67,7 @@ spec = describe "Commit" $ do
       case result1 of
         Right (rev0, node0) -> do
           -- Create new branch
-          C.branch client (Just "foo") []
+          C.branch client (mkDefaultCommitOptions "foo") []
           commonAppendFile "a" "a"
           let options = mkTestCommitOptions "second"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
@@ -78,13 +78,13 @@ spec = describe "Commit" $ do
               -- Close branch
               let options = mkTestCommitOptions "closing foo"
               result3 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-                C.commit client (options { C.commitCloseBranch = True })
+                C.commit client (options { commitCloseBranch = True })
               
               case result3 of
                 Right (revClose, nodeClose) -> do
                   -- Check branches (should only show default)
-                  branches <- C.branches client []
-                  let branchNames = map (\bi -> branchName bi) branches
+                  branches <- C.branches client defaultBranchesOptions
+                  let branchNames = map (\bi -> branchInfoName bi) branches
                   branchNames `shouldBe` ["default"]
                   
                   -- Check closed branches
@@ -109,7 +109,7 @@ spec = describe "Commit" $ do
           commonAppendFile "a" "a"
           let options = mkTestCommitOptions "amended"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-            C.commit client (options { C.commitAmend = True })
+            C.commit client (options { commitAmend = True })
           
           case result2 of
             Right (rev1, node1) -> do

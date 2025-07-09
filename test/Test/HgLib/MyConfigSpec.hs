@@ -21,7 +21,7 @@ spec = describe "Config" $ do
       -- Reopen client to see config changes
       closeClient (btClient bt)
       client <- openClient nonInteractiveConfig
-      config <- C.config client [] []
+      config <- C.config client defaultConfigOptions
       let hasConfig = any (\(s, k, v) -> s == "section" && k == "key" && v == "value") config
       hasConfig `shouldBe` True
       closeClient client

@@ -48,8 +48,8 @@ spec = describe "Commit" $ do
       C.branch client "foo"
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkDefaultCommitOptions "second")
-      revclose <- C.commit client ((mkDefaultCommitOptions "closing foo") { C.commitCloseBranch = True })
-      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client ((mkDefaultCommitOptions "closing foo") { C.commitCloseBranch = True }) !! 1)]
+      revclose <- C.commit client ((mkDefaultCommitOptions "closing foo") { commitCloseBranch = True })
+      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client ((mkDefaultCommitOptions "closing foo") { commitCloseBranch = True }) !! 1)]
       C.branches client  `shouldBe` [(revBranch rev0, read revRev rev0, take 12 revNode rev0)]
       C.branches client  (C.defaultBranchesOptions { -- TODO: options closed=True }) `shouldBe` [(revBranch revclose, read revRev revclose, take 12 revNode revclose), (revBranch rev0, read revRev rev0, take 12 revNode rev0)]
 
@@ -76,7 +76,7 @@ spec = describe "Commit" $ do
       (rev0, node0) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (mkDefaultCommitOptions "" { C.commitAmend = True })
+      (rev1, node1) <- C.commit client (mkDefaultCommitOptions "" { commitAmend = True })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       node0 `shouldNotBe` node1
       1 `shouldBe` length C.log_ client []
