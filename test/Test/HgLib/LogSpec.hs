@@ -21,19 +21,18 @@ spec :: Spec
 spec = describe "Log" $ do
 
 -- Conversion notes:
--- TODO: Unhandled method call: revs.reverse
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: subprocess.check_call
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "a" "a"
+      commonAppendFile "a" "a"
       (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: appendFile "a" "a"
+      commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       revs <- C.log_ client 
-      -- TODO: revs.reverse
+      -- TODO: revs <- return (reverse revs) -- Note: Python reverse() is in-place, Haskell reverse is not
       len C.log_ client  == 2 `shouldBe` True
       revNode ((C.log_ client  !! 1)) `shouldBe` node1
       head C.log_ client  `shouldBe` head C.log_ client "0"
@@ -43,7 +42,7 @@ spec = describe "Log" $ do
   it "should dash_in_filename" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "-a" "-a"
+      commonAppendFile "-a" "-a"
       C.commit client "first" -- TODO: options addremove=True
       revs <- C.log_ client  -- TODO: options files=["-a"]
       len C.log_ client  -- TODO: options files=["-a"] == 1 `shouldBe` True
@@ -52,7 +51,7 @@ spec = describe "Log" $ do
   it "should empty_short_option" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "foobar" "foobar"
+      commonAppendFile "foobar" "foobar"
       C.commit client "first" -- TODO: options addremove=True
       revs <- C.log_ client  -- TODO: options keyword="" files=["foobar"]
       len C.log_ client  -- TODO: options keyword="" files=["foobar"] == 1 `shouldBe` True
@@ -61,7 +60,7 @@ spec = describe "Log" $ do
   it "should null_byte" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "a" "a"
+      commonAppendFile "a" "a"
       -- TODO: with statement
       -- TODO: subprocess.check_call
       revs <- C.log_ client  -- TODO: options revrange="."
@@ -69,6 +68,5 @@ spec = describe "Log" $ do
 
 
 -- TODOS:
--- Unhandled method call: revs.reverse
 -- With statement conversion
 -- Unhandled method call: subprocess.check_call

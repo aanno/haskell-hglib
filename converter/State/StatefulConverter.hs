@@ -522,12 +522,12 @@ convertVariableMethodCall :: String -> String -> [ArgumentSpan] -> Converter Str
 convertVariableMethodCall varName methodName args = do
   case (varName, methodName) of
     ("self", "append") -> do
-      -- self.append(file, content) -> file append operation
+      -- self.append(file, content) -> commonAppendFile
       case args of
         [ArgExpr fileExpr _, ArgExpr contentExpr _] -> do
           fileStr <- convertExpr fileExpr
           contentStr <- convertExpr contentExpr
-          return $ "-- TODO: appendFile " ++ fileStr ++ " " ++ contentStr
+          return $ "commonAppendFile " ++ fileStr ++ " " ++ contentStr
         _ -> do
           addTodo $ "Complex self.append() call"
           return "-- TODO: complex self.append() call"
@@ -550,6 +550,13 @@ convertVariableMethodCall varName methodName args = do
         _ -> do
           addTodo $ "Complex append() call"
           return "-- TODO: complex append() call"
+    (_, "reverse") -> do
+      -- list.reverse() -> reverse list (note: Python does in-place, Haskell doesn't)
+      case args of
+        [] -> return $ "-- TODO: " ++ varName ++ " <- return (reverse " ++ varName ++ ") -- Note: Python reverse() is in-place, Haskell reverse is not"
+        _ -> do
+          addTodo $ "Complex reverse() call"
+          return "-- TODO: complex reverse() call"
     _ -> do
       addTodo $ "Unhandled method call: " ++ varName ++ "." ++ methodName
       return $ "-- TODO: " ++ varName ++ "." ++ methodName
@@ -574,6 +581,14 @@ convertModuleCall modName subModName funcName args = do
     ("hglib", "error", "CommandError") -> do
       -- This is likely an exception type
       return "CommandError"
+    ("os", "", "remove") -> do
+      case args of
+        [ArgExpr pathExpr _] -> do
+          pathStr <- convertExpr pathExpr
+          return $ "commonRemoveFile " ++ pathStr
+        _ -> do
+          addTodo $ "Complex os.remove() call"
+          return "-- TODO: complex os.remove() call"
     _ -> do
       addTodo $ "Unhandled module call: " ++ fullName
       return $ "-- TODO: " ++ fullName
@@ -632,15 +647,72 @@ convertSetUp body = do
   setupLines <- convertSuite body
   -- Filter out self.client assignment as it's handled by withTestRepo
   let filteredLines = filter (not . isClientAssignment) setupLines
-  return $ map ("-- Setup: " ++) filteredLines
+  if null filteredLines
+    then return []
+    else return $ ["-- Setup:"] ++ filteredLines
   where
     isClientAssignment line = "self.client" `isInfixOf` line
 
--- | Placeholder functions that need to be implemented
+-- | Convert if statements to when or if-then-else
 convertIfStatement :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> Converter [String]
-convertIfStatement _ _ = do
-  addTodo "If statement conversion"
-  return ["-- TODO: if statement"]
+convertIfStatement clauses elseSuite = do
+  case clauses of
+    [(condExpr, thenSuite)] -> do
+      -- Single if clause - convert to when
+      condStr <- convertExpr condExpr
+      thenLines <- convertSuite thenSuite
+      elseLines <- convertSuite elseSuite
+      
+      if null elseLines
+        then do
+          -- Simple when statement
+          let whenLine = "when (" ++ condStr ++ ") $ do"
+          return $ [whenLine] ++ map ("  " ++) thenLines
+        else do
+          -- if-then-else
+          let ifLine = "if " ++ condStr
+          let thenLine = "  then do"
+          let elseLine = "  else do"
+          return $ [ifLine, thenLine] ++ map ("    " ++) thenLines ++ [elseLine] ++ map ("    " ++) elseLines
+    
+    _ -> do
+      -- Multiple clauses (elif chains) - convert to if-then-else chain
+      result <- convertIfChain clauses elseSuite
+      return result
+  where
+    convertIfChain :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> Converter [String]
+    convertIfChain [] elseSuite = do
+      -- Final else clause
+      elseLines <- convertSuite elseSuite
+      if null elseLines
+        then return []
+        else return $ ["else do"] ++ map ("  " ++) elseLines
+    
+    convertIfChain [(condExpr, thenSuite)] elseSuite = do
+      -- Last condition
+      condStr <- convertExpr condExpr
+      thenLines <- convertSuite thenSuite
+      elseLines <- convertSuite elseSuite
+      
+      let ifLine = "if " ++ condStr
+      let thenLine = "  then do"
+      let result = [ifLine, thenLine] ++ map ("    " ++) thenLines
+      
+      if null elseLines
+        then return result
+        else return $ result ++ ["  else do"] ++ map ("    " ++) elseLines
+    
+    convertIfChain ((condExpr, thenSuite):rest) elseSuite = do
+      -- Multiple conditions - elif chain
+      condStr <- convertExpr condExpr
+      thenLines <- convertSuite thenSuite
+      restLines <- convertIfChain rest elseSuite
+      
+      let ifLine = "if " ++ condStr
+      let thenLine = "  then do"
+      let elseIfLine = "  else"
+      
+      return $ [ifLine, thenLine] ++ map ("    " ++) thenLines ++ [elseIfLine] ++ map ("  " ++) restLines
 
 convertWithStatement :: [(ExprSpan, Maybe ExprSpan)] -> SuiteSpan -> Converter [String]
 convertWithStatement _ _ = do

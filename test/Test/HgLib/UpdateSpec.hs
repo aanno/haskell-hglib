@@ -42,11 +42,12 @@ spec = describe "Update" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       (u, m, r, ur) <- C.update client -- TODO: self.rev0
       u `shouldBe` 1
       m `shouldBe` 0
@@ -56,13 +57,14 @@ spec = describe "Update" $ do
   it "should unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       C.update client -- TODO: self.rev0
-      -- TODO: appendFile "a" "b"
+      commonAppendFile "a" "b"
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 0
       m `shouldBe` 0
@@ -73,14 +75,15 @@ spec = describe "Update" $ do
   it "should merge" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
-      -- TODO: appendFile "a" "\n\n\n\nb"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
+      commonAppendFile "a" "\n\n\n\nb"
       (rev2, node2) <- C.commit client "third"
-      -- TODO: appendFile "a" "b"
+      commonAppendFile "a" "b"
       C.commit client "fourth"
       C.update client rev2
       -- TODO: with statement
@@ -97,17 +100,18 @@ spec = describe "Update" $ do
   it "should tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       C.update client -- TODO: self.rev0
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 1
       revNode (head C.parents client ) `shouldBe` -- TODO: self.node1
       C.update client -- TODO: self.rev0
-      -- TODO: appendFile "a" "b"
+      commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client "new head"
       C.update client -- TODO: self.rev0
       C.update client 
@@ -116,24 +120,25 @@ spec = describe "Update" $ do
   it "should check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       -- TODO: complex assertRaises
-      pendingWith "Test not implemented yet"
 
   it "should clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       -- TODO: with statement
-      -- TODO: appendFile "a" "b"
+      commonAppendFile "a" "b"
       -- TODO: complex assertRaises
       (u, m, r, ur) <- C.update client  -- TODO: options clean=True
       u `shouldBe` 1
@@ -142,11 +147,12 @@ spec = describe "Update" $ do
   it "should basic_plain" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: appendFile "a" "a"
-      -- Setup: (_, _) <- C.commit client "second"
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      commonAppendFile "a" "a"
+      (_, _) <- C.commit client "second"
       f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       hPutStrLn f "[defaults]\nupdate=-v\n"
       -- TODO: close f (handled by withFile)

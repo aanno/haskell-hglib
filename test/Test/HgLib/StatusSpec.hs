@@ -32,15 +32,15 @@ spec = describe "Status" $ do
   it "should one_of_each" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile ".hgignore" "ignored"
-      -- TODO: appendFile "ignored" "a"
-      -- TODO: appendFile "clean" "a"
-      -- TODO: appendFile "modified" "a"
-      -- TODO: appendFile "removed" "a"
-      -- TODO: appendFile "missing" "a"
+      commonAppendFile ".hgignore" "ignored"
+      commonAppendFile "ignored" "a"
+      commonAppendFile "clean" "a"
+      commonAppendFile "modified" "a"
+      commonAppendFile "removed" "a"
+      commonAppendFile "missing" "a"
       C.commit client "first" -- TODO: options addremove=True
-      -- TODO: appendFile "modified" "a"
-      -- TODO: appendFile "added" "a"
+      commonAppendFile "modified" "a"
+      commonAppendFile "added" "a"
       C.add client ["added"]
       -- TODO: os.remove
       C.remove client ["removed"]
@@ -52,7 +52,7 @@ spec = describe "Status" $ do
   it "should copy" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "source" "a"
+      commonAppendFile "source" "a"
       C.commit client "first" -- TODO: options addremove=True
       C.copy client "source" "dest"
       l <- [("A", "dest"), (" ", "source")]
@@ -61,7 +61,7 @@ spec = describe "Status" $ do
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: appendFile "s ource" "a"
+      commonAppendFile "s ource" "a"
       C.commit client "first" -- TODO: options addremove=True
       C.copy client "s ource" "dest"
       l <- [("A", "dest"), (" ", "s ource")]

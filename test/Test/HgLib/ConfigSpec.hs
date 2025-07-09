@@ -29,10 +29,11 @@ spec = describe "Config" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
-      -- Setup: hPutStrLn f "[section]\nkey=value\n"
-      -- Setup: -- TODO: close f (handled by withFile)
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
+      hPutStrLn f "[section]\nkey=value\n"
+      -- TODO: close f (handled by withFile)
       config <- C.config client 
       elem ("section", "key", "value") C.config client  `shouldBe` True
       [("section", "key", "value")] `shouldBe` C.config client "section"
@@ -42,10 +43,11 @@ spec = describe "Config" $ do
   it "should show_source" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: common.basetest.setUp
-      -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
-      -- Setup: hPutStrLn f "[section]\nkey=value\n"
-      -- Setup: -- TODO: close f (handled by withFile)
+      -- Setup:
+      -- TODO: common.basetest.setUp
+      f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
+      hPutStrLn f "[section]\nkey=value\n"
+      -- TODO: close f (handled by withFile)
       config <- C.config client  -- TODO: options showsource=True
       elem (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value") C.config client  -- TODO: options showsource=True `shouldBe` True
 
