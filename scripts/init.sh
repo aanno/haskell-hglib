@@ -22,4 +22,12 @@ wget -k --recursive --level=3 -nH -A html \
 
 popd
 
+mkdir language-python || true
+
+pushd language-python
+
+wget -k -nH https://raw.githubusercontent.com/bjpop/language-python/refs/heads/master/language-python/src/Language/Python/Common/AST.hs
+
+popd
+
 popd

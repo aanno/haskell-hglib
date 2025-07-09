@@ -3,7 +3,7 @@
 
 * Try paths `/stratis/home/tpasch/dev/scm/aanno/github/haskell-hglib` and `/workspaces/ghc`
 * Don't use filesystem MCP `write_file`
-* Instead use vs code MCP `text_editor`
+* Instead use vs code MCP `text_editor` (if available)
 * Don't use `copilot_*'. There plain commands as well.
 
 ## General
@@ -84,6 +84,8 @@ We address this as well, but normally after fixing errors.
 
 * There is a Haskell tool `converter/PythonTestcaseConverter.hs` that parses 
   the python tests to AST and then converts this to Haskell tests.
+* The AST definitions of the language-python library are at
+  `tmp/language-python/AST.hs`.
 * There are python tests at `tmp/python-hglib/tests/test*.py`
 * The converter should make haskell test from these. If possible, if we get to 90% or 95%,
   and than have to make some manual adaptions, it ok as well.
