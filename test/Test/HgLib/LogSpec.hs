@@ -35,26 +35,26 @@ spec = describe "Log" $ do
       length C.log_ client [] == 2 `shouldBe` True
       revNode ((C.log_ client [] !! 1)) `shouldBe` node1
       head C.log_ client [] `shouldBe` head C.log_ client "0"
-      C.log_ client [] `shouldBe` C.log_ client [] (defaultLogOptions { C.logFiles = ["a"] })
-      C.log_ client [] `shouldBe` C.log_ client [] (defaultLogOptions { C.logHidden = True })
+      C.log_ client [] `shouldBe` C.log_ client [] (defaultLogOptions { logFiles = ["a"] })
+      C.log_ client [] `shouldBe` C.log_ client [] (defaultLogOptions { logHidden = True })
 
   it "should dash_in_filename" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "-a" "-a"
       C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
-      revs <- C.log_ client [] (defaultLogOptions { C.logFiles = ["-a"] })
-      length C.log_ client [] (defaultLogOptions { C.logFiles = ["-a"] }) == 1 `shouldBe` True
-      revRev (head C.log_ client [] (defaultLogOptions { C.logFiles = ["-a"] })) `shouldBe` "0"
+      revs <- C.log_ client [] (defaultLogOptions { logFiles = ["-a"] })
+      length C.log_ client [] (defaultLogOptions { logFiles = ["-a"] }) == 1 `shouldBe` True
+      revRev (head C.log_ client [] (defaultLogOptions { logFiles = ["-a"] })) `shouldBe` "0"
 
   it "should empty_short_option" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "foobar" "foobar"
       C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
-      revs <- C.log_ client [] (defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })
-      length C.log_ client [] (defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] }) == 1 `shouldBe` True
-      revRev (head C.log_ client [] (defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })) `shouldBe` "0"
+      revs <- C.log_ client [] (defaultLogOptions { logKeyword = Just "", logFiles = ["foobar"] })
+      length C.log_ client [] (defaultLogOptions { logKeyword = Just "", logFiles = ["foobar"] }) == 1 `shouldBe` True
+      revRev (head C.log_ client [] (defaultLogOptions { logKeyword = Just "", logFiles = ["foobar"] })) `shouldBe` "0"
 
   it "should null_byte" $
     withTestRepo $ \bt -> do
@@ -63,8 +63,8 @@ spec = describe "Log" $ do
       withFile "commitmessagenullbyte" WriteMode $ \h -> do
         hPutStrLn f "some message\0more stuff"
       -- TODO: subprocess.check_call
-      revs <- C.log_ client [] (defaultLogOptions { C.logRevRange = Just "." })
-      revDesc (head C.log_ client [] (defaultLogOptions { C.logRevRange = Just "." })) `shouldBe` "some message\0more stuff"
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just "." })
+      revDesc (head C.log_ client [] (defaultLogOptions { logRevRange = Just "." })) `shouldBe` "some message\0more stuff"
 
 
 -- TODOS:

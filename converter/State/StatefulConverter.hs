@@ -658,7 +658,7 @@ convertCommitOption (ArgKeyword (Ident name _) expr _) = do
   case name of
     "addremove" -> return $ "commitAddRemove = " ++ exprStr
     "user" -> return $ "commitUser = Just " ++ exprStr
-    "date" -> return $ "C.commitDate = Just " ++ exprStr
+    "date" -> return $ "commitDate = Just " ++ exprStr
     "closebranch" -> return $ "commitCloseBranch = " ++ exprStr
     "amend" -> return $ "commitAmend = " ++ exprStr
     _ -> return $ "-- TODO: unknown commit option " ++ name
@@ -669,11 +669,11 @@ convertLogOption :: ArgumentSpan -> Converter String
 convertLogOption (ArgKeyword (Ident name _) expr _) = do
   exprStr <- convertExpr expr
   case name of
-    "rev" -> return $ "C.logRev = Just " ++ exprStr
-    "files" -> return $ "C.logFiles = " ++ exprStr
-    "hidden" -> return $ "C.logHidden = " ++ exprStr
-    "revrange" -> return $ "C.logRevRange = Just " ++ exprStr
-    "keyword" -> return $ "C.logKeyword = Just " ++ exprStr
+    "rev" -> return $ "logRev = Just " ++ exprStr
+    "files" -> return $ "logFiles = " ++ exprStr
+    "hidden" -> return $ "logHidden = " ++ exprStr
+    "revrange" -> return $ "logRevRange = Just " ++ exprStr
+    "keyword" -> return $ "logKeyword = Just " ++ exprStr
     _ -> return $ "-- TODO: unknown log option " ++ name
 convertLogOption _ = return ""
 

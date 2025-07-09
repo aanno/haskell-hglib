@@ -65,7 +65,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
-      (rev0, node0) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      (rev0, node0) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
 
   it "should amend previous commit" $
@@ -73,7 +73,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
-      (rev0, node0) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      (rev0, node0) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client (mkDefaultCommitOptions "" { commitAmend = True })

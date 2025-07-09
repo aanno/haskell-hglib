@@ -67,7 +67,7 @@ spec = describe "Commit" $ do
       case result1 of
         Right (rev0, node0) -> do
           -- Create new branch
-          C.branch client (mkDefaultCommitOptions "foo") []
+          C.branch client (defaultBranchOptions { branchName = Just "foo"})
           commonAppendFile "a" "a"
           let options = mkTestCommitOptions "second"
           result2 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
@@ -88,7 +88,7 @@ spec = describe "Commit" $ do
                   branchNames `shouldBe` ["default"]
                   
                   -- Check closed branches
-                  allBranches <- C.branches client (defaultBranchesOptions { branchesClosed = true })
+                  allBranches <- C.branches client (defaultBranchesOptions { branchesClosed = True })
                   length allBranches `shouldBe` 2
                 Left _ -> pendingWith "Close branch commit failed"
             Left _ -> pendingWith "Second commit failed"
