@@ -9,6 +9,8 @@ import Control.Monad (when)
 import Data.List (isPrefixOf, isInfixOf, intercalate)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Data.Char (toUpper)
 import System.FilePath (takeBaseName)
 
@@ -178,14 +180,26 @@ generateHaskellTest testName body = do
   needsDo <- or <$> mapM needsMonadicContext finalBody
   hasSequential <- hasSequentialStatements finalBody
   
+  -- Check if test involves config file operations
+  needsClientReopen <- needsClientReopenForConfig finalBody
+  
   let useMonadic = needsDo || hasSequential
   
   return $ unlines $
     [ "  it \"" ++ testDesc ++ "\" $"
     ] ++ if useMonadic
-         then [ "    withTestRepo $ \\bt -> do"
-              , "      let client = btClient bt"
-              ] ++ map ("      " ++) finalBody
+         then if needsClientReopen
+              then [ "    withTestRepo $ \\bt -> do"
+                   , "      let client = btClient bt"
+                   ] ++ map ("      " ++) finalBody ++
+                   [ "      closeClient client"
+                   , "      client' <- openClient nonInteractiveConfig"
+                   , "      -- ... continue with client' ..."
+                   , "      closeClient client'"
+                   ]
+              else [ "    withTestRepo $ \\bt -> do"
+                   , "      let client = btClient bt"
+                   ] ++ map ("      " ++) finalBody
          else [ "    withTestRepo $ \\bt ->"
               , "      let client = btClient bt"
               ] ++ map ("      " ++) finalBody
@@ -196,9 +210,35 @@ convertSuite stmts = do
   results <- mapM convertStatement stmts
   return $ concat results
 
+-- | Apply indentation to statement results if in monadic context
+applyIndentationToResults :: [String] -> Converter [String]
+applyIndentationToResults results = do
+  inMonadic <- isInMonadicContext
+  if inMonadic
+    then mapM applyIndentation results
+    else return results
+
 -- | Convert a single statement using State monad
 convertStatement :: StatementSpan -> Converter [String]
-convertStatement stmt = case stmt of
+convertStatement stmt = do
+  -- Save current indentation state
+  currentIndent <- getCurrentIndentLevel
+  currentMonadic <- isInMonadicContext
+  
+  -- Convert the statement
+  result <- convertStatement' stmt
+  
+  -- Apply indentation based on the state BEFORE processing this statement
+  indentedResult <- if currentMonadic
+    then mapM (\line -> do
+      let indent = replicate (currentIndent * 2) ' '
+      return $ indent ++ line) result
+    else return result
+    
+  return indentedResult
+
+convertStatement' :: StatementSpan -> Converter [String]
+convertStatement' stmt = case stmt of
   -- Handle assignments
   Assign targets expr _ -> do
     convertAssignment targets expr
@@ -238,19 +278,33 @@ convertStatement stmt = case stmt of
 -- | Convert assignment statements
 convertAssignment :: [ExprSpan] -> ExprSpan -> Converter [String]
 convertAssignment targets expr = do
-  exprStr <- convertExpr expr
-  case targets of
-    [Var (Ident varName _) _] -> do
+  case (targets, expr) of
+    -- Handle file handle assignments from open() calls
+    ([Var (Ident varName _) _], Call (Var (Ident "open" _) _) args _) -> do
+      -- Convert open() to withFile and track handle mapping
+      withFileExpr <- convertOpenCall args
+      -- Map the Python variable to the lambda parameter 'h'
+      addVariable varName "h"
+      -- Set up indentation for subsequent statements inside the withFile block
+      setMonadicContext True
+      increaseIndentLevel
+      return [withFileExpr ++ " do"]
+    
+    -- Handle regular assignments
+    ([Var (Ident varName _) _], _) -> do
       -- Simple variable assignment
+      exprStr <- convertExpr expr
       addVariable varName exprStr
       return [varName ++ " <- " ++ exprStr]
-    [Tuple vars _] -> do
+    ([Tuple vars _], _) -> do
       -- Tuple assignment
+      exprStr <- convertExpr expr
       varNames <- mapM extractVarName vars
       let tuplePattern = "(" ++ intercalate ", " varNames ++ ")"
       return [tuplePattern ++ " <- " ++ exprStr]
-    [Dot (Var (Ident objName _) _) (Ident attrName _) _] -> do
+    ([Dot (Var (Ident objName _) _) (Ident attrName _) _], _) -> do
       -- Attribute assignment (e.g., self.client = ...)
+      exprStr <- convertExpr expr
       if objName == "self"
         then do
           -- For self.client assignments, we typically don't need them in Haskell tests
@@ -258,7 +312,8 @@ convertAssignment targets expr = do
         else do
           addTodo $ "Attribute assignment: " ++ objName ++ "." ++ attrName
           return ["-- TODO: " ++ objName ++ "." ++ attrName ++ " <- " ++ exprStr]
-    _ -> do
+    (_, _) -> do
+      exprStr <- convertExpr expr
       addTodo $ "Complex assignment pattern: " ++ show targets
       return ["-- TODO: complex assignment: " ++ show targets]
 
@@ -296,6 +351,12 @@ convertAssertion assertMethod args = do
       return ["-- TODO: " ++ assertMethod]
     Just haskellAssert -> do
       case (assertMethod, args) of
+        -- Handle assertTrue with 'in' operator - must come before single argument case
+        ("assertTrue", [ArgExpr (BinaryOp (In _) left right _) _]) -> do
+          leftStr <- convertExpr left
+          rightStr <- convertExpr right
+          return (["let hasValue = any (\\item -> item == " ++ leftStr ++ ") " ++ rightStr]
+                 ++ ["hasValue `shouldBe` True"])
         -- assertTrue with single argument
         ("assertTrue", [ArgExpr actual _]) -> do
           actualStr <- convertExpr actual
@@ -373,11 +434,17 @@ convertExpr expr = case expr of
         
         -- Handle keyword arguments as options
         if null keywordArgs
-          then return $ haskellMethod ++ " client " ++ posArgsStr
+          then do
+            -- Add default arguments for methods that require them
+            let defaultArgs = getDefaultMethodArgs method
+            let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+            return $ haskellMethod ++ " client " ++ finalArgs
           else do
             -- Convert keyword arguments to proper Haskell options
             optionsStr <- convertMethodOptions method keywordArgs
-            return $ haskellMethod ++ " client " ++ posArgsStr ++ " " ++ optionsStr
+            let defaultArgs = getDefaultMethodArgs method
+            let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+            return $ haskellMethod ++ " client " ++ finalArgs ++ " " ++ optionsStr
   
   Call (Var (Ident funcName _) _) args _ -> do
     -- Handle special function calls
@@ -472,6 +539,17 @@ convertExpr expr = case expr of
       | length s >= 2 && head s == '\'' && last s == '\'' = init (tail s)
       | length s >= 2 && head s == '"' && last s == '"' = init (tail s)
       | otherwise = s
+
+-- | Get default arguments for methods that require them
+getDefaultMethodArgs :: String -> String
+getDefaultMethodArgs method = case method of
+  "config" -> "[] []"  -- config requires [sections] [names] arguments
+  "status" -> "[]"     -- status requires [files] argument
+  "log" -> "[]"        -- log requires [files] argument
+  "diff" -> "[]"       -- diff requires [files] argument
+  "add" -> "[]"        -- add requires [files] argument
+  "remove" -> "[]"     -- remove requires [files] argument
+  _ -> ""               -- other methods don't need default args
 
 -- | Convert function arguments
 convertArgs :: [ArgumentSpan] -> Converter String
@@ -606,7 +684,9 @@ convertOpenCall args = do
       pathStr <- convertExpr pathExpr
       modeStr <- convertExpr modeExpr
       let haskellMode = pythonModeToHaskell modeStr
-      return $ "-- TODO: withFile " ++ pathStr ++ " " ++ haskellMode ++ " $ \\h ->"
+      -- Add System.IO import for file operations
+      addImport "System.IO"
+      return $ "withFile " ++ pathStr ++ " " ++ haskellMode ++ " $ \\h ->"
     _ -> do
       addTodo $ "Complex open() call with " ++ show (length args) ++ " args"
       return "-- TODO: complex open() call"
@@ -615,6 +695,15 @@ convertOpenCall args = do
       "\"r\"" -> "ReadMode"
       "\"w\"" -> "WriteMode"
       "\"a\"" -> "AppendMode"
+      "\"rb\"" -> "ReadMode"      -- Read binary -> ReadMode
+      "\"wb\"" -> "WriteMode"     -- Write binary -> WriteMode
+      "\"ab\"" -> "AppendMode"    -- Append binary -> AppendMode
+      "\"r+\"" -> "ReadWriteMode"  -- Read/write -> ReadWriteMode
+      "\"w+\"" -> "ReadWriteMode"  -- Write/read -> ReadWriteMode
+      "\"a+\"" -> "ReadWriteMode"  -- Append/read -> ReadWriteMode
+      "\"rb+\"" -> "ReadWriteMode" -- Read/write binary -> ReadWriteMode
+      "\"wb+\"" -> "ReadWriteMode" -- Write/read binary -> ReadWriteMode
+      "\"ab+\"" -> "ReadWriteMode" -- Append/read binary -> ReadWriteMode
       _ -> "-- TODO: unknown mode " ++ mode
 
 -- | Convert b() calls (bytes literals)
@@ -653,7 +742,14 @@ convertLenCall args = do
 -- | Convert method calls on variables (e.g., f.write(), f.close())
 convertVariableMethodCall :: String -> String -> [ArgumentSpan] -> Converter String
 convertVariableMethodCall varName methodName args = do
-  case (varName, methodName) of
+  -- Check if the variable has a mapping (e.g., f -> h for file handles)
+  actualVarName <- do
+    maybeMapping <- lookupVariable varName
+    case maybeMapping of
+      Just mapping -> return mapping
+      Nothing -> return varName
+  
+  case (actualVarName, methodName) of
     ("self", "append") -> do
       -- self.append(file, content) -> commonAppendFile
       case args of
@@ -668,7 +764,7 @@ convertVariableMethodCall varName methodName args = do
       case args of
         [ArgExpr contentExpr _] -> do
           contentStr <- convertExpr contentExpr
-          return $ "hPutStrLn " ++ varName ++ " " ++ contentStr
+          return $ "hPutStrLn " ++ actualVarName ++ " " ++ contentStr
         _ -> do
           addTodo $ "Complex write() call"
           return "-- TODO: complex write() call"
@@ -679,14 +775,14 @@ convertVariableMethodCall varName methodName args = do
       case args of
         [ArgExpr itemExpr _] -> do
           itemStr <- convertExpr itemExpr
-          return $ varName ++ " ++ [" ++ itemStr ++ "]"
+          return $ actualVarName ++ " ++ [" ++ itemStr ++ "]"
         _ -> do
           addTodo $ "Complex append() call"
           return "-- TODO: complex append() call"
     (_, "reverse") -> do
       -- list.reverse() -> reverse list (note: Python does in-place, Haskell doesn't)
       case args of
-        [] -> return $ "-- TODO: " ++ varName ++ " <- return (reverse " ++ varName ++ ") -- Note: Python reverse() is in-place, Haskell reverse is not"
+        [] -> return $ "-- TODO: " ++ actualVarName ++ " <- return (reverse " ++ actualVarName ++ ") -- Note: Python reverse() is in-place, Haskell reverse is not"
         _ -> do
           addTodo $ "Complex reverse() call"
           return "-- TODO: complex reverse() call"
@@ -913,9 +1009,34 @@ convertIfStatement clauses elseSuite = do
       return $ [ifLine, thenLine] ++ map ("    " ++) thenLines ++ [elseIfLine] ++ map ("  " ++) restLines
 
 convertWithStatement :: [(ExprSpan, Maybe ExprSpan)] -> SuiteSpan -> Converter [String]
-convertWithStatement _ _ = do
-  addTodo "With statement conversion"
-  return ["-- TODO: with statement"]
+convertWithStatement contexts body = do
+  case contexts of
+    [(Call (Var (Ident "open" _) _) args _, Just (Var (Ident varName _) _))] -> do
+      -- Handle: with open(file, mode) as f:
+      case args of
+        [ArgExpr pathExpr _, ArgExpr modeExpr _] -> do
+          pathStr <- convertExpr pathExpr
+          modeStr <- convertExpr modeExpr
+          let haskellMode = pythonModeToHaskell modeStr
+          bodyLines <- convertSuite body
+          
+          -- Add System.IO import for file operations
+          addImport "System.IO"
+          
+          return $ ["withFile " ++ pathStr ++ " " ++ haskellMode ++ " $ \\h -> do"] 
+                   ++ map ("  " ++) bodyLines
+        _ -> do
+          addTodo "Complex open() call in with statement"
+          return ["-- TODO: complex with open() call"]
+    _ -> do
+      addTodo "Non-file with statement"
+      return ["-- TODO: non-file with statement"]
+  where
+    pythonModeToHaskell mode = case mode of
+      "\"r\"" -> "ReadMode"
+      "\"w\"" -> "WriteMode"
+      "\"a\"" -> "AppendMode"
+      _ -> "-- TODO: unknown mode " ++ mode
 
 convertRaiseStatement :: RaiseExprSpan -> Converter [String]
 convertRaiseStatement _ = do
@@ -945,8 +1066,26 @@ needsMonadicContext line = do
 
 hasSequentialStatements :: [String] -> Converter Bool
 hasSequentialStatements lines = do
-  let executableLines = filter (not . isDeclarationOrComment) lines
-  return $ length executableLines > 1
+  let nonEmptyLines = filter (not . null . strip) lines
+  -- If we have multiple statements (declarations, executables, comments), we need do
+  return $ length nonEmptyLines > 1
+  where
+    strip = dropWhile (== ' ')
+
+-- Helper function to detect if config file operations require client reopening
+needsClientReopenForConfig :: [String] -> Converter Bool
+needsClientReopenForConfig bodyLines = do
+  let hasConfigFile = any (isInfixOf ".hg/hgrc") bodyLines
+      hasConfigCall = any (isInfixOf "C.config") bodyLines
+  return (hasConfigFile && hasConfigCall)
+
+-- Helper function to add required imports based on file operations
+addFileOperationImports :: [String] -> Converter ()
+addFileOperationImports bodyLines = do
+  when (any (isInfixOf "withFile") bodyLines) $ do
+    addImport "System.IO"
+  when (any (isInfixOf "closeClient") bodyLines) $ do
+    addImport "HgLib.Protocol"
 
 -- | Generate the final Haskell module
 generateHaskellModule :: String -> [String] -> Converter String
@@ -956,17 +1095,11 @@ generateHaskellModule moduleName testMethods = do
   todos <- getTodos
   errors <- getErrors
   
-  -- Filter out malformed imports and add standard imports
+  -- Filter out malformed imports and use Set for deduplication
   let filteredImports = filter isValidImport requiredImports
-      standardImports = 
-        [ "Control.Exception (try, SomeException)"
-        , "Data.Text (Text)"
-        , "HgLib.Types"
-        , "Test.HgLib.Common"
-        , "Test.Hspec"
-        , "qualified Data.Text as T"
-        , "qualified HgLib.Commands as C"
-        ] ++ filteredImports
+      -- Remove duplicates using Set
+      allImports = Set.toList $ Set.fromList filteredImports
+      standardImports = allImports
   
   let moduleHeader = unlines $
         [ "{-# LANGUAGE OverloadedStrings #-}"

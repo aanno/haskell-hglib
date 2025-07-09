@@ -9,13 +9,6 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
-import Control.Exception (try, SomeException)
-import Data.Text (Text)
-import HgLib.Types
-import Test.HgLib.Common
-import Test.Hspec
-import qualified Data.Text as T
-import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -41,7 +34,7 @@ spec = describe "Commit" $ do
       revAuthor rev `shouldBe` "foo"
 
   it "should fail with empty user" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
       -- TODO: self.client.commit "first" -- TODO: keyword arg user="" `shouldThrow` anyException
@@ -60,7 +53,7 @@ spec = describe "Commit" $ do
       C.branches client  -- TODO: options closed=True `shouldBe` [(revBranch revclose, read revRev revclose, take 12 revNode revclose), (revBranch rev0, read revRev rev0, take 12 revNode rev0)]
 
   it "should handle message and logfile conflicts" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: self.client.commit "foo" -- TODO: keyword arg logfile="bar" `shouldThrow` anyException
       -- TODO: self.client.commit `shouldThrow` anyException
@@ -85,14 +78,14 @@ spec = describe "Commit" $ do
       (rev1, node1) <- C.commit client  (C.defaultCommitOptions { C.commitAmend = True })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       node0 `shouldNotBe` node1
-      1 `shouldBe` length C.log_ client 
+      1 `shouldBe` length C.log_ client []
 
   it "should prevent null injection" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
       (\_-> C.commit client "fail\0-A") `shouldThrow` anyException
-      0 `shouldBe` length C.log_ client 
+      0 `shouldBe` length C.log_ client []
 
 
 -- TODOS:

@@ -197,6 +197,21 @@ exitMethod = modify $ \s -> s { csCurrentMethod = Nothing }
 setMonadicContext :: Bool -> Converter ()
 setMonadicContext inMonadic = modify $ \s -> s { csInMonadicContext = inMonadic }
 
+increaseIndentLevel :: Converter ()
+increaseIndentLevel = modify $ \s -> s { csIndentLevel = csIndentLevel s + 1 }
+
+decreaseIndentLevel :: Converter ()
+decreaseIndentLevel = modify $ \s -> s { csIndentLevel = max 0 (csIndentLevel s - 1) }
+
+getCurrentIndentLevel :: Converter Int
+getCurrentIndentLevel = gets csIndentLevel
+
+applyIndentation :: String -> Converter String
+applyIndentation line = do
+  level <- getCurrentIndentLevel
+  let indent = replicate (level * 2) ' '  -- 2 spaces per level
+  return $ indent ++ line
+
 addWarning :: String -> Converter ()
 addWarning warning = modify $ \s -> s { csWarnings = warning : csWarnings s }
 

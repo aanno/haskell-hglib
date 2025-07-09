@@ -9,13 +9,6 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
-import Control.Exception (try, SomeException)
-import Data.Text (Text)
-import HgLib.Types
-import Test.HgLib.Common
-import Test.Hspec
-import qualified Data.Text as T
-import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool

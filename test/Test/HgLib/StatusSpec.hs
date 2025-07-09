@@ -9,13 +9,6 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
-import Control.Exception (try, SomeException)
-import Data.Text (Text)
-import HgLib.Types
-import Test.HgLib.Common
-import Test.Hspec
-import qualified Data.Text as T
-import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -33,7 +26,7 @@ spec = describe "Status" $ do
   it "should handle empty repository" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      C.status client  `shouldBe` []
+      C.status client [] `shouldBe` []
 
   it "should one_of_each" $
     withTestRepo $ \bt -> do
@@ -52,7 +45,7 @@ spec = describe "Status" $ do
       C.remove client ["removed"]
       -- TODO: complex self.append() call
       l <- [("M", "modified"), ("A", "added"), ("R", "removed"), ("C", ".hgignore"), ("C", "clean"), ("!", "missing"), ("?", "untracked"), ("I", "ignored")]
-      st <- C.status client  -- TODO: options all=True
+      st <- C.status client [] -- TODO: options all=True
       -- TODO: For {for_targets = [Var {var_ident = Ident {ident_
 
   it "should copy" $
@@ -62,7 +55,7 @@ spec = describe "Status" $ do
       C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       C.copy client "source" "dest"
       l <- [("A", "dest"), (" ", "source")]
-      C.status client  -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "source")]
+      C.status client [] -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "source")]
 
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
@@ -71,7 +64,7 @@ spec = describe "Status" $ do
       C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       C.copy client "s ource" "dest"
       l <- [("A", "dest"), (" ", "s ource")]
-      C.status client  -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "s ource")]
+      C.status client [] -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "s ource")]
 
 
 -- TODOS:

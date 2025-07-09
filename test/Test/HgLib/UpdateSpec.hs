@@ -5,13 +5,7 @@ module Test.HgLib.UpdateSpec (spec) where
 import Control.Exception (try, SomeException)
 import Data.Text (Text)
 import HgLib.Types
-import Test.HgLib.Common
-import Test.Hspec
-import qualified Data.Text as T
-import qualified HgLib.Commands as C
-import Control.Exception (try, SomeException)
-import Data.Text (Text)
-import HgLib.Types
+import System.IO
 import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
@@ -27,12 +21,12 @@ spec = describe "Update" $ do
 
 -- Conversion notes:
 -- TODO: Unhandled module call: common.basetest.setUp
--- TODO: With statement conversion
+-- TODO: Complex open() call in with statement
 -- TODO: Unhandled method call: old.encode
 -- TODO: Unhandled module attribute: self.client.update
--- TODO: With statement conversion
+-- TODO: Complex open() call in with statement
 -- TODO: Unhandled module attribute: self.client.update
--- TODO: With statement conversion
+-- TODO: Complex open() call in with statement
 -- TODO: Unhandled method call: self.test_basic
 
   it "should handle basic repository with one commit" $
@@ -66,7 +60,8 @@ spec = describe "Update" $ do
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      elem ("M", "a") C.status client  `shouldBe` True
+      let hasValue = any (\item -> item == ("M", "a")) C.status client []
+      hasValue `shouldBe` True
 
   it "should merge" $
     withTestRepo $ \bt -> do
@@ -82,16 +77,16 @@ spec = describe "Update" $ do
       commonAppendFile "a" "b"
       C.commit client "fourth"
       C.update client rev2
-      -- TODO: with statement
-      f <- -- TODO: withFile "a" -- TODO: unknown mode "wb" $ \h ->
-      hPutStrLn f "a" ++ -- TODO: old.encode
-      -- TODO: close f (handled by withFile)
-      (u, m, r, ur) <- C.update client 
-      u `shouldBe` 0
-      m `shouldBe` 1
-      r `shouldBe` 0
-      ur `shouldBe` 0
-      C.status client  `shouldBe` [("M", "a")]
+      -- TODO: complex with open() call
+      withFile "a" WriteMode $ \h -> do
+        hPutStrLn h "a" ++ -- TODO: old.encode
+        -- TODO: close f (handled by withFile)
+        (u, m, r, ur) <- C.update client 
+        u `shouldBe` 0
+        m `shouldBe` 1
+        r `shouldBe` 0
+        ur `shouldBe` 0
+        C.status client [] `shouldBe` [("M", "a")]
 
   it "should tip" $
     withTestRepo $ \bt -> do
@@ -102,16 +97,16 @@ spec = describe "Update" $ do
       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      C.update client rev0
-      (u, m, r, ur) <- C.update client 
-      u `shouldBe` 1
-      revNode (head C.parents client ) `shouldBe` node1
-      C.update client rev0
-      commonAppendFile "a" "b"
-      (rev2, node2) <- C.commit client "new head"
-      C.update client rev0
-      C.update client 
-      revNode (head C.parents client ) `shouldBe` node2
+        C.update client rev0
+        (u, m, r, ur) <- C.update client 
+        u `shouldBe` 1
+        revNode (head C.parents client ) `shouldBe` node1
+        C.update client rev0
+        commonAppendFile "a" "b"
+        (rev2, node2) <- C.commit client "new head"
+        C.update client rev0
+        C.update client 
+        revNode (head C.parents client ) `shouldBe` node2
 
   it "should check_clean" $
     withTestRepo $ \bt -> do
@@ -122,7 +117,7 @@ spec = describe "Update" $ do
       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      -- TODO: self.client.update -- TODO: keyword arg clean=True -- TODO: keyword arg check=True `shouldThrow` anyException
+        -- TODO: self.client.update -- TODO: keyword arg clean=True -- TODO: keyword arg check=True `shouldThrow` anyException
 
   it "should clean" $
     withTestRepo $ \bt -> do
@@ -133,12 +128,12 @@ spec = describe "Update" $ do
       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      -- TODO: with statement
-      commonAppendFile "a" "b"
-      -- TODO: self.client.update -- TODO: keyword arg check=True `shouldThrow` anyException
-      (u, m, r, ur) <- C.update client  -- TODO: options clean=True
-      u `shouldBe` 1
-      -- TODO: with statement
+        -- TODO: complex with open() call
+        commonAppendFile "a" "b"
+        -- TODO: self.client.update -- TODO: keyword arg check=True `shouldThrow` anyException
+        (u, m, r, ur) <- C.update client  -- TODO: options clean=True
+        u `shouldBe` 1
+        -- TODO: complex with open() call
 
   it "should basic_plain" $
     withTestRepo $ \bt -> do
@@ -149,18 +144,18 @@ spec = describe "Update" $ do
       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
-      hPutStrLn f "[defaults]\nupdate=-v\n"
-      -- TODO: close f (handled by withFile)
-      -- TODO: self.test_basic
+        withFile ".hg/hgrc" AppendMode $ \h -> do
+          hPutStrLn h "[defaults]\nupdate=-v\n"
+          -- TODO: close f (handled by withFile)
+          -- TODO: self.test_basic
 
 
 -- TODOS:
 -- Unhandled module call: common.basetest.setUp
--- With statement conversion
+-- Complex open() call in with statement
 -- Unhandled method call: old.encode
 -- Unhandled module attribute: self.client.update
--- With statement conversion
+-- Complex open() call in with statement
 -- Unhandled module attribute: self.client.update
--- With statement conversion
+-- Complex open() call in with statement
 -- Unhandled method call: self.test_basic
