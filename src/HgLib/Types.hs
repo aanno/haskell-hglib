@@ -321,18 +321,20 @@ formatRevisionLong Revision{..} = T.unlines
 
 -- | Options for the add command
 data AddOptions = AddOptions
-    { addDryRun :: !Bool
+    { addFiles :: ![String]               -- ^ file argument
+    , addDryRun :: !Bool
     , addSubrepos :: !Bool
     , addInclude :: !(Maybe String)
     , addExclude :: !(Maybe String)
     } deriving (Show, Eq)
 
 defaultAddOptions :: AddOptions
-defaultAddOptions = AddOptions False False Nothing Nothing
+defaultAddOptions = AddOptions [] False False Nothing Nothing
 
 -- | Options for the commit command
 data CommitOptions = CommitOptions
-    { commitMessage :: !String -- mandatory
+    { commitFiles :: ![String]            -- ^ file argument
+    , commitMessage :: !String            -- mandatory
     , commitLogfile :: !(Maybe FilePath)
     , commitAddRemove :: !Bool
     , commitCloseBranch :: !Bool
@@ -343,15 +345,17 @@ data CommitOptions = CommitOptions
     , commitAmend :: !Bool
     } deriving (Show, Eq)
 
+-- should NOT be exported
 mkDefaultCommitOptions :: String -> CommitOptions
 mkDefaultCommitOptions msg = defaultCommitOptions { commitMessage = msg }
 
 defaultCommitOptions :: CommitOptions
-defaultCommitOptions = CommitOptions "" Nothing False False Nothing Nothing Nothing Nothing False
+defaultCommitOptions = CommitOptions [] "" Nothing False False Nothing Nothing Nothing Nothing False
 
 -- | Options for the log command
 data LogOptions = LogOptions
-    { logRevRange :: !(Maybe String)
+    { logFiles :: ![String]               -- ^ file argument
+    , logRevRange :: !(Maybe String)
     , logFollow :: !Bool
     , logFollowFirst :: !Bool
     , logDate :: !(Maybe String)
@@ -369,11 +373,12 @@ data LogOptions = LogOptions
     } deriving (Show, Eq)
 
 defaultLogOptions :: LogOptions
-defaultLogOptions = LogOptions Nothing False False Nothing False Nothing False False Nothing Nothing Nothing Nothing False Nothing Nothing
+defaultLogOptions = LogOptions [] Nothing False False Nothing False Nothing False False Nothing Nothing Nothing Nothing False Nothing Nothing
 
 -- | Options for the status command
 data StatusOptions = StatusOptions
-    { statusRev :: !(Maybe String)
+    { statusFiles :: ![String]
+    , statusRev :: !(Maybe String)
     , statusChange :: !(Maybe String)
     , statusAll :: !Bool
     , statusModified :: !Bool
@@ -390,11 +395,12 @@ data StatusOptions = StatusOptions
     } deriving (Show, Eq)
 
 defaultStatusOptions :: StatusOptions
-defaultStatusOptions = StatusOptions Nothing Nothing False False False False False False False False False False Nothing Nothing
+defaultStatusOptions = StatusOptions [] Nothing Nothing False False False False False False False False False False Nothing Nothing
 
 -- | Options for the diff command
 data DiffOptions = DiffOptions
-    { diffRevs :: ![String]
+    { diffFiles :: ![String]
+    , diffRevs :: ![String]
     , diffChange :: !(Maybe String)
     , diffText :: !Bool
     , diffGit :: !Bool
@@ -412,7 +418,7 @@ data DiffOptions = DiffOptions
     } deriving (Show, Eq)
 
 defaultDiffOptions :: DiffOptions
-defaultDiffOptions = DiffOptions [] Nothing False False False False False False False False Nothing False False Nothing Nothing
+defaultDiffOptions = DiffOptions [] [] Nothing False False False False False False False False Nothing False False Nothing Nothing
 
 -- | Options for the update command
 data UpdateOptions = UpdateOptions
