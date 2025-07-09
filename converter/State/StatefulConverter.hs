@@ -185,7 +185,14 @@ convertStatement stmt = case stmt of
   
   -- Handle assertions (must come before general StmtExpr)
   StmtExpr (Call (Dot (Var (Ident "self" _) _) (Ident assertMethod _) _) args _) _ -> do
-    convertAssertion assertMethod args
+    -- Only treat as assertion if it's an actual assertion method
+    maybeHaskellAssert <- lookupAssertionMethod assertMethod
+    case maybeHaskellAssert of
+      Just _ -> convertAssertion assertMethod args
+      Nothing -> do
+        -- Handle as a regular method call like self.append()
+        result <- convertVariableMethodCall "self" assertMethod args
+        return [result]
   
   -- Handle expressions/function calls
   StmtExpr expr _ -> do
@@ -262,6 +269,11 @@ convertAssertion assertMethod args = do
         ("assertTrue", [ArgExpr actual _]) -> do
           actualStr <- convertExpr actual
           return [actualStr ++ " `shouldBe` True"]
+        -- assertTrue with two arguments (actually assertEqual)
+        ("assertTrue", [ArgExpr actual _, ArgExpr expected _]) -> do
+          actualStr <- convertExpr actual
+          expectedStr <- convertExpr expected
+          return [actualStr ++ " `shouldBe` " ++ expectedStr]
         -- assertFalse with single argument  
         ("assertFalse", [ArgExpr actual _]) -> do
           actualStr <- convertExpr actual
@@ -354,9 +366,39 @@ convertExpr expr = case expr of
   Call (Dot (Var (Ident varName _) _) (Ident methodName _) _) args _ -> do
     convertVariableMethodCall varName methodName args
   
+  -- Handle module.function() calls (e.g., hglib.open(), os.path.abspath())
+  Call (Dot (Dot (Var (Ident modName _) _) (Ident subModName _) _) (Ident funcName _) _) args _ -> do
+    convertModuleCall modName subModName funcName args
+  
+  -- Handle module.function() calls with 2 levels (e.g., hglib.open())
+  Call (Dot (Var (Ident modName _) _) (Ident funcName _) _) args _ -> do
+    convertModuleCall modName "" funcName args
+  
   -- Handle parenthesized expressions
   Paren innerExpr _ -> do
     convertExpr innerExpr
+  
+  -- Handle attribute access (e.g., os.path.abspath, hglib.error.CommandError)
+  Dot (Dot (Var (Ident modName _) _) (Ident subModName _) _) (Ident attrName _) _ -> do
+    convertModuleAttr modName subModName attrName
+  
+  -- Handle 2-level attribute access (e.g., hglib.open)
+  Dot (Var (Ident modName _) _) (Ident attrName _) _ -> do
+    convertModuleAttr modName "" attrName
+  
+  -- Handle attribute access on subscript results (e.g., result[0].node)
+  Dot (Subscript expr index _) (Ident attrName _) _ -> do
+    subscriptStr <- convertSubscript expr index
+    return $ convertDotAccess subscriptStr attrName
+  
+  -- Handle generic attribute access (e.g., obj.attr)
+  Dot expr (Ident attrName _) _ -> do
+    exprStr <- convertExpr expr
+    return $ convertDotAccess exprStr attrName
+  
+  -- Handle subscript/indexing expressions (e.g., list[0], dict[key])
+  Subscript expr index _ -> do
+    convertSubscript expr index
   
   _ -> do
     addTodo $ "Unhandled expression: " ++ take 50 (show expr)
@@ -420,8 +462,14 @@ convertBinaryOp left op right = do
         s | "Or" `isInfixOf` s -> leftStr ++ " || " ++ rightStr
         s | "Eq" `isInfixOf` s -> leftStr ++ " == " ++ rightStr
         s | "NotEq" `isInfixOf` s -> leftStr ++ " /= " ++ rightStr
+        s | "Plus" `isInfixOf` s -> leftStr ++ " ++ " ++ rightStr
+        s | "Minus" `isInfixOf` s -> leftStr ++ " - " ++ rightStr
+        s | "Multiply" `isInfixOf` s -> leftStr ++ " * " ++ rightStr
+        s | "Divide" `isInfixOf` s -> leftStr ++ " / " ++ rightStr
         _ -> leftStr ++ " -- TODO: " ++ show op ++ " " ++ rightStr
-  if "elem" `isPrefixOf` opStr || "&&" `isInfixOf` opStr || "||" `isInfixOf` opStr || "==" `isInfixOf` opStr || "/=" `isInfixOf` opStr
+  let knownOps = ["elem", "&&", "||", "==", "/=", "++", " - ", " * ", " / "]
+      isKnownOp = any (`isInfixOf` opStr) knownOps || "elem" `isPrefixOf` opStr
+  if isKnownOp
     then return opStr
     else do
       addTodo $ "Unhandled binary operator: " ++ show op
@@ -472,8 +520,18 @@ convertBytesCall args = do
 -- | Convert method calls on variables (e.g., f.write(), f.close())
 convertVariableMethodCall :: String -> String -> [ArgumentSpan] -> Converter String
 convertVariableMethodCall varName methodName args = do
-  case methodName of
-    "write" -> do
+  case (varName, methodName) of
+    ("self", "append") -> do
+      -- self.append(file, content) -> file append operation
+      case args of
+        [ArgExpr fileExpr _, ArgExpr contentExpr _] -> do
+          fileStr <- convertExpr fileExpr
+          contentStr <- convertExpr contentExpr
+          return $ "-- TODO: appendFile " ++ fileStr ++ " " ++ contentStr
+        _ -> do
+          addTodo $ "Complex self.append() call"
+          return "-- TODO: complex self.append() call"
+    (_, "write") -> do
       case args of
         [ArgExpr contentExpr _] -> do
           contentStr <- convertExpr contentExpr
@@ -481,11 +539,90 @@ convertVariableMethodCall varName methodName args = do
         _ -> do
           addTodo $ "Complex write() call"
           return "-- TODO: complex write() call"
-    "close" -> do
+    (_, "close") -> do
       return $ "-- TODO: close " ++ varName ++ " (handled by withFile)"
+    (_, "append") -> do
+      -- Generic list.append(item) -> list concatenation
+      case args of
+        [ArgExpr itemExpr _] -> do
+          itemStr <- convertExpr itemExpr
+          return $ varName ++ " ++ [" ++ itemStr ++ "]"
+        _ -> do
+          addTodo $ "Complex append() call"
+          return "-- TODO: complex append() call"
     _ -> do
       addTodo $ "Unhandled method call: " ++ varName ++ "." ++ methodName
       return $ "-- TODO: " ++ varName ++ "." ++ methodName
+
+-- | Convert module function calls (e.g., hglib.open(), os.path.abspath())
+convertModuleCall :: String -> String -> String -> [ArgumentSpan] -> Converter String
+convertModuleCall modName subModName funcName args = do
+  let fullName = if null subModName then modName ++ "." ++ funcName 
+                                    else modName ++ "." ++ subModName ++ "." ++ funcName
+  case (modName, subModName, funcName) of
+    ("hglib", "", "open") -> do
+      -- hglib.open() -> openClient nonInteractiveConfig
+      return "openClient nonInteractiveConfig"
+    ("os", "path", "abspath") -> do
+      case args of
+        [ArgExpr pathExpr _] -> do
+          pathStr <- convertExpr pathExpr
+          return $ "System.FilePath.normalise " ++ pathStr
+        _ -> do
+          addTodo $ "Complex os.path.abspath() call"
+          return "-- TODO: complex os.path.abspath() call"
+    ("hglib", "error", "CommandError") -> do
+      -- This is likely an exception type
+      return "CommandError"
+    _ -> do
+      addTodo $ "Unhandled module call: " ++ fullName
+      return $ "-- TODO: " ++ fullName
+
+-- | Convert module attribute access (e.g., os.path.abspath, hglib.error.CommandError)
+convertModuleAttr :: String -> String -> String -> Converter String
+convertModuleAttr modName subModName attrName = do
+  let fullName = if null subModName then modName ++ "." ++ attrName 
+                                    else modName ++ "." ++ subModName ++ "." ++ attrName
+  case (modName, subModName, attrName) of
+    ("os", "path", "abspath") -> do
+      return "System.FilePath.normalise"
+    ("hglib", "error", "CommandError") -> do
+      return "CommandError"
+    ("hglib", "", "open") -> do
+      return "openClient nonInteractiveConfig"
+    _ -> do
+      addTodo $ "Unhandled module attribute: " ++ fullName
+      return $ "-- TODO: " ++ fullName
+
+-- | Convert subscript expressions (e.g., list[0], dict[key])
+convertSubscript :: ExprSpan -> ExprSpan -> Converter String
+convertSubscript expr indexExpr = do
+  exprStr <- convertExpr expr
+  indexStr <- convertExpr indexExpr
+  case indexStr of
+    "0" -> return $ "head " ++ exprStr
+    "1" -> return $ "(" ++ exprStr ++ " !! 1)"
+    _ -> return $ "(" ++ exprStr ++ " !! " ++ indexStr ++ ")"
+
+-- | Convert dot access to record accessor functions
+convertDotAccess :: String -> String -> String
+convertDotAccess exprStr attrName = 
+  case attrName of
+    "node" -> "revNode (" ++ exprStr ++ ")"
+    "rev" -> "revRev (" ++ exprStr ++ ")"
+    "desc" -> "revDesc (" ++ exprStr ++ ")"
+    "author" -> "revAuthor (" ++ exprStr ++ ")"
+    "branch" -> "revBranch (" ++ exprStr ++ ")"
+    "tags" -> "revTags (" ++ exprStr ++ ")"
+    "date" -> "revDate (" ++ exprStr ++ ")"
+    "bookmarks" -> "revBookmarks (" ++ exprStr ++ ")"
+    "parents" -> "revParents (" ++ exprStr ++ ")"
+    "children" -> "revChildren (" ++ exprStr ++ ")"
+    -- Common attribute access patterns
+    "status" -> "statusCode (" ++ exprStr ++ ")"
+    "path" -> "filePath (" ++ exprStr ++ ")"
+    "name" -> "fileName (" ++ exprStr ++ ")"
+    _ -> "-- TODO: " ++ exprStr ++ "." ++ attrName
 
 -- | Convert setUp method body to setup code
 convertSetUp :: SuiteSpan -> Converter [String]

@@ -20,18 +20,8 @@ spec :: Spec
 spec = describe "Status" $ do
 
 -- Conversion notes:
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
 -- TODO: Unhandled method call: os.remove
+-- TODO: Complex self.append() call
 -- TODO: Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
 
   it "should handle empty repository" $
@@ -42,19 +32,19 @@ spec = describe "Status" $ do
   it "should one_of_each" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
-      -- TODO: append
-      -- TODO: append
-      -- TODO: append
-      -- TODO: append
-      -- TODO: append
+      -- TODO: appendFile ".hgignore" "ignored"
+      -- TODO: appendFile "ignored" "a"
+      -- TODO: appendFile "clean" "a"
+      -- TODO: appendFile "modified" "a"
+      -- TODO: appendFile "removed" "a"
+      -- TODO: appendFile "missing" "a"
       C.commit client "first" -- TODO: options addremove=True
-      -- TODO: append
-      -- TODO: append
+      -- TODO: appendFile "modified" "a"
+      -- TODO: appendFile "added" "a"
       C.add client ["added"]
       -- TODO: os.remove
       C.remove client ["removed"]
-      -- TODO: append
+      -- TODO: complex self.append() call
       l <- [("M", "modified"), ("A", "added"), ("R", "removed"), ("C", ".hgignore"), ("C", "clean"), ("!", "missing"), ("?", "untracked"), ("I", "ignored")]
       st <- C.status client  -- TODO: options all=True
       -- TODO: For {for_targets = [Var {var_ident = Ident {ident_
@@ -62,7 +52,7 @@ spec = describe "Status" $ do
   it "should copy" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "source" "a"
       C.commit client "first" -- TODO: options addremove=True
       C.copy client "source" "dest"
       l <- [("A", "dest"), (" ", "source")]
@@ -71,25 +61,14 @@ spec = describe "Status" $ do
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "s ource" "a"
       C.commit client "first" -- TODO: options addremove=True
       C.copy client "s ource" "dest"
       l <- [("A", "dest"), (" ", "s ource")]
       C.status client  -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "s ource")]
 
 
--- WARNINGS:
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
 -- TODOS:
 -- Unhandled method call: os.remove
+-- Complex self.append() call
 -- Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_

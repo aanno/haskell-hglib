@@ -20,44 +20,34 @@ spec :: Spec
 spec = describe "Update" $ do
 
 -- Conversion notes:
--- WARNING: Unknown assertion method: append
 -- WARNING: Non-variable in assignment target
 -- WARNING: Non-variable in assignment target
--- WARNING: Unknown assertion method: append
 -- WARNING: Non-variable in assignment target
 -- WARNING: Non-variable in assignment target
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: test_basic
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled module call: common.basetest.setUp
+-- TODO: Unhandled module attribute: self.rev0
+-- TODO: Unhandled module attribute: self.rev0
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: old.encode
--- TODO: Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
+-- TODO: Unhandled module attribute: self.rev0
+-- TODO: Unhandled module attribute: self.node1
+-- TODO: Unhandled module attribute: self.rev0
+-- TODO: Unhandled module attribute: self.rev0
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: With statement conversion
 -- TODO: Complex assertion: assertRaises with 3 args
 -- TODO: With statement conversion
+-- TODO: Unhandled method call: self.test_basic
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
-      (u, m, r, ur) <- C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      (u, m, r, ur) <- C.update client -- TODO: self.rev0
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -66,13 +56,13 @@ spec = describe "Update" $ do
   it "should unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
-      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      -- TODO: append
+      C.update client -- TODO: self.rev0
+      -- TODO: appendFile "a" "b"
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 0
       m `shouldBe` 0
@@ -83,19 +73,19 @@ spec = describe "Update" $ do
   it "should merge" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
-      -- TODO: append
+      -- TODO: appendFile "a" "\n\n\n\nb"
       (rev2, node2) <- C.commit client "third"
-      -- TODO: append
+      -- TODO: appendFile "a" "b"
       C.commit client "fourth"
       C.update client rev2
       -- TODO: with statement
       f <- -- TODO: withFile "a" -- TODO: unknown mode "wb" $ \h ->
-      hPutStrLn f "a" -- TODO: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}} -- TODO: old.encode
+      hPutStrLn f "a" ++ -- TODO: old.encode
       -- TODO: close f (handled by withFile)
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 0
@@ -107,29 +97,29 @@ spec = describe "Update" $ do
   it "should tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
-      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      C.update client -- TODO: self.rev0
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 1
-      -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      -- TODO: append
+      revNode (head C.parents client ) `shouldBe` -- TODO: self.node1
+      C.update client -- TODO: self.rev0
+      -- TODO: appendFile "a" "b"
       (rev2, node2) <- C.commit client "new head"
-      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      C.update client -- TODO: self.rev0
       C.update client 
-      -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` node2
+      revNode (head C.parents client ) `shouldBe` node2
 
   it "should check_clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
       -- TODO: complex assertRaises
       pendingWith "Test not implemented yet"
@@ -137,13 +127,13 @@ spec = describe "Update" $ do
   it "should clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
       -- TODO: with statement
-      -- TODO: append
+      -- TODO: appendFile "a" "b"
       -- TODO: complex assertRaises
       (u, m, r, ur) <- C.update client  -- TODO: options clean=True
       u `shouldBe` 1
@@ -152,44 +142,34 @@ spec = describe "Update" $ do
   it "should basic_plain" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: common.basetest.setUp
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
-      -- Setup: -- TODO: append
+      -- Setup: -- TODO: appendFile "a" "a"
       -- Setup: (_, _) <- C.commit client "second"
       f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       hPutStrLn f "[defaults]\nupdate=-v\n"
       -- TODO: close f (handled by withFile)
-      -- TODO: test_basic
+      -- TODO: self.test_basic
 
 
 -- WARNINGS:
--- Unknown assertion method: append
 -- Non-variable in assignment target
 -- Non-variable in assignment target
--- Unknown assertion method: append
 -- Non-variable in assignment target
 -- Non-variable in assignment target
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: test_basic
 -- TODOS:
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled module call: common.basetest.setUp
+-- Unhandled module attribute: self.rev0
+-- Unhandled module attribute: self.rev0
 -- With statement conversion
 -- Unhandled method call: old.encode
--- Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
+-- Unhandled module attribute: self.rev0
+-- Unhandled module attribute: self.node1
+-- Unhandled module attribute: self.rev0
+-- Unhandled module attribute: self.rev0
 -- Complex assertion: assertRaises with 4 args
 -- With statement conversion
 -- Complex assertion: assertRaises with 3 args
 -- With statement conversion
+-- Unhandled method call: self.test_basic

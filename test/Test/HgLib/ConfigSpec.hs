@@ -22,40 +22,36 @@ spec = describe "Config" $ do
 
 -- Conversion notes:
 -- TODO: Unhandled method call: hglib.open
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+-- TODO: Unhandled module call: common.basetest.setUp
 -- TODO: Unhandled method call: hglib.open
--- TODO: Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
--- TODO: Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}}
+-- TODO: Unhandled module attribute: self.client.config
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: common.basetest.setUp
       -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       -- Setup: hPutStrLn f "[section]\nkey=value\n"
       -- Setup: -- TODO: close f (handled by withFile)
       config <- C.config client 
       elem ("section", "key", "value") C.config client  `shouldBe` True
-      [("section", "key", "value")] `shouldBe True` C.config client "section"
-      [("section", "key", "value")] `shouldBe True` C.config client ["section", "foo"]
-      -- TODO: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I ["a.b", "foo"] `shouldThrow` anyException
+      [("section", "key", "value")] `shouldBe` C.config client "section"
+      [("section", "key", "value")] `shouldBe` C.config client ["section", "foo"]
+      -- TODO: self.client.config ["a.b", "foo"] `shouldThrow` anyException
 
   it "should show_source" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: common.basetest.setUp
       -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       -- Setup: hPutStrLn f "[section]\nkey=value\n"
       -- Setup: -- TODO: close f (handled by withFile)
       config <- C.config client  -- TODO: options showsource=True
-      elem (-- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V -- TODO: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}} ":2", "section", "key", "value") C.config client  -- TODO: options showsource=True `shouldBe` True
+      elem (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value") C.config client  -- TODO: options showsource=True `shouldBe` True
 
 
 -- TODOS:
 -- Unhandled method call: hglib.open
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+-- Unhandled module call: common.basetest.setUp
 -- Unhandled method call: hglib.open
--- Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
--- Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}}
+-- Unhandled module attribute: self.client.config

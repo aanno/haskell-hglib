@@ -21,138 +21,109 @@ spec :: Spec
 spec = describe "Commit" $ do
 
 -- Conversion notes:
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- TODO: Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled module attribute: rev.author
 -- TODO: Complex assertion: assertRaises with 4 args
--- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled module attribute: rev0.branch
+-- TODO: Unhandled module attribute: rev0.rev
 -- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled module attribute: revclose.branch
+-- TODO: Unhandled module attribute: revclose.rev
 -- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled module attribute: rev0.branch
+-- TODO: Unhandled module attribute: rev0.rev
 -- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- TODO: Complex assertion: assertRaises with 4 args
--- TODO: Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
+-- TODO: Unhandled module attribute: self.client.commit
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
--- TODO: Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
 -- TODO: Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call
 
   it "should handle commit with custom user" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True user="foo"
-      rev <- -- TODO: Subscript {subscriptee = Call {call_fun = Dot {dot
-      -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri `shouldBe` "foo"
+      rev <- head C.log_ client node
+      -- TODO: rev.author `shouldBe` "foo"
 
   it "should fail with empty user" $
     withTestRepo $ \bt ->
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       -- TODO: complex assertRaises
       pendingWith "Test not implemented yet"
 
   it "should close branch" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       C.branch client "foo"
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       revclose <- C.commit client "closing foo" -- TODO: options closebranch=True
-      (rev0, rev1, revclose) <- C.log_ client [node0, node1, -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i]
-      C.branches client  `shouldBe` [(-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
-      C.branches client  -- TODO: options closed=True `shouldBe` [(-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client "closing foo" -- TODO: options closebranch=True !! 1)]
+      C.branches client  `shouldBe` [(-- TODO: rev0.branch, int -- TODO: rev0.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      C.branches client  -- TODO: options closed=True `shouldBe` [(-- TODO: revclose.branch, int -- TODO: revclose.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (-- TODO: rev0.branch, int -- TODO: rev0.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
 
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt ->
       let client = btClient bt
       -- TODO: complex assertRaises
-      -- TODO: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I `shouldThrow` anyException
+      -- TODO: self.client.commit `shouldThrow` anyException
       pendingWith "Test not implemented yet"
 
   it "should handle custom date" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
       (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` -- TODO: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
+      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
 
   it "should amend previous commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
       (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` -- TODO: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
-      -- TODO: append
+      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
+      -- TODO: appendFile "a" "a"
       (rev1, node1) <- C.commit client  -- TODO: options amend=True
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` -- TODO: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
+      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
       node0 `shouldNotBe` node1
       1 `shouldBe` len C.log_ client 
 
   it "should prevent null injection" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       -- TODO: Lambda {lambda_args = [], lambda_body = Call {call `shouldThrow` anyException
       0 `shouldBe` len C.log_ client 
 
 
--- WARNINGS:
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
 -- TODOS:
--- Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled module attribute: rev.author
 -- Complex assertion: assertRaises with 4 args
--- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled module attribute: rev0.branch
+-- Unhandled module attribute: rev0.rev
 -- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled module attribute: revclose.branch
+-- Unhandled module attribute: revclose.rev
 -- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled module attribute: rev0.branch
+-- Unhandled module attribute: rev0.rev
 -- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- Complex assertion: assertRaises with 4 args
--- Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
+-- Unhandled module attribute: self.client.commit
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
--- Unhandled expression: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
 -- Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call

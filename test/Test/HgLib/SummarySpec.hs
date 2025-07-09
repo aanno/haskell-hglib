@@ -21,18 +21,6 @@ spec :: Spec
 spec = describe "Summary" $ do
 
 -- Conversion notes:
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -47,7 +35,6 @@ spec = describe "Summary" $ do
 -- TODO: If statement conversion
 -- TODO: If statement conversion
 -- TODO: Unhandled binary operator: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}}
--- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: If statement conversion
 -- TODO: Unhandled method call: hglib.open
@@ -80,7 +67,7 @@ spec = describe "Summary" $ do
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
@@ -89,9 +76,9 @@ spec = describe "Summary" $ do
   it "should detect dirty working directory" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
       C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -100,18 +87,18 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: if statement
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       C.phase client ["%d" -- TODO: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}} rev] -- TODO: options secret=True force=True
       e <- C.summary client 
-      -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i `shouldBe` True
+      (C.summary client  !! "commit") `shouldBe` True
 
   it "should handle update" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       C.commit client "second"
       C.update client 0
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -121,13 +108,13 @@ spec = describe "Summary" $ do
   it "should handle remote" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       C.clone client  -- TODO: options dest="other"
       other <- -- TODO: hglib.open
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       C.commit client "second"
       -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 9, span_end_column = 22}}]
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -138,7 +125,7 @@ spec = describe "Summary" $ do
       -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 9, span_end_column = 22}}]
       -- TODO: if statement
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      -- TODO: append
+      -- TODO: appendFile "other/a" "a"
       (rev, node) <- -- TODO: other.commit
       -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 9, span_end_column = 22}}]
       -- TODO: if statement
@@ -149,12 +136,12 @@ spec = describe "Summary" $ do
   it "should handle two parents" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev0, node) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: append
+      -- TODO: appendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       C.update client rev0
-      -- TODO: append
+      -- TODO: appendFile "b" "a"
       (rev2, node2) <- C.commit client "third" -- TODO: options addremove=True
       C.merge client rev1
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -162,19 +149,6 @@ spec = describe "Summary" $ do
       C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
 
--- WARNINGS:
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
 -- TODOS:
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -190,7 +164,6 @@ spec = describe "Summary" $ do
 -- If statement conversion
 -- If statement conversion
 -- Unhandled binary operator: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}}
--- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- If statement conversion
 -- Unhandled method call: hglib.open
