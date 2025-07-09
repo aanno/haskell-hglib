@@ -141,14 +141,14 @@ showLog client limitOpt = do
     putStrLn "================="
     
     let limit = maybe 10 id limitOpt
-    revisions <- C.log_ client [] C.defaultLogOptions { C.logLimit = Just limit }
+    revisions <- C.log_ client [] defaultLogOptions { logLimit = Just limit }
     
     forM_ revisions $ \rev -> do
         putStrLn $ "Revision: " ++ T.unpack (formatRevision rev)
         putStrLn $ "Author:   " ++ T.unpack (revAuthor rev)
         putStrLn $ "Branch:   " ++ T.unpack (revBranch rev)
         putStrLn $ "Date:     " ++ show (revDate rev)
-        putStrLn $ "Summary:  " ++ T.unpack (T.take 80 $ revDesc rev)
+        putStrLn $ "C.summary:  " ++ T.unpack (T.take 80 $ revDesc rev)
         unless (T.null $ revTags rev) $
             putStrLn $ "Tags:     " ++ T.unpack (revTags rev)
         putStrLn ""
@@ -203,7 +203,7 @@ doAdd client files = do
         then putStrLn "No files specified"
         else do
             putStrLn $ "Adding " ++ show (length files) ++ " files..."
-            success <- C.add client files C.defaultAddOptions
+            success <- C.add client files defaultAddOptions
             
             if success
                 then putStrLn "Files added successfully"
@@ -221,27 +221,27 @@ advancedExample = do
     
     withClient config $ \client -> do
         -- Get detailed status with options
-        statuses <- C.status client C.defaultStatusOptions
-            { C.statusModified = True
-            , C.statusAdded = True
-            , C.statusRemoved = True
+        statuses <- C.status client defaultStatusOptions
+            { statusModified = True
+            , statusAdded = True
+            , statusRemoved = True
             }
         
         putStrLn $ "Modified/Added/Removed files: " ++ show (length statuses)
         
         -- Get log with specific options
-        recent <- C.log_ client [] C.defaultLogOptions
-            { C.logLimit = Just 5
-            , C.logBranch = Just "default"
-            , C.logNoMerges = True
+        recent <- C.log_ client [] defaultLogOptions
+            { logLimit = Just 5
+            , logBranch = Just "default"
+            , logNoMerges = True
             }
         
         putStrLn $ "Recent non-merge commits: " ++ show (length recent)
         
         -- Show diff for working directory
-        diff <- C.diff client [] C.defaultDiffOptions
-            { C.diffGit = True
-            , C.diffShowFunction = True
+        diff <- C.diff client [] defaultDiffOptions
+            { diffGit = True
+            , diffShowFunction = True
             }
         
         putStrLn "Current diff:"

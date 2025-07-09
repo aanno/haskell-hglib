@@ -90,21 +90,21 @@ defaultTestMethods = Map.fromList
 data CommandMetadata = CommandMetadata
   { cmdFunction :: String                  -- The Haskell function name (e.g., "C.commit")
   , cmdRequiredArgs :: [String]           -- Required positional arguments (e.g., ["message"])
-  , cmdOptionsConstructor :: String        -- Options constructor (e.g., "C.mkDefaultCommitOptions")
+  , cmdOptionsConstructor :: String        -- Options constructor (e.g., "mkDefaultCommitOptions")
   , cmdDefaultArgs :: [String]            -- Default arguments when none provided (e.g., ["[]", "[]"])
   } deriving (Show, Eq)
 
 -- | Default client method mappings with metadata
 defaultClientMethods :: Map String CommandMetadata
 defaultClientMethods = Map.fromList
-  [ ("commit", CommandMetadata "C.commit" ["message"] "C.mkDefaultCommitOptions" [])
-  , ("log", CommandMetadata "C.log_" [] "C.defaultLogOptions" ["[]"])
+  [ ("commit", CommandMetadata "C.commit" ["message"] "mkDefaultCommitOptions" [])
+  , ("log", CommandMetadata "C.log_" [] "defaultLogOptions" ["[]"])
   , ("status", CommandMetadata "C.status" [] "C.defaultStatusOptions" ["[]"])
   , ("config", CommandMetadata "C.config" [] "C.defaultConfigOptions" [])
   , ("update", CommandMetadata "C.update" [] "C.defaultUpdateOptions" [])
   , ("branches", CommandMetadata "C.branches" [] "C.defaultBranchesOptions" [])
   , ("branch", CommandMetadata "C.branch" [] "C.defaultBranchOptions" [])
-  , ("summary", CommandMetadata "C.summary" [] "C.defaultSummaryOptions" [])
+  , ("C.summary", CommandMetadata "C.summary" [] "C.defaultSummaryOptions" [])
   , ("parents", CommandMetadata "C.parents" [] "C.defaultParentsOptions" [])
   , ("tip", CommandMetadata "C.tip" [] "C.defaultTipOptions" [])
   , ("clone", CommandMetadata "C.clone" ["source"] "C.mkDefaultCloneOptions" [])

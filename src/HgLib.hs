@@ -20,7 +20,7 @@
 --     print statuses
 --     
 --     -- Get recent log entries
---     revisions <- C.log_ client [] C.defaultLogOptions { C.logLimit = Just 10 }
+--     revisions <- C.log_ client [] defaultLogOptions { C.logLimit = Just 10 }
 --     mapM_ (putStrLn . T.unpack . formatRevision) revisions
 --     
 --     -- Add and commit files
@@ -62,7 +62,7 @@ import qualified HgLib.Commands as C
 import HgLib.Protocol
 import HgLib.Error
 
--- | Summary information about a repository
+-- | C.summary information about a repository
 data RepositoryInfo = RepositoryInfo
     { repoRoot :: !FilePath
     , repoCurrentRevision :: !Revision
@@ -80,15 +80,15 @@ simpleClone source dest = do
 -- | Simple commit with just a message
 simpleCommit :: HgClient -> String -> IO (Int, Text)
 simpleCommit client message = 
-    C.commit client $ C.mkDefaultCommitOptions message
+    C.commit client $ mkDefaultCommitOptions message
 
 -- | Simple status check (all files)
 simpleStatus :: HgClient -> IO [HgStatus]
-simpleStatus client = C.status client C.defaultStatusOptions
+simpleStatus client = C.status client defaultStatusOptions
 
 -- | Simple log (last 10 revisions)
 simpleLog :: HgClient -> IO [Revision]
-simpleLog client = C.log_ client [] C.defaultLogOptions { C.logLimit = Just 10 }
+simpleLog client = C.log_ client [] defaultLogOptions { logLimit = Just 10 }
 
 -- | Get the current (tip) revision
 getCurrentRevision :: HgClient -> IO Revision
@@ -105,7 +105,7 @@ getRepositoryInfo :: HgClient -> IO RepositoryInfo
 getRepositoryInfo client = do
     repoRoot <- C.root client
     repoCurrentRevision <- getCurrentRevision client
-    repoBranch <- C.branch client C.defaultBranchOptions
+    repoBranch <- C.branch client defaultBranchOptions
     
     statuses <- simpleStatus client
     let repoIsClean = null statuses

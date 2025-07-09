@@ -45,12 +45,12 @@ nonInteractiveConfig = defaultConfig {
 }
 
 -- Use the exported constructor directly for simple cases
-mkTestCommitOptions :: String -> C.CommitOptions  
-mkTestCommitOptions = C.mkDefaultCommitOptions
+mkTestCommitOptions :: String -> CommitOptions  
+mkTestCommitOptions = mkDefaultCommitOptions
 
 -- For updateable cases
-mkUpdateableCommitOptions :: String -> (C.CommitOptions -> C.CommitOptions) -> C.CommitOptions
-mkUpdateableCommitOptions msg updateFn = updateFn (C.mkDefaultCommitOptions msg)
+mkUpdateableCommitOptions :: String -> (CommitOptions -> CommitOptions) -> CommitOptions
+mkUpdateableCommitOptions msg updateFn = updateFn (mkDefaultCommitOptions msg)
 
 -- | Setup a test repository and run tests
 withTestRepo :: (BaseTest -> IO a) -> IO a

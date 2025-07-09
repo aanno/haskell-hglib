@@ -45,7 +45,7 @@ spec = describe "Status" $ do
 
       -- Try to commit (fix the Maybe String issue)
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True })
+        C.commit client (options { commitAddRemove = True })
       
       case result of
         Right _ -> do
@@ -60,7 +60,7 @@ spec = describe "Status" $ do
 --       let client = btClient bt
       
 --       commonCreateFile "source" "a"
---       C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+--       C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
 --       C.copy client "source" "dest" []
       
 --       status <- C.status client (C.defaultStatusOptions { C.statusCopies = True })

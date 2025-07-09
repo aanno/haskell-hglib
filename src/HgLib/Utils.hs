@@ -316,7 +316,7 @@ parseVersion text =
             in (majorNum, minorNum, microNum, extra)
         _ -> (0, 0, 0, T.unpack cleanText)
 
--- | Parses the parent field from hg summary output.
+-- | Parses the parent field from hg C.summary output.
 parseParents :: Maybe Text -> [(Int, Text, Maybe Text, Maybe Text)]
 parseParents Nothing = []
 parseParents (Just txt) =
@@ -350,7 +350,7 @@ readMaybe s = case reads s of
     [(x, "")] -> Just x
     _         -> Nothing
 
--- | Parse the remote field from hg summary --remote output.
+-- | Parse the remote field from hg C.summary --remote output.
 --   Returns (incoming, incoming bookmarks, outgoing, outgoing bookmarks)
 parseRemote :: Maybe Text -> Maybe (Int, Int, Int, Int)
 parseRemote Nothing = Nothing
@@ -375,7 +375,7 @@ parseRemote (Just txt)
            (numTxt:rest) | Just n <- readMaybe (T.unpack numTxt) -> (n, T.unwords rest)
            _ -> (0, "")
 
--- | Parse summary information from summary command output
+-- | Parse C.summary information from C.summary command output
 parseSummary :: Text -> IO SummaryInfo
 parseSummary text = do
     let lines' = T.lines text

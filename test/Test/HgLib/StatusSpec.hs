@@ -38,7 +38,7 @@ spec = describe "Status" $ do
       commonAppendFile "modified" "a"
       commonAppendFile "removed" "a"
       commonAppendFile "missing" "a"
-      C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       commonAppendFile "modified" "a"
       commonAppendFile "added" "a"
       C.add client ["added"]
@@ -53,7 +53,7 @@ spec = describe "Status" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "source" "a"
-      C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       C.copy client "source" "dest"
       l <- [("A", "dest"), (" ", "source")]
       C.status client [] (C.defaultStatusOptions { -- TODO: options copies=True }) `shouldBe` [("A", "dest"), (" ", "source")]
@@ -62,7 +62,7 @@ spec = describe "Status" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "s ource" "a"
-      C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       C.copy client "s ource" "dest"
       l <- [("A", "dest"), (" ", "s ource")]
       C.status client [] (C.defaultStatusOptions { -- TODO: options copies=True }) `shouldBe` [("A", "dest"), (" ", "s ource")]

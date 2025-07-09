@@ -29,12 +29,12 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True })
+        C.commit client (options { commitAddRemove = True })
       
       case result of
         Right (rev, node) -> do
           -- Verify commit was created - fix the function name
-          revs <- C.log_ client [] C.defaultLogOptions
+          revs <- C.log_ client [] defaultLogOptions
           length revs `shouldBe` 1
           
           let rev' = head revs
@@ -48,7 +48,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True, C.commitUser = Just "" })
+        C.commit client (options { commitAddRemove = True, C.commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail
@@ -62,7 +62,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True })
+        C.commit client (options { commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
@@ -101,7 +101,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True })
+        C.commit client (options { commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
@@ -114,7 +114,7 @@ spec = describe "Commit" $ do
           case result2 of
             Right (rev1, node1) -> do
               -- Should still only have one commit
-              revs <- C.log_ client [] C.defaultLogOptions
+              revs <- C.log_ client [] defaultLogOptions
               length revs `shouldBe` 1
               
               -- But different node
@@ -135,9 +135,9 @@ spec = describe "Commit" $ do
       
 --       commonAppendFile "a" "a"
 --       (rev, node) <- C.commit client "first" 
---         (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "foo" })
+--         (C.defaultCommitOptions { commitAddRemove = True, C.commitUser = Just "foo" })
       
---       revs <- C.log_ client (C.defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
+--       revs <- C.log_ client (defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
 --       case revs of
 --         [rev'] -> revAuthor rev' `shouldBe` "foo"
 --         _ -> expectationFailure "Expected exactly one revision"
@@ -149,7 +149,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True, C.commitUser = Just "" })
+        C.commit client (options { commitAddRemove = True, C.commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail
@@ -166,11 +166,11 @@ spec = describe "Commit" $ do
       
   --     (rev, node) <- C.commit client "first" 
   --       (C.defaultCommitOptions 
-  --         { C.commitAddRemove = True
+  --         { commitAddRemove = True
   --         , C.commitDate = Just dateStr 
   --         })
       
-  --     revs <- C.log_ client (C.defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
+  --     revs <- C.log_ client (defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
   --     case revs of
   --       [rev'] -> do
   --         let commitTime = revDate rev'

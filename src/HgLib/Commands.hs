@@ -46,27 +46,7 @@ module HgLib.Commands
     , summary
     , tip
     , update
-    , version
-    
-    -- * Command Options
-    , AddOptions(..)
-    , CommitOptions(..)
-    , LogOptions(..)
-    , StatusOptions(..)
-    , DiffOptions(..)
-    , UpdateOptions(..)
-    , BranchOptions(..)
-    , BranchesOptions(..)
-    , ConfigOptions(..)
-    , defaultAddOptions
-    , mkDefaultCommitOptions
-    , defaultLogOptions
-    , defaultStatusOptions
-    , defaultDiffOptions
-    , defaultUpdateOptions
-    , defaultBranchOptions
-    , defaultBranchesOptions
-    , defaultConfigOptions
+    , version    
     ) where
 
 import Control.Monad (void)
@@ -87,148 +67,6 @@ import HgLib.Protocol
 import HgLib.Error
 import HgLib.Utils
 import Logging
-
--- | Options for the add command
-data AddOptions = AddOptions
-    { addDryRun :: !Bool
-    , addSubrepos :: !Bool
-    , addInclude :: !(Maybe String)
-    , addExclude :: !(Maybe String)
-    } deriving (Show, Eq)
-
-defaultAddOptions :: AddOptions
-defaultAddOptions = AddOptions False False Nothing Nothing
-
--- | Options for the commit command
-data CommitOptions = CommitOptions
-    { commitMessage :: !String -- mandatory
-    , commitLogfile :: !(Maybe FilePath)
-    , commitAddRemove :: !Bool
-    , commitCloseBranch :: !Bool
-    , commitDate :: !(Maybe String)
-    , commitUser :: !(Maybe String)
-    , commitInclude :: !(Maybe String)
-    , commitExclude :: !(Maybe String)
-    , commitAmend :: !Bool
-    } deriving (Show, Eq)
-
-mkDefaultCommitOptions :: String -> CommitOptions
-mkDefaultCommitOptions msg = defaultCommitOptions { commitMessage = msg }
-
-defaultCommitOptions :: CommitOptions
-defaultCommitOptions = CommitOptions "" Nothing False False Nothing Nothing Nothing Nothing False
-
--- | Options for the log command
-data LogOptions = LogOptions
-    { logRevRange :: !(Maybe String)
-    , logFollow :: !Bool
-    , logFollowFirst :: !Bool
-    , logDate :: !(Maybe String)
-    , logCopies :: !Bool
-    , logKeyword :: !(Maybe String)
-    , logRemoved :: !Bool
-    , logOnlyMerges :: !Bool
-    , logUser :: !(Maybe String)
-    , logBranch :: !(Maybe String)
-    , logPrune :: !(Maybe String)
-    , logLimit :: !(Maybe Int)
-    , logNoMerges :: !Bool
-    , logInclude :: !(Maybe String)
-    , logExclude :: !(Maybe String)
-    } deriving (Show, Eq)
-
-defaultLogOptions :: LogOptions
-defaultLogOptions = LogOptions Nothing False False Nothing False Nothing False False Nothing Nothing Nothing Nothing False Nothing Nothing
-
--- | Options for the status command
-data StatusOptions = StatusOptions
-    { statusRev :: !(Maybe String)
-    , statusChange :: !(Maybe String)
-    , statusAll :: !Bool
-    , statusModified :: !Bool
-    , statusAdded :: !Bool
-    , statusRemoved :: !Bool
-    , statusDeleted :: !Bool
-    , statusClean :: !Bool
-    , statusUnknown :: !Bool
-    , statusIgnored :: !Bool
-    , statusCopies :: !Bool
-    , statusSubrepos :: !Bool
-    , statusInclude :: !(Maybe String)
-    , statusExclude :: !(Maybe String)
-    } deriving (Show, Eq)
-
-defaultStatusOptions :: StatusOptions
-defaultStatusOptions = StatusOptions Nothing Nothing False False False False False False False False False False Nothing Nothing
-
--- | Options for the diff command
-data DiffOptions = DiffOptions
-    { diffRevs :: ![String]
-    , diffChange :: !(Maybe String)
-    , diffText :: !Bool
-    , diffGit :: !Bool
-    , diffNoDates :: !Bool
-    , diffShowFunction :: !Bool
-    , diffReverse :: !Bool
-    , diffIgnoreAllSpace :: !Bool
-    , diffIgnoreSpaceChange :: !Bool
-    , diffIgnoreBlankLines :: !Bool
-    , diffUnified :: !(Maybe Int)
-    , diffStat :: !Bool
-    , diffSubrepos :: !Bool
-    , diffInclude :: !(Maybe String)
-    , diffExclude :: !(Maybe String)
-    } deriving (Show, Eq)
-
-defaultDiffOptions :: DiffOptions
-defaultDiffOptions = DiffOptions [] Nothing False False False False False False False False Nothing False False Nothing Nothing
-
--- | Options for the update command
-data UpdateOptions = UpdateOptions
-    { updateRev :: !(Maybe String)       -- ^ -r --rev REV
-    , updateClean :: !Bool               -- ^ -C --clean
-    , updateCheck :: !Bool               -- ^ -c --check  
-    , updateMerge :: !Bool               -- ^ -m --merge
-    , updateDate :: !(Maybe String)      -- ^ -d --date DATE
-    , updateTool :: !(Maybe String)      -- ^ -t --tool TOOL
-    } deriving (Show, Eq)
-
-defaultUpdateOptions :: UpdateOptions
-defaultUpdateOptions = UpdateOptions Nothing False False False Nothing Nothing
-
--- | Options for the branch command
-data BranchOptions = BranchOptions
-    { branchName :: !(Maybe String)      -- ^ Branch name argument
-    , branchForce :: !Bool               -- ^ -f --force
-    , branchClean :: !Bool               -- ^ -C --clean
-    } deriving (Show, Eq)
-
-defaultBranchOptions :: BranchOptions
-defaultBranchOptions = BranchOptions Nothing False False
-
--- | Options for the branches command  
-data BranchesOptions = BranchesOptions
-    { branchesRev :: ![String]           -- ^ -r --rev VALUE [+]
-    , branchesClosed :: !Bool            -- ^ -c --closed
-    , branchesTemplate :: !(Maybe String) -- ^ -T --template TEMPLATE
-    } deriving (Show, Eq)
-
-defaultBranchesOptions :: BranchesOptions
-defaultBranchesOptions = BranchesOptions [] False Nothing
-
--- | Options for the config/showconfig command
-data ConfigOptions = ConfigOptions
-    { configNames :: ![String]           -- ^ NAME arguments
-    , configUntrusted :: !Bool           -- ^ -u --untrusted
-    , configEdit :: !Bool                -- ^ -e --edit
-    , configLocal :: !Bool               -- ^ -l --local
-    , configSource :: !Bool              -- ^ --source
-    , configGlobal :: !Bool              -- ^ -g --global
-    , configTemplate :: !(Maybe String) -- ^ -T --template TEMPLATE
-    } deriving (Show, Eq)
-
-defaultConfigOptions :: ConfigOptions
-defaultConfigOptions = ConfigOptions [] False False False False False Nothing
 
 -- | Add files to the repository
 add :: HgClient -> [FilePath] -> AddOptions -> IO Bool
@@ -637,10 +475,10 @@ phase client revs options = do
     result <- rawCommand client args
     return $ parsePhase $ TE.decodeUtf8 result
 
--- | Show repository summary
+-- | Show repository C.summary
 summary :: HgClient -> [String] -> IO SummaryInfo
 summary client options = do
-    let args = buildArgs "summary" (map (\o -> (o, Just "")) options) []
+    let args = buildArgs "C.summary" (map (\o -> (o, Just "")) options) []
     result <- rawCommand client args
     parseSummary $ TE.decodeUtf8 result
 

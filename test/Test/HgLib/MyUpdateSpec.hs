@@ -23,7 +23,7 @@ spec = describe "Update" $ do
       
 --       -- Create two commits
 --       commonAppendFile "a" "a"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+--       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
 --       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
@@ -49,7 +49,7 @@ spec = describe "Update" $ do
       
 --       -- Create divergent history
 --       commonAppendFile "a" "a"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+--       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
 --       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
@@ -72,7 +72,7 @@ spec = describe "Update" $ do
 --       let client = btClient bt
       
 --       commonCreateFile "a" "original"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+--       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
       
 --       -- Modify file
 --       commonCreateFile "a" "modified"

@@ -72,7 +72,7 @@ This is an error within the converter that should be fixed:
         ‘(try ::
             IO (Int, Text) -> IO (Either SomeException IO (Int, Text)))’
    |        
-79 |       result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client C.defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
+79 |       result <- (try :: IO (Int, Text) -> IO (Either SomeException IO (Int, Text))) $ C.update client defaultLogOptions -- TODO: UpdateOptions not implemented, got ["clean","check"]
    |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ```

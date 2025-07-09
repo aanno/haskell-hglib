@@ -18,7 +18,7 @@ spec = describe "Log" $ do
   it "should return empty log for empty repository" $ do
     withTestRepo $ \bt -> do
       -- Correct parameter order: C.log_ client files options
-      revs <- C.log_ (btClient bt) [] C.defaultLogOptions
+      revs <- C.log_ (btClient bt) [] defaultLogOptions
       revs `shouldBe` []
   
   it "should return commit information" $ do
@@ -29,7 +29,7 @@ spec = describe "Log" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result1 <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { C.commitAddRemove = True })
+        C.commit client (options { commitAddRemove = True })
       
       case result1 of
         Right (rev0, node0) -> do
@@ -40,7 +40,7 @@ spec = describe "Log" $ do
           
           case result2 of
             Right (rev1, node1) -> do
-              revs <- C.log_ client [] C.defaultLogOptions
+              revs <- C.log_ client [] defaultLogOptions
               
               length revs `shouldBe` 2
               let [rev1', rev0'] = revs  -- log returns newest first
@@ -58,11 +58,11 @@ spec = describe "Log" $ do
 --       let client = btClient bt
       
 --       commonAppendFile "a" "a"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+--       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
 --       commonAppendFile "a" "a"
 --       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
       
---       revs <- C.log_ client (C.defaultLogOptions { C.logRev = Just "0" })
+--       revs <- C.log_ client (defaultLogOptions { C.logRev = Just "0" })
       
 --       length revs `shouldBe` 1
 --       revNode (head revs) `shouldBe` node0
@@ -74,7 +74,7 @@ spec = describe "Log" $ do
       
   --     commonCreateFile "a" "a"
   --     commonCreateFile "b" "b"
-  --     C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+  --     C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
       
   --     commonAppendFile "a" "a"
   --     C.commit client "second on a" C.defaultCommitOptions
@@ -83,10 +83,10 @@ spec = describe "Log" $ do
   --     C.commit client "third on b" C.defaultCommitOptions
       
   --     -- Log should show all commits
-  --     allRevs <- C.log_ client C.defaultLogOptions
+  --     allRevs <- C.log_ client defaultLogOptions
   --     length allRevs `shouldBe` 3
       
   --     -- Log for file 'a' should show 2 commits
-  --     aRevs <- C.log_ client (C.defaultLogOptions { C.logFiles = ["a"] })
+  --     aRevs <- C.log_ client (defaultLogOptions { C.logFiles = ["a"] })
   --     length aRevs `shouldBe` 2
 

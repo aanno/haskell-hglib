@@ -20,6 +20,13 @@ spec :: Spec
 spec = describe "Summary" $ do
 
 -- Conversion notes:
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
+-- WARNING: Unknown client method: summary
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -71,28 +78,28 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: client.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       when (-- TODO: self.client.version == (3, 5)) $ do
         -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_column = 13}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_column = 13}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_column = 15}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_column = 15}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'phases'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_start_column = 17, span_end_column = 24}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_start_column = 17, span_end_column = 24}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_start_column = 15, span_end_column = 25}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 24, span_start_column = 13, span_end_column = 26}}]
-      C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: client.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
   it "should detect dirty working directory" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       commonAppendFile "a" "a"
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       when (-- TODO: self.client.version == (3, 5)) $ do
         -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_column = 13}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_column = 13}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_column = 15}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_column = 15}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'phases'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_start_column = 17, span_end_column = 24}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_start_column = 17, span_end_column = 24}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_start_column = 15, span_end_column = 25}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 38, span_start_column = 13, span_end_column = 26}}]
-      C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: client.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
   it "should handle secret commit clean" $
     withTestRepo $ \bt -> do
@@ -100,35 +107,35 @@ spec = describe "Summary" $ do
       when (-- TODO: self.client.version -- TODO: LessThan {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 43, span_column = 32}} (2, 1)) $ do
         -- TODO: raise statement
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       C.phase client ["%d" -- TODO: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}} rev] (C.defaultPhaseOptions { -- TODO: options secret=True force=True })
-      e <- C.summary client 
-      (C.summary client  !! "commit") `shouldBe` True
+      e <- -- TODO: client.summary
+      (-- TODO: client.summary !! "commit") `shouldBe` True
 
   it "should handle update" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       commonAppendFile "a" "a"
-      C.commit client (C.mkDefaultCommitOptions "second")
+      C.commit client (mkDefaultCommitOptions "second")
       C.update client 0
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       when (-- TODO: self.client.version == (3, 5)) $ do
         -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_column = 13}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_column = 13}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_column = 15}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_column = 15}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'phases'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_start_column = 17, span_end_column = 24}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_start_column = 17, span_end_column = 24}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_start_column = 15, span_end_column = 25}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 63, span_start_column = 13, span_end_column = 26}}]
-      C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: client.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
   it "should handle remote" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       C.clone client  (C.mkDefaultCloneOptions { -- TODO: options dest="other" })
       other <- -- TODO: hglib.open
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       commonAppendFile "a" "a"
-      C.commit client (C.mkDefaultCommitOptions "second")
+      C.commit client (mkDefaultCommitOptions "second")
       -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 9, span_end_column = 22}}]
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       C.bookmark client "bm"
@@ -159,19 +166,27 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
+      (rev0, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (C.mkDefaultCommitOptions "second")
+      (rev1, node1) <- C.commit client (mkDefaultCommitOptions "second")
       C.update client rev0
       commonAppendFile "b" "a"
-      (rev2, node2) <- C.commit client ((C.mkDefaultCommitOptions "third") { C.commitAddRemove = True })
+      (rev2, node2) <- C.commit client ((mkDefaultCommitOptions "third") { commitAddRemove = True })
       C.merge client rev1
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       when (-- TODO: self.client.version == (3, 5)) $ do
         -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_column = 13}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_column = 13}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_column = 15}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_column = 15}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'phases'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_start_column = 17, span_end_column = 24}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_start_column = 17, span_end_column = 24}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_start_column = 15, span_end_column = 25}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 133, span_start_column = 13, span_end_column = 26}}]
-      C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: client.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
 
+-- WARNINGS:
+-- Unknown client method: summary
+-- Unknown client method: summary
+-- Unknown client method: summary
+-- Unknown client method: summary
+-- Unknown client method: summary
+-- Unknown client method: summary
+-- Unknown client method: summary
 -- TODOS:
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
