@@ -21,34 +21,20 @@ spec :: Spec
 spec = describe "Commit" $ do
 
 -- Conversion notes:
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled module attribute: rev.author
 -- TODO: Complex assertion: assertRaises with 4 args
--- TODO: Unhandled module attribute: rev0.branch
--- TODO: Unhandled module attribute: rev0.rev
--- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- TODO: Unhandled module attribute: revclose.branch
--- TODO: Unhandled module attribute: revclose.rev
--- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- TODO: Unhandled module attribute: rev0.branch
--- TODO: Unhandled module attribute: rev0.rev
--- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: Unhandled module attribute: self.client.commit
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
+-- TODO: Unhandled method call: now.isoformat
+-- TODO: Unhandled method call: now.isoformat
 -- TODO: Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call
 
   it "should handle commit with custom user" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client "first" -- TODO: options addremove=True user="foo"
+      (rev, node) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "foo" })
       rev <- head C.log_ client node
-      -- TODO: rev.author `shouldBe` "foo"
+      revAuthor rev `shouldBe` "foo"
 
   it "should fail with empty user" $
     withTestRepo $ \bt ->
@@ -60,14 +46,14 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       C.branch client "foo"
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      revclose <- C.commit client "closing foo" -- TODO: options closebranch=True
-      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client "closing foo" -- TODO: options closebranch=True !! 1)]
-      C.branches client  `shouldBe` [(-- TODO: rev0.branch, int -- TODO: rev0.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
-      C.branches client  -- TODO: options closed=True `shouldBe` [(-- TODO: revclose.branch, int -- TODO: revclose.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (-- TODO: rev0.branch, int -- TODO: rev0.rev, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      revclose <- C.commit client "closing foo" (C.defaultCommitOptions { C.commitCloseBranch = True })
+      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client "closing foo" (C.defaultCommitOptions { C.commitCloseBranch = True }) !! 1)]
+      C.branches client  `shouldBe` [(revBranch rev0, read revRev rev0, take 12 revNode rev0)]
+      C.branches client  -- TODO: options closed=True `shouldBe` [(revBranch revclose, read revRev revclose, take 12 revNode revclose), (revBranch rev0, read revRev rev0, take 12 revNode rev0)]
 
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt ->
@@ -80,49 +66,35 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
+      now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
 
   it "should amend previous commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
+      now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client  -- TODO: options amend=True
-      -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` revDate (C.tip client )
+      (rev1, node1) <- C.commit client  (C.defaultCommitOptions { C.commitAmend = True })
+      -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       node0 `shouldNotBe` node1
-      1 `shouldBe` len C.log_ client 
+      1 `shouldBe` length C.log_ client 
 
   it "should prevent null injection" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
       -- TODO: Lambda {lambda_args = [], lambda_body = Call {call `shouldThrow` anyException
-      0 `shouldBe` len C.log_ client 
+      0 `shouldBe` length C.log_ client 
 
 
 -- TODOS:
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled module attribute: rev.author
 -- Complex assertion: assertRaises with 4 args
--- Unhandled module attribute: rev0.branch
--- Unhandled module attribute: rev0.rev
--- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- Unhandled module attribute: revclose.branch
--- Unhandled module attribute: revclose.rev
--- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
--- Unhandled module attribute: rev0.branch
--- Unhandled module attribute: rev0.rev
--- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- Complex assertion: assertRaises with 4 args
 -- Unhandled module attribute: self.client.commit
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
+-- Unhandled method call: now.isoformat
+-- Unhandled method call: now.isoformat
 -- Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call

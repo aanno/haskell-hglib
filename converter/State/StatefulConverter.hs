@@ -74,7 +74,7 @@ trackAssignment expr = \case
 -- | Convert DottedName to string
 dottedNameToString :: DottedNameSpan -> String
 dottedNameToString name = 
-  -- For now, use show and clean it up
+  -- For now, use show and clean it up better
   let nameStr = show name
   in case nameStr of
     s | "DottedName" `isPrefixOf` s -> extractModuleName s
@@ -86,13 +86,33 @@ dottedNameToString name =
       case s of
         _ | "\"os\"" `isInfixOf` s -> "os"
         _ | "\"hglib\"" `isInfixOf` s -> "hglib"
+        _ | "\"datetime\"" `isInfixOf` s -> "datetime"
+        _ | "\"subprocess\"" `isInfixOf` s -> "subprocess"
+        _ | "\"tests\"" `isInfixOf` s -> "tests"
+        _ | "\"common\"" `isInfixOf` s -> "common"
         _ -> takeWhile (/= ' ') $ drop 1 $ dropWhile (/= '"') s
 
 -- | Process import items
 processImportItem :: ImportItemSpan -> Converter ()
 processImportItem (ImportItem name _ _) = do
   let moduleName = dottedNameToString name
-  addImport moduleName
+  -- Map Python modules to Haskell modules
+  let haskellModule = mapPythonModuleToHaskell moduleName
+  -- Only add meaningful imports, skip common test modules
+  when (not $ moduleName `elem` ["tests.common", "common.basetest"]) $ do
+    addImport haskellModule
+
+-- | Map Python module names to Haskell module names
+mapPythonModuleToHaskell :: String -> String
+mapPythonModuleToHaskell pyModule = case pyModule of
+  "os" -> "System.IO"
+  "os.path" -> "System.FilePath"
+  "datetime" -> "Data.Time"
+  "subprocess" -> "System.Process"
+  "hglib" -> "qualified HgLib"
+  "hglib.util" -> "HgLib.Util"
+  "hglib.error" -> "HgLib.Error"
+  _ -> pyModule
 
 -- | Find and convert test methods (second pass)
 findAndConvertTestMethods :: [StatementSpan] -> Converter [String]
@@ -347,15 +367,17 @@ convertExpr expr = case expr of
         if null keywordArgs
           then return $ haskellMethod ++ " client " ++ posArgsStr
           else do
-            -- For now, create a TODO for proper options handling
-            keywordStr <- mapM convertKeywordArg keywordArgs
-            return $ haskellMethod ++ " client " ++ posArgsStr ++ " -- TODO: options " ++ intercalate " " keywordStr
+            -- Convert keyword arguments to proper Haskell options
+            optionsStr <- convertMethodOptions method keywordArgs
+            return $ haskellMethod ++ " client " ++ posArgsStr ++ " " ++ optionsStr
   
   Call (Var (Ident funcName _) _) args _ -> do
     -- Handle special function calls
     case funcName of
       "open" -> convertOpenCall args
       "b" -> convertBytesCall args  -- Handle b('string') calls
+      "int" -> convertIntCall args  -- Handle int() calls
+      "len" -> convertLenCall args  -- Handle len() calls
       _ -> do
         -- Regular function call
         argsStr <- convertArgs args
@@ -385,6 +407,12 @@ convertExpr expr = case expr of
   Call (Dot (Var (Ident modName _) _) (Ident funcName _) _) args _ -> do
     convertModuleCall modName "" funcName args
   
+  -- Handle chained method calls (e.g., datetime.datetime.now().replace(...))
+  Call (Dot (Call innerCallExpr innerCallArgs _) (Ident methodName _) _) args _ -> do
+    innerCallStr <- convertExpr (Call innerCallExpr innerCallArgs (error "span placeholder"))
+    argsStr <- convertArgs args
+    return $ "-- TODO: " ++ methodName ++ " chained call on " ++ innerCallStr ++ " " ++ argsStr
+  
   -- Handle parenthesized expressions
   Paren innerExpr _ -> do
     convertExpr innerExpr
@@ -393,7 +421,7 @@ convertExpr expr = case expr of
   Dot (Dot (Var (Ident modName _) _) (Ident subModName _) _) (Ident attrName _) _ -> do
     convertModuleAttr modName subModName attrName
   
-  -- Handle 2-level attribute access (e.g., hglib.open)
+  -- Handle 2-level attribute access (e.g., hglib.open, rev.author)
   Dot (Var (Ident modName _) _) (Ident attrName _) _ -> do
     -- Special case for self.attribute -> lookup in variable map
     if modName == "self"
@@ -401,6 +429,9 @@ convertExpr expr = case expr of
         let selfAttrName = "self." ++ attrName
         maybeVar <- lookupVariable selfAttrName
         return $ fromMaybe ("-- TODO: " ++ selfAttrName) maybeVar
+      -- Handle regular variable attribute access (e.g., rev.author -> revAuthor rev)
+      else if modName `elem` ["rev", "rev0", "rev1", "revclose", "node", "node0", "node1"]
+        then return $ convertDotAccess modName attrName
       else convertModuleAttr modName "" attrName
   
   -- Handle attribute access on subscript results (e.g., result[0].node)
@@ -416,6 +447,10 @@ convertExpr expr = case expr of
   -- Handle subscript/indexing expressions (e.g., list[0], dict[key])
   Subscript expr index _ -> do
     convertSubscript expr index
+  
+  -- Handle sliced expressions (e.g., list[:12], node[:12])
+  SlicedExpr expr slices _ -> do
+    convertSlicedExpr expr slices
   
   _ -> do
     addTodo $ "Unhandled expression: " ++ take 50 (show expr)
@@ -466,6 +501,53 @@ convertKeywordArg (ArgKeyword (Ident name _) expr _) = do
   exprStr <- convertExpr expr
   return $ name ++ "=" ++ exprStr
 convertKeywordArg _ = return "-- TODO: non-keyword arg"
+
+-- | Convert method options to proper Haskell record syntax
+convertMethodOptions :: String -> [ArgumentSpan] -> Converter String
+convertMethodOptions method keywordArgs = do
+  case method of
+    "commit" -> do
+      options <- mapM convertCommitOption keywordArgs
+      let optionsStr = intercalate ", " (filter (not . null) options)
+      if null optionsStr
+        then return "C.defaultCommitOptions"
+        else return $ "(C.defaultCommitOptions { " ++ optionsStr ++ " })"
+    "log" -> do
+      options <- mapM convertLogOption keywordArgs
+      let optionsStr = intercalate ", " (filter (not . null) options)
+      if null optionsStr
+        then return "C.defaultLogOptions"
+        else return $ "(C.defaultLogOptions { " ++ optionsStr ++ " })"
+    _ -> do
+      -- Fallback for unknown methods
+      keywordStr <- mapM convertKeywordArg keywordArgs
+      return $ "-- TODO: options " ++ intercalate " " keywordStr
+
+-- | Convert commit-specific options
+convertCommitOption :: ArgumentSpan -> Converter String
+convertCommitOption (ArgKeyword (Ident name _) expr _) = do
+  exprStr <- convertExpr expr
+  case name of
+    "addremove" -> return $ "C.commitAddRemove = " ++ exprStr
+    "user" -> return $ "C.commitUser = Just " ++ exprStr
+    "date" -> return $ "C.commitDate = Just " ++ exprStr
+    "closebranch" -> return $ "C.commitCloseBranch = " ++ exprStr
+    "amend" -> return $ "C.commitAmend = " ++ exprStr
+    _ -> return $ "-- TODO: unknown commit option " ++ name
+convertCommitOption _ = return ""
+
+-- | Convert log-specific options
+convertLogOption :: ArgumentSpan -> Converter String
+convertLogOption (ArgKeyword (Ident name _) expr _) = do
+  exprStr <- convertExpr expr
+  case name of
+    "rev" -> return $ "C.logRev = Just " ++ exprStr
+    "files" -> return $ "C.logFiles = " ++ exprStr
+    "hidden" -> return $ "C.logHidden = " ++ exprStr
+    "revrange" -> return $ "C.logRevRange = Just " ++ exprStr
+    "keyword" -> return $ "C.logKeyword = Just " ++ exprStr
+    _ -> return $ "-- TODO: unknown log option " ++ name
+convertLogOption _ = return ""
 
 -- | Convert binary operators
 convertBinaryOp :: ExprSpan -> OpSpan -> ExprSpan -> Converter String
@@ -533,6 +615,28 @@ convertBytesCall args = do
     _ -> do
       addTodo $ "Complex b() call"
       return "-- TODO: complex b() call"
+
+-- | Convert int() calls
+convertIntCall :: [ArgumentSpan] -> Converter String
+convertIntCall args = do
+  case args of
+    [ArgExpr expr _] -> do
+      exprStr <- convertExpr expr
+      return $ "read " ++ exprStr
+    _ -> do
+      addTodo $ "Complex int() call"
+      return "-- TODO: complex int() call"
+
+-- | Convert len() calls
+convertLenCall :: [ArgumentSpan] -> Converter String
+convertLenCall args = do
+  case args of
+    [ArgExpr expr _] -> do
+      exprStr <- convertExpr expr
+      return $ "length " ++ exprStr
+    _ -> do
+      addTodo $ "Complex len() call"
+      return "-- TODO: complex len() call"
 
 -- | Convert method calls on variables (e.g., f.write(), f.close())
 convertVariableMethodCall :: String -> String -> [ArgumentSpan] -> Converter String
@@ -606,6 +710,10 @@ convertModuleCall modName subModName funcName args = do
         _ -> do
           addTodo $ "Complex os.remove() call"
           return "-- TODO: complex os.remove() call"
+    ("datetime", "", "now") -> do
+      return "getCurrentTime"
+    ("datetime", "datetime", "now") -> do
+      return "getCurrentTime"
     _ -> do
       addTodo $ "Unhandled module call: " ++ fullName
       return $ "-- TODO: " ++ fullName
@@ -636,24 +744,68 @@ convertSubscript expr indexExpr = do
     "1" -> return $ "(" ++ exprStr ++ " !! 1)"
     _ -> return $ "(" ++ exprStr ++ " !! " ++ indexStr ++ ")"
 
+-- | Convert sliced expressions (e.g., list[:12], node[:12])
+convertSlicedExpr :: ExprSpan -> [SliceSpan] -> Converter String
+convertSlicedExpr expr slices = do
+  exprStr <- convertExpr expr
+  case slices of
+    [SliceProper Nothing (Just (Int n _ _)) Nothing _] -> do
+      -- Simple slice [:n] -> take n
+      return $ "take " ++ show n ++ " " ++ exprStr
+    [SliceProper (Just (Int start _ _)) (Just (Int end _ _)) Nothing _] -> do
+      -- Range slice [start:end] -> take (end-start) . drop start
+      let len = end - start
+      return $ "take " ++ show len ++ " (drop " ++ show start ++ " " ++ exprStr ++ ")"
+    _ -> do
+      addTodo $ "Complex slicing pattern: " ++ show slices
+      return $ "-- TODO: " ++ exprStr ++ "[sliced]"
+
 -- | Convert dot access to record accessor functions
 convertDotAccess :: String -> String -> String
 convertDotAccess exprStr attrName = 
   case attrName of
-    "node" -> "revNode (" ++ exprStr ++ ")"
-    "rev" -> "revRev (" ++ exprStr ++ ")"
-    "desc" -> "revDesc (" ++ exprStr ++ ")"
-    "author" -> "revAuthor (" ++ exprStr ++ ")"
-    "branch" -> "revBranch (" ++ exprStr ++ ")"
-    "tags" -> "revTags (" ++ exprStr ++ ")"
-    "date" -> "revDate (" ++ exprStr ++ ")"
+    -- Revision attributes - handle both expressions and variables
+    "node" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revNode " ++ exprStr
+        else "revNode (" ++ exprStr ++ ")"
+    "rev" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revRev " ++ exprStr
+        else "revRev (" ++ exprStr ++ ")"
+    "desc" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revDesc " ++ exprStr
+        else "revDesc (" ++ exprStr ++ ")"
+    "author" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revAuthor " ++ exprStr
+        else "revAuthor (" ++ exprStr ++ ")"
+    "branch" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revBranch " ++ exprStr
+        else "revBranch (" ++ exprStr ++ ")"
+    "tags" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revTags " ++ exprStr
+        else "revTags (" ++ exprStr ++ ")"
+    "date" -> 
+      if exprStr `elem` ["rev", "rev0", "rev1", "revclose"]
+        then "revDate " ++ exprStr
+        else "revDate (" ++ exprStr ++ ")"
     "bookmarks" -> "revBookmarks (" ++ exprStr ++ ")"
     "parents" -> "revParents (" ++ exprStr ++ ")"
     "children" -> "revChildren (" ++ exprStr ++ ")"
+    -- Branch attributes
+    "name" -> "branchName (" ++ exprStr ++ ")"
     -- Common attribute access patterns
     "status" -> "statusCode (" ++ exprStr ++ ")"
     "path" -> "filePath (" ++ exprStr ++ ")"
-    "name" -> "fileName (" ++ exprStr ++ ")"
+    -- Method calls that look like attributes
+    "encode" -> exprStr ++ " -- TODO: encode method"
+    -- Python string methods
+    "replace" -> "-- TODO: replace method on " ++ exprStr
+    "isoformat" -> "-- TODO: isoformat method on " ++ exprStr
     _ -> "-- TODO: " ++ exprStr ++ "." ++ attrName
 
 -- | Convert setUp method body to setup code

@@ -28,34 +28,34 @@ spec = describe "Log" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       revs <- C.log_ client 
       -- TODO: revs <- return (reverse revs) -- Note: Python reverse() is in-place, Haskell reverse is not
-      len C.log_ client  == 2 `shouldBe` True
+      length C.log_ client  == 2 `shouldBe` True
       revNode ((C.log_ client  !! 1)) `shouldBe` node1
       head C.log_ client  `shouldBe` head C.log_ client "0"
-      C.log_ client  `shouldBe` C.log_ client  -- TODO: options files=["a"]
-      C.log_ client  `shouldBe` C.log_ client  -- TODO: options hidden=True
+      C.log_ client  `shouldBe` C.log_ client  (C.defaultLogOptions { C.logFiles = ["a"] })
+      C.log_ client  `shouldBe` C.log_ client  (C.defaultLogOptions { C.logHidden = True })
 
   it "should dash_in_filename" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "-a" "-a"
-      C.commit client "first" -- TODO: options addremove=True
-      revs <- C.log_ client  -- TODO: options files=["-a"]
-      len C.log_ client  -- TODO: options files=["-a"] == 1 `shouldBe` True
-      revRev (head C.log_ client  -- TODO: options files=["-a"]) `shouldBe` "0"
+      C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      revs <- C.log_ client  (C.defaultLogOptions { C.logFiles = ["-a"] })
+      length C.log_ client  (C.defaultLogOptions { C.logFiles = ["-a"] }) == 1 `shouldBe` True
+      revRev (head C.log_ client  (C.defaultLogOptions { C.logFiles = ["-a"] })) `shouldBe` "0"
 
   it "should empty_short_option" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "foobar" "foobar"
-      C.commit client "first" -- TODO: options addremove=True
-      revs <- C.log_ client  -- TODO: options keyword="" files=["foobar"]
-      len C.log_ client  -- TODO: options keyword="" files=["foobar"] == 1 `shouldBe` True
-      revRev (head C.log_ client  -- TODO: options keyword="" files=["foobar"]) `shouldBe` "0"
+      C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      revs <- C.log_ client  (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })
+      length C.log_ client  (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] }) == 1 `shouldBe` True
+      revRev (head C.log_ client  (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })) `shouldBe` "0"
 
   it "should null_byte" $
     withTestRepo $ \bt -> do
@@ -63,8 +63,8 @@ spec = describe "Log" $ do
       commonAppendFile "a" "a"
       -- TODO: with statement
       -- TODO: subprocess.check_call
-      revs <- C.log_ client  -- TODO: options revrange="."
-      revDesc (head C.log_ client  -- TODO: options revrange=".") `shouldBe` "some message\0more stuff"
+      revs <- C.log_ client  (C.defaultLogOptions { C.logRevRange = Just "." })
+      revDesc (head C.log_ client  (C.defaultLogOptions { C.logRevRange = Just "." })) `shouldBe` "some message\0more stuff"
 
 
 -- TODOS:

@@ -35,7 +35,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       (u, m, r, ur) <- C.update client rev0
@@ -50,7 +50,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       C.update client rev0
@@ -68,7 +68,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       commonAppendFile "a" "\n\n\n\nb"
@@ -93,7 +93,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       C.update client rev0
@@ -113,7 +113,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       -- TODO: complex assertRaises
@@ -124,7 +124,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       -- TODO: with statement
@@ -140,7 +140,7 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
       f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
