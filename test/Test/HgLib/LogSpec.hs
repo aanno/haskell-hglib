@@ -10,6 +10,7 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
+import qualified System.FilePath
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -26,9 +27,9 @@ spec = describe "Log" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      (rev0, node0) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client "second"
+      (rev1, node1) <- C.commit client (C.mkDefaultCommitOptions "second")
       revs <- C.log_ client []
       -- TODO: C.log_ client [] <- return (reverse C.log_ client []) -- Note: Python reverse() is in-place, Haskell reverse is not
       length C.log_ client [] == 2 `shouldBe` True
@@ -41,7 +42,7 @@ spec = describe "Log" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "-a" "-a"
-      C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
       revs <- C.log_ client [] (C.defaultLogOptions { C.logFiles = ["-a"] })
       length C.log_ client [] (C.defaultLogOptions { C.logFiles = ["-a"] }) == 1 `shouldBe` True
       revRev (head C.log_ client [] (C.defaultLogOptions { C.logFiles = ["-a"] })) `shouldBe` "0"
@@ -50,7 +51,7 @@ spec = describe "Log" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "foobar" "foobar"
-      C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
       revs <- C.log_ client [] (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })
       length C.log_ client [] (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] }) == 1 `shouldBe` True
       revRev (head C.log_ client [] (C.defaultLogOptions { C.logKeyword = Just "", C.logFiles = ["foobar"] })) `shouldBe` "0"

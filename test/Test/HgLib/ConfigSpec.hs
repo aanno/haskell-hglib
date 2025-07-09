@@ -10,6 +10,7 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
+import qualified System.FilePath
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -52,8 +53,8 @@ spec = describe "Config" $ do
       withFile ".hg/hgrc" AppendMode $ \h -> do
         hPutStrLn h "[section]\nkey=value\n"
         -- TODO: close f (handled by withFile)
-        config <- C.config client [] [] -- TODO: options showsource=True
-        let hasValue = any (\item -> item == (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value")) C.config client [] [] -- TODO: options showsource=True
+        config <- C.config client [] [] (C.defaultConfigOptions { -- TODO: options showsource=True })
+        let hasValue = any (\item -> item == (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value")) C.config client [] [] (C.defaultConfigOptions { -- TODO: options showsource=True })
         hasValue `shouldBe` True
       closeClient client
       client' <- openClient nonInteractiveConfig

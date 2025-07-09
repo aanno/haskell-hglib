@@ -9,6 +9,7 @@ import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
+import qualified System.FilePath
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -29,7 +30,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitUser = Just "foo" })
+      (rev, node) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True, C.commitUser = Just "foo" })
       rev <- head C.log_ client node
       revAuthor rev `shouldBe` "foo"
 
@@ -43,14 +44,14 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
+      (rev0, node0) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True })
       C.branch client "foo"
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client "second"
-      revclose <- C.commit client "closing foo" (C.defaultCommitOptions { C.commitCloseBranch = True })
-      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client "closing foo" (C.defaultCommitOptions { C.commitCloseBranch = True }) !! 1)]
+      (rev1, node1) <- C.commit client (C.mkDefaultCommitOptions "second")
+      revclose <- C.commit client ((C.mkDefaultCommitOptions "closing foo") { C.commitCloseBranch = True })
+      (rev0, rev1, revclose) <- C.log_ client [node0, node1, (C.commit client ((C.mkDefaultCommitOptions "closing foo") { C.commitCloseBranch = True }) !! 1)]
       C.branches client  `shouldBe` [(revBranch rev0, read revRev rev0, take 12 revNode rev0)]
-      C.branches client  -- TODO: options closed=True `shouldBe` [(revBranch revclose, read revRev revclose, take 12 revNode revclose), (revBranch rev0, read revRev rev0, take 12 revNode rev0)]
+      C.branches client  (C.defaultBranchesOptions { -- TODO: options closed=True }) `shouldBe` [(revBranch revclose, read revRev revclose, take 12 revNode revclose), (revBranch rev0, read revRev rev0, take 12 revNode rev0)]
 
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt -> do
@@ -64,7 +65,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
-      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      (rev0, node0) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
 
   it "should amend previous commit" $
@@ -72,10 +73,10 @@ spec = describe "Commit" $ do
       let client = btClient bt
       commonAppendFile "a" "a"
       now <- -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0
-      (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
+      (rev0, node0) <- C.commit client ((C.mkDefaultCommitOptions "first") { C.commitAddRemove = True, C.commitDate = Just -- TODO: encode chained call on -- TODO: now.isoformat "latin-1" })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client  (C.defaultCommitOptions { C.commitAmend = True })
+      (rev1, node1) <- C.commit client (C.mkDefaultCommitOptions "" { C.commitAmend = True })
       -- TODO: replace chained call on getCurrentTime -- TODO: keyword arg microsecond=0 `shouldBe` revDate (C.tip client )
       node0 `shouldNotBe` node1
       1 `shouldBe` length C.log_ client []
@@ -84,7 +85,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (\_-> C.commit client "fail\0-A") `shouldThrow` anyException
+      (\_-> C.commit client (C.mkDefaultCommitOptions "fail\0-A")) `shouldThrow` anyException
       0 `shouldBe` length C.log_ client []
 
 

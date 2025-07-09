@@ -27,7 +27,7 @@ data ConverterState = ConverterState
   , csInMonadicContext :: Bool                -- Whether we're in a do block
   
   -- Conversion mappings
-  , csClientMethods :: Map String String       -- Python method -> Haskell function
+  , csClientMethods :: Map String CommandMetadata  -- Python method -> Command metadata
   , csAssertionMethods :: Map String String    -- Python assert -> Haskell assertion
   , csBuiltinFunctions :: Map String String    -- Python builtin -> Haskell equivalent
   
@@ -86,40 +86,48 @@ defaultTestMethods = Map.fromList
   , ("test_nul_injection", "should prevent null injection")
   ]
 
--- | Default client method mappings
-defaultClientMethods :: Map String String
+-- | Command metadata for handling required arguments and options
+data CommandMetadata = CommandMetadata
+  { cmdFunction :: String                  -- The Haskell function name (e.g., "C.commit")
+  , cmdRequiredArgs :: [String]           -- Required positional arguments (e.g., ["message"])
+  , cmdOptionsConstructor :: String        -- Options constructor (e.g., "C.mkDefaultCommitOptions")
+  , cmdDefaultArgs :: [String]            -- Default arguments when none provided (e.g., ["[]", "[]"])
+  } deriving (Show, Eq)
+
+-- | Default client method mappings with metadata
+defaultClientMethods :: Map String CommandMetadata
 defaultClientMethods = Map.fromList
-  [ ("commit", "C.commit")
-  , ("log", "C.log_")
-  , ("status", "C.status")
-  , ("config", "C.config")
-  , ("update", "C.update")
-  , ("branches", "C.branches")
-  , ("branch", "C.branch")
-  , ("summary", "C.summary")
-  , ("parents", "C.parents")
-  , ("tip", "C.tip")
-  , ("clone", "C.clone")
-  , ("bookmark", "C.bookmark")
-  , ("bookmarks", "C.bookmarks")
-  , ("add", "C.add")
-  , ("remove", "C.remove")
-  , ("diff", "C.diff")
-  , ("pull", "C.pull")
-  , ("push", "C.push")
-  , ("merge", "C.merge")
-  , ("revert", "C.revert")
-  , ("resolve", "C.resolve")
-  , ("forget", "C.forget")
-  , ("archive", "C.archive")
-  , ("cat", "C.cat")
-  , ("copy", "C.copy")
-  , ("move", "C.move")
-  , ("paths", "C.paths")
-  , ("phase", "C.phase")
-  , ("root", "C.root")
-  , ("serve", "C.serve")
-  , ("version", "C.version")
+  [ ("commit", CommandMetadata "C.commit" ["message"] "C.mkDefaultCommitOptions" [])
+  , ("log", CommandMetadata "C.log_" [] "C.defaultLogOptions" ["[]"])
+  , ("status", CommandMetadata "C.status" [] "C.defaultStatusOptions" ["[]"])
+  , ("config", CommandMetadata "C.config" [] "C.defaultConfigOptions" ["[]", "[]"])
+  , ("update", CommandMetadata "C.update" [] "C.defaultUpdateOptions" [])
+  , ("branches", CommandMetadata "C.branches" [] "C.defaultBranchesOptions" [])
+  , ("branch", CommandMetadata "C.branch" [] "C.defaultBranchOptions" [])
+  , ("summary", CommandMetadata "C.summary" [] "C.defaultSummaryOptions" [])
+  , ("parents", CommandMetadata "C.parents" [] "C.defaultParentsOptions" [])
+  , ("tip", CommandMetadata "C.tip" [] "C.defaultTipOptions" [])
+  , ("clone", CommandMetadata "C.clone" ["source"] "C.mkDefaultCloneOptions" [])
+  , ("bookmark", CommandMetadata "C.bookmark" [] "C.defaultBookmarkOptions" [])
+  , ("bookmarks", CommandMetadata "C.bookmarks" [] "C.defaultBookmarksOptions" [])
+  , ("add", CommandMetadata "C.add" [] "C.defaultAddOptions" ["[]"])
+  , ("remove", CommandMetadata "C.remove" [] "C.defaultRemoveOptions" ["[]"])
+  , ("diff", CommandMetadata "C.diff" [] "C.defaultDiffOptions" ["[]"])
+  , ("pull", CommandMetadata "C.pull" [] "C.defaultPullOptions" [])
+  , ("push", CommandMetadata "C.push" [] "C.defaultPushOptions" [])
+  , ("merge", CommandMetadata "C.merge" [] "C.defaultMergeOptions" [])
+  , ("revert", CommandMetadata "C.revert" [] "C.defaultRevertOptions" [])
+  , ("resolve", CommandMetadata "C.resolve" [] "C.defaultResolveOptions" [])
+  , ("forget", CommandMetadata "C.forget" [] "C.defaultForgetOptions" [])
+  , ("archive", CommandMetadata "C.archive" [] "C.defaultArchiveOptions" [])
+  , ("cat", CommandMetadata "C.cat" [] "C.defaultCatOptions" [])
+  , ("copy", CommandMetadata "C.copy" [] "C.defaultCopyOptions" [])
+  , ("move", CommandMetadata "C.move" [] "C.defaultMoveOptions" [])
+  , ("paths", CommandMetadata "C.paths" [] "C.defaultPathsOptions" [])
+  , ("phase", CommandMetadata "C.phase" [] "C.defaultPhaseOptions" [])
+  , ("root", CommandMetadata "C.root" [] "C.defaultRootOptions" [])
+  , ("serve", CommandMetadata "C.serve" [] "C.defaultServeOptions" [])
+  , ("version", CommandMetadata "C.version" [] "C.defaultVersionOptions" [])
   ]
 
 -- | Default assertion method mappings
@@ -167,6 +175,7 @@ defaultRequiredImports =
   , "Control.Exception (try, SomeException)"
   , "Data.Text (Text)"
   , "qualified Data.Text as T"
+  , "qualified System.FilePath"
   ]
 
 -- | Type alias for the converter monad
@@ -219,7 +228,7 @@ addTodo :: String -> Converter ()
 addTodo todo = modify $ \s -> s { csTodos = todo : csTodos s }
 
 addError :: String -> Converter ()
-addError error = modify $ \s -> s { csErrors = error : csErrors s }
+addError err = modify $ \s -> s { csErrors = err : csErrors s }
 
 addSetupCode :: [String] -> Converter ()
 addSetupCode setupLines = modify $ \s -> s { csSetupCode = csSetupCode s ++ setupLines }
@@ -228,7 +237,7 @@ getSetupCode :: Converter [String]
 getSetupCode = gets csSetupCode
 
 -- | Lookup functions with state
-lookupClientMethod :: String -> Converter (Maybe String)
+lookupClientMethod :: String -> Converter (Maybe CommandMetadata)
 lookupClientMethod method = gets (Map.lookup method . csClientMethods)
 
 lookupAssertionMethod :: String -> Converter (Maybe String)

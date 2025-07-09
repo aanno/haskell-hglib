@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | Stateful converter using State monad
 module State.StatefulConverter where
@@ -423,28 +424,14 @@ convertExpr expr = case expr of
   
   Call (Dot (Dot (Var (Ident "self" _) _) (Ident "client" _) _) (Ident method _) _) args _ -> do
     -- Client method call
-    maybeHaskellMethod <- lookupClientMethod method
-    case maybeHaskellMethod of
+    maybeCommandMetadata <- lookupClientMethod method
+    case maybeCommandMetadata of
       Nothing -> do
         addWarning $ "Unknown client method: " ++ method
         return $ "-- TODO: client." ++ method
-      Just haskellMethod -> do
+      Just commandMetadata -> do
         (positionalArgs, keywordArgs) <- separateArgs args
-        posArgsStr <- convertArgs positionalArgs
-        
-        -- Handle keyword arguments as options
-        if null keywordArgs
-          then do
-            -- Add default arguments for methods that require them
-            let defaultArgs = getDefaultMethodArgs method
-            let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
-            return $ haskellMethod ++ " client " ++ finalArgs
-          else do
-            -- Convert keyword arguments to proper Haskell options
-            optionsStr <- convertMethodOptions method keywordArgs
-            let defaultArgs = getDefaultMethodArgs method
-            let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
-            return $ haskellMethod ++ " client " ++ finalArgs ++ " " ++ optionsStr
+        buildCommandCall commandMetadata positionalArgs keywordArgs
   
   Call (Var (Ident funcName _) _) args _ -> do
     -- Handle special function calls
@@ -540,16 +527,67 @@ convertExpr expr = case expr of
       | length s >= 2 && head s == '"' && last s == '"' = init (tail s)
       | otherwise = s
 
--- | Get default arguments for methods that require them
-getDefaultMethodArgs :: String -> String
-getDefaultMethodArgs method = case method of
-  "config" -> "[] []"  -- config requires [sections] [names] arguments
-  "status" -> "[]"     -- status requires [files] argument
-  "log" -> "[]"        -- log requires [files] argument
-  "diff" -> "[]"       -- diff requires [files] argument
-  "add" -> "[]"        -- add requires [files] argument
-  "remove" -> "[]"     -- remove requires [files] argument
-  _ -> ""               -- other methods don't need default args
+-- | Build command call with proper argument handling using CommandMetadata
+buildCommandCall :: CommandMetadata -> [ArgumentSpan] -> [ArgumentSpan] -> Converter String
+buildCommandCall CommandMetadata{..} positionalArgs keywordArgs = do
+  let hasRequiredArgs = not (null cmdRequiredArgs)
+  let hasKeywordArgs = not (null keywordArgs)
+  
+  if hasKeywordArgs
+    then do
+      -- Convert keyword arguments to options
+      optionsStr <- convertMethodOptions cmdFunction keywordArgs
+      
+      if hasRequiredArgs
+        then do
+          -- Command has required args AND keyword args - use constructor with record syntax
+          case positionalArgs of
+            argExprs | length argExprs == length cmdRequiredArgs -> do
+              requiredArgStrs <- mapM (convertExpr . extractArgExpr) argExprs
+              let constructorCall = cmdOptionsConstructor ++ " " ++ unwords requiredArgStrs
+              return $ cmdFunction ++ " client ((" ++ constructorCall ++ ") { " ++ optionsStr ++ " })"
+            [] | cmdFunction == "C.commit" -> do
+              -- Special case: commit with only keyword args (e.g., amend=True) - no message needed
+              return $ cmdFunction ++ " client (" ++ cmdOptionsConstructor ++ " \"\" { " ++ optionsStr ++ " })"
+            _ -> do
+              -- Wrong number of required arguments
+              posArgsStr <- convertArgs positionalArgs
+              let defaultArgs = intercalate " " cmdDefaultArgs
+              let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+              return $ cmdFunction ++ " client " ++ finalArgs ++ " (" ++ cmdOptionsConstructor ++ " { " ++ optionsStr ++ " })"
+        else do
+          -- No required args, just keyword args - use default constructor with record syntax  
+          posArgsStr <- convertArgs positionalArgs
+          let defaultArgs = intercalate " " cmdDefaultArgs
+          let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+          return $ cmdFunction ++ " client " ++ finalArgs ++ " (" ++ cmdOptionsConstructor ++ " { " ++ optionsStr ++ " })"
+    else do
+      -- No keyword arguments
+      if hasRequiredArgs
+        then do
+          -- Command has required args but no keyword args - use constructor without record syntax
+          case positionalArgs of
+            argExprs | length argExprs == length cmdRequiredArgs -> do
+              requiredArgStrs <- mapM (convertExpr . extractArgExpr) argExprs
+              let constructorCall = cmdOptionsConstructor ++ " " ++ unwords requiredArgStrs
+              return $ cmdFunction ++ " client (" ++ constructorCall ++ ")"
+            _ -> do
+              -- Wrong number of required arguments or additional args
+              posArgsStr <- convertArgs positionalArgs
+              let defaultArgs = intercalate " " cmdDefaultArgs
+              let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+              return $ cmdFunction ++ " client " ++ finalArgs
+        else do
+          -- No required args, no keyword args - simple call
+          posArgsStr <- convertArgs positionalArgs
+          let defaultArgs = intercalate " " cmdDefaultArgs
+          let finalArgs = if null posArgsStr then defaultArgs else posArgsStr
+          return $ cmdFunction ++ " client " ++ finalArgs
+
+-- | Extract expression from argument
+extractArgExpr :: ArgumentSpan -> ExprSpan
+extractArgExpr (ArgExpr expr _) = expr
+extractArgExpr _ = error "Only simple expressions supported in required arguments"
 
 -- | Convert function arguments
 convertArgs :: [ArgumentSpan] -> Converter String
@@ -594,20 +632,20 @@ convertKeywordArg _ = return "-- TODO: non-keyword arg"
 
 -- | Convert method options to proper Haskell record syntax
 convertMethodOptions :: String -> [ArgumentSpan] -> Converter String
-convertMethodOptions method keywordArgs = do
+convertMethodOptions cmdFunction keywordArgs = do
+  -- Extract method name from command function (e.g., "C.commit" -> "commit")
+  let method = if "C." `isPrefixOf` cmdFunction 
+               then drop 2 cmdFunction 
+               else cmdFunction
   case method of
     "commit" -> do
       options <- mapM convertCommitOption keywordArgs
       let optionsStr = intercalate ", " (filter (not . null) options)
-      if null optionsStr
-        then return "C.defaultCommitOptions"
-        else return $ "(C.defaultCommitOptions { " ++ optionsStr ++ " })"
-    "log" -> do
+      return optionsStr
+    "log_" -> do  -- Note: log_ vs log due to Haskell keyword conflict
       options <- mapM convertLogOption keywordArgs
       let optionsStr = intercalate ", " (filter (not . null) options)
-      if null optionsStr
-        then return "C.defaultLogOptions"
-        else return $ "(C.defaultLogOptions { " ++ optionsStr ++ " })"
+      return optionsStr
     _ -> do
       -- Fallback for unknown methods
       keywordStr <- mapM convertKeywordArg keywordArgs
