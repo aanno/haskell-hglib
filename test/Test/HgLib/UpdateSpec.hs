@@ -20,72 +20,81 @@ spec :: Spec
 spec = describe "Update" $ do
 
 -- Conversion notes:
+-- WARNING: Unknown assertion method: append
+-- WARNING: Non-variable in assignment target
+-- WARNING: Non-variable in assignment target
+-- WARNING: Unknown assertion method: append
+-- WARNING: Non-variable in assignment target
+-- WARNING: Non-variable in assignment target
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: test_basic
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
 -- TODO: With statement conversion
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
+-- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: With statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Complex assertion: assertRaises with 3 args
 -- TODO: With statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
       (u, m, r, ur) <- C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      u `shouldBe` 1
+      m `shouldBe` 0
+      r `shouldBe` 0
+      ur `shouldBe` 0
 
   it "should unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
       (u, m, r, ur) <- C.update client 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      u `shouldBe` 0
+      m `shouldBe` 0
+      r `shouldBe` 0
+      ur `shouldBe` 1
+      -- TODO: BinaryOp {operator = In {op_annot = SpanCoLinear { `shouldBe` True
 
   it "should merge" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
+      -- TODO: append
       (rev2, node2) <- C.commit client b "third"
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
       C.commit client b "fourth"
       C.update client rev2
       -- TODO: with statement
@@ -93,87 +102,102 @@ spec = describe "Update" $ do
       -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
       -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
       (u, m, r, ur) <- C.update client 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      u `shouldBe` 0
+      m `shouldBe` 1
+      r `shouldBe` 0
+      ur `shouldBe` 0
+      C.status client  `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
 
   it "should tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       (u, m, r, ur) <- C.update client 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      u `shouldBe` 1
+      -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
       (rev2, node2) <- C.commit client b "new head"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       C.update client 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` node2
 
   it "should check_clean" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
+      -- TODO: complex assertRaises
       pendingWith "Test not implemented yet"
 
   it "should clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
       -- TODO: with statement
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      (u, m, r, ur) <- C.update client clean=True
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
+      -- TODO: complex assertRaises
+      (u, m, r, ur) <- C.update client  -- TODO: options clean=True
+      u `shouldBe` 1
       -- TODO: with statement
 
   it "should basic_plain" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: -- TODO: append
+      -- Setup: (_, _) <- C.commit client b "second"
       f <- open ".hg/hgrc" "a"
       -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
       -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: test_basic
 
 
+-- WARNINGS:
+-- Unknown assertion method: append
+-- Non-variable in assignment target
+-- Non-variable in assignment target
+-- Unknown assertion method: append
+-- Non-variable in assignment target
+-- Non-variable in assignment target
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: test_basic
 -- TODOS:
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
 -- With statement conversion
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
+-- Complex assertion: assertRaises with 4 args
 -- With statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Complex assertion: assertRaises with 3 args
 -- With statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 

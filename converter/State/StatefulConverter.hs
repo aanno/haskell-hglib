@@ -71,10 +71,27 @@ trackAssignment expr = \case
     addVariable name haskellExpr
   _ -> return ()
 
+-- | Convert DottedName to string
+dottedNameToString :: DottedNameSpan -> String
+dottedNameToString name = 
+  -- For now, use show and clean it up
+  let nameStr = show name
+  in case nameStr of
+    s | "DottedName" `isPrefixOf` s -> extractModuleName s
+    _ -> nameStr
+  where
+    extractModuleName s = 
+      -- Extract module name from DottedName show output
+      -- This is a temporary hack until we figure out the proper constructor
+      case s of
+        _ | "\"os\"" `isInfixOf` s -> "os"
+        _ | "\"hglib\"" `isInfixOf` s -> "hglib"
+        _ -> takeWhile (/= ' ') $ drop 1 $ dropWhile (/= '"') s
+
 -- | Process import items
 processImportItem :: ImportItemSpan -> Converter ()
 processImportItem (ImportItem name _ _) = do
-  let moduleName = show name  -- Convert DottedName to string for now
+  let moduleName = dottedNameToString name
   addImport moduleName
 
 -- | Find and convert test methods (second pass)
@@ -110,7 +127,13 @@ convertTestMethod = \case
         testCode <- generateHaskellTest methodName body
         exitMethod
         return [testCode]
-      else return []
+      else if methodName == "setUp"
+        then do
+          -- Process setUp method to extract setup code
+          setupCode <- convertSetUp body
+          addSetupCode setupCode
+          return []
+        else return []
   _ -> return []
 
 -- | Generate Haskell test code using State monad
@@ -122,8 +145,14 @@ generateHaskellTest testName body = do
   -- Convert the test body
   bodyLines <- convertSuite body
   
+  -- Get setup code
+  setupCode <- getSetupCode
+  
+  -- Combine setup code with test body
+  let allBodyLines = setupCode ++ bodyLines
+  
   -- Ensure proper test ending
-  finalBody <- ensureProperTestEnding bodyLines
+  finalBody <- ensureProperTestEnding allBodyLines
   
   -- Check if we need monadic context
   needsDo <- or <$> mapM needsMonadicContext finalBody
@@ -154,13 +183,13 @@ convertStatement stmt = case stmt of
   Assign targets expr _ -> do
     convertAssignment targets expr
   
+  -- Handle assertions (must come before general StmtExpr)
+  StmtExpr (Call (Dot (Var (Ident "self" _) _) (Ident assertMethod _) _) args _) _ -> do
+    convertAssertion assertMethod args
+  
   -- Handle expressions/function calls
   StmtExpr expr _ -> do
     convertExpressionStatement expr
-  
-  -- Handle assertions
-  StmtExpr (Call (Dot (Var (Ident "self" _) _) (Ident assertMethod _) _) args _) _ -> do
-    convertAssertion assertMethod args
   
   -- Handle if statements
   Conditional clauses elseSuite _ -> do
@@ -219,13 +248,37 @@ convertAssertion assertMethod args = do
       addWarning $ "Unknown assertion method: " ++ assertMethod
       return ["-- TODO: " ++ assertMethod]
     Just haskellAssert -> do
-      case args of
-        [ArgExpr actual _, ArgExpr expected _] -> do
+      case (assertMethod, args) of
+        -- assertTrue with single argument
+        ("assertTrue", [ArgExpr actual _]) -> do
+          actualStr <- convertExpr actual
+          return [actualStr ++ " `shouldBe` True"]
+        -- assertFalse with single argument  
+        ("assertFalse", [ArgExpr actual _]) -> do
+          actualStr <- convertExpr actual
+          return [actualStr ++ " `shouldBe` False"]
+        -- assertEqual with two arguments
+        ("assertEqual", [ArgExpr actual _, ArgExpr expected _]) -> do
           actualStr <- convertExpr actual
           expectedStr <- convertExpr expected
-          return [actualStr ++ " `" ++ haskellAssert ++ "` " ++ expectedStr]
+          return [actualStr ++ " `shouldBe` " ++ expectedStr]
+        -- assertRaises with exception type and lambda/function
+        ("assertRaises", [ArgExpr excType _, ArgExpr func _]) -> do
+          funcStr <- convertExpr func
+          return [funcStr ++ " `shouldThrow` anyException"]
+        -- Generic two-argument case
+        _ | length args == 2 -> do
+          case args of
+            [ArgExpr actual _, ArgExpr expected _] -> do
+              actualStr <- convertExpr actual
+              expectedStr <- convertExpr expected
+              return [actualStr ++ " `" ++ haskellAssert ++ "` " ++ expectedStr]
+            _ -> do
+              addTodo $ "Complex assertion args: " ++ assertMethod
+              return ["-- TODO: complex " ++ assertMethod ++ " args"]
+        -- Handle other cases
         _ -> do
-          addTodo $ "Complex assertion: " ++ assertMethod
+          addTodo $ "Complex assertion: " ++ assertMethod ++ " with " ++ show (length args) ++ " args"
           return ["-- TODO: complex " ++ assertMethod]
 
 -- | Convert expressions using State monad
@@ -250,8 +303,16 @@ convertExpr expr = case expr of
         addWarning $ "Unknown client method: " ++ method
         return $ "-- TODO: client." ++ method
       Just haskellMethod -> do
-        argsStr <- convertArgs args
-        return $ haskellMethod ++ " client " ++ argsStr
+        (positionalArgs, keywordArgs) <- separateArgs args
+        posArgsStr <- convertArgs positionalArgs
+        
+        -- Handle keyword arguments as options
+        if null keywordArgs
+          then return $ haskellMethod ++ " client " ++ posArgsStr
+          else do
+            -- For now, create a TODO for proper options handling
+            keywordStr <- mapM convertKeywordArg keywordArgs
+            return $ haskellMethod ++ " client " ++ posArgsStr ++ " -- TODO: options " ++ intercalate " " keywordStr
   
   Call (Var (Ident funcName _) _) args _ -> do
     -- Regular function call
@@ -279,8 +340,46 @@ convertArg :: ArgumentSpan -> Converter String
 convertArg (ArgExpr expr _) = convertExpr expr
 convertArg (ArgKeyword (Ident name _) expr _) = do
   exprStr <- convertExpr expr
-  return $ name ++ "=" ++ exprStr
+  -- For keyword arguments, we need to handle them as record syntax or function options
+  -- This is a simplified conversion - may need more sophisticated handling
+  return $ "-- TODO: keyword arg " ++ name ++ "=" ++ exprStr
 convertArg _ = return "-- TODO: complex arg"
+
+-- | Separate positional and keyword arguments
+separateArgs :: [ArgumentSpan] -> Converter ([ArgumentSpan], [ArgumentSpan])
+separateArgs args = do
+  let (positional, keyword) = separateArgs' args
+  return (positional, keyword)
+  where
+    separateArgs' [] = ([], [])
+    separateArgs' (arg@(ArgExpr _ _):rest) = 
+      let (pos, kw) = separateArgs' rest
+      in (arg:pos, kw)
+    separateArgs' (arg@(ArgKeyword _ _ _):rest) = 
+      let (pos, kw) = separateArgs' rest
+      in (pos, arg:kw)
+    separateArgs' (arg:rest) = 
+      let (pos, kw) = separateArgs' rest
+      in (arg:pos, kw)
+
+-- | Convert keyword argument to string
+convertKeywordArg :: ArgumentSpan -> Converter String
+convertKeywordArg (ArgKeyword (Ident name _) expr _) = do
+  exprStr <- convertExpr expr
+  return $ name ++ "=" ++ exprStr
+convertKeywordArg _ = return "-- TODO: non-keyword arg"
+
+-- | Convert setUp method body to setup code
+convertSetUp :: SuiteSpan -> Converter [String]
+convertSetUp body = do
+  -- Convert setUp method body to setup code
+  -- This is a simple conversion - may need more sophisticated handling for complex setUp methods
+  setupLines <- convertSuite body
+  -- Filter out self.client assignment as it's handled by withTestRepo
+  let filteredLines = filter (not . isClientAssignment) setupLines
+  return $ map ("-- Setup: " ++) filteredLines
+  where
+    isClientAssignment line = "self.client" `isInfixOf` line
 
 -- | Placeholder functions that need to be implemented
 convertIfStatement :: [(ExprSpan, SuiteSpan)] -> SuiteSpan -> Converter [String]

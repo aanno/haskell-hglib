@@ -22,32 +22,54 @@ spec = describe "Config" $ do
 
 -- Conversion notes:
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Complex assignment pattern
+-- TODO: Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
+-- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- TODO: Complex assertion: assertRaises with 3 args
+-- TODO: Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: f <- open ".hg/hgrc" "a"
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: complex assignment
       config <- C.config client 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: BinaryOp {operator = In {op_annot = SpanCoLinear { `shouldBe` True
+      -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup `shouldBe True` C.config client b "section"
+      -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup `shouldBe True` C.config client -- TODO: List {list_exprs = [Call {call_fun = Var {var_iden
+      -- TODO: complex assertRaises
 
   it "should show_source" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      config <- C.config client showsource=True
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+      -- Setup: f <- open ".hg/hgrc" "a"
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: -- TODO: complex assignment
+      config <- C.config client  -- TODO: options showsource=True
+      -- TODO: BinaryOp {operator = In {op_annot = SpanCoLinear { `shouldBe` True
 
 
 -- TODOS:
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Complex assignment pattern
+-- Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
+-- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- Complex assertion: assertRaises with 3 args
+-- Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {

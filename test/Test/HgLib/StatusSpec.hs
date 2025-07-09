@@ -20,103 +20,98 @@ spec :: Spec
 spec = describe "Status" $ do
 
 -- Conversion notes:
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
 -- WARNING: Unknown client method: add
 -- WARNING: Unknown client method: remove
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
 -- WARNING: Unknown client method: copy
+-- WARNING: Unknown assertion method: append
 -- WARNING: Unknown client method: copy
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: List {list_exprs = [], expr_annot = SpanCoLinear {
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- TODO: Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle empty repository" $
-    withTestRepo $ \bt ->
+    withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      pendingWith "Test not implemented yet"
+      C.status client  `shouldBe` -- TODO: List {list_exprs = [], expr_annot = SpanCoLinear {
 
   it "should one_of_each" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      C.commit client b "first" addremove=True
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
+      -- TODO: append
+      -- TODO: append
+      -- TODO: append
+      -- TODO: append
+      -- TODO: append
+      C.commit client b "first" -- TODO: options addremove=True
+      -- TODO: append
+      -- TODO: append
       -- TODO: client.add
       -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
       -- TODO: client.remove
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: append
       l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      st <- C.status client all=True
+      st <- C.status client  -- TODO: options all=True
       -- TODO: For {for_targets = [Var {var_ident = Ident {ident_
 
   it "should copy" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      C.commit client b "first" addremove=True
+      -- TODO: append
+      C.commit client b "first" -- TODO: options addremove=True
       -- TODO: client.copy
       l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.status client  -- TODO: options copies=True `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
 
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      C.commit client b "first" addremove=True
+      -- TODO: append
+      C.commit client b "first" -- TODO: options addremove=True
       -- TODO: client.copy
       l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.status client  -- TODO: options copies=True `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
 
 
 -- WARNINGS:
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
 -- Unknown client method: add
 -- Unknown client method: remove
+-- Unknown assertion method: append
+-- Unknown assertion method: append
 -- Unknown client method: copy
+-- Unknown assertion method: append
 -- Unknown client method: copy
 -- TODOS:
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: List {list_exprs = [], expr_annot = SpanCoLinear {
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
 -- Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 -- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 

@@ -40,6 +40,9 @@ data ConverterState = ConverterState
   , csModuleName :: String                    -- Target Haskell module name
   , csRequiredImports :: Set String           -- Required Haskell imports
   
+  -- Setup code from setUp method
+  , csSetupCode :: [String]                   -- Setup code to inject into tests
+  
   } deriving (Show, Eq)
 
 -- | Initial converter state
@@ -61,6 +64,7 @@ initialConverterState moduleName = ConverterState
   , csErrors = []
   , csModuleName = moduleName
   , csRequiredImports = Set.fromList defaultRequiredImports
+  , csSetupCode = []
   }
 
 -- | Default test method name mappings
@@ -167,6 +171,12 @@ addTodo todo = modify $ \s -> s { csTodos = todo : csTodos s }
 
 addError :: String -> Converter ()
 addError error = modify $ \s -> s { csErrors = error : csErrors s }
+
+addSetupCode :: [String] -> Converter ()
+addSetupCode setupLines = modify $ \s -> s { csSetupCode = csSetupCode s ++ setupLines }
+
+getSetupCode :: Converter [String]
+getSetupCode = gets csSetupCode
 
 -- | Lookup functions with state
 lookupClientMethod :: String -> Converter (Maybe String)
