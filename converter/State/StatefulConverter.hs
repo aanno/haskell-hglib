@@ -323,6 +323,14 @@ convertAssertion assertMethod args = do
           funcStr <- convertExpr func
           argsStr <- convertExpr args
           return [funcStr ++ " " ++ argsStr ++ " `shouldThrow` anyException"]
+        -- assertRaises with more complex patterns
+        ("assertRaises", excType : func : rest) -> do
+          funcStr <- convertArg func
+          if null rest
+            then return [funcStr ++ " `shouldThrow` anyException"]
+            else do
+              restStr <- mapM convertArg rest
+              return [funcStr ++ " " ++ intercalate " " restStr ++ " `shouldThrow` anyException"]
         -- Generic two-argument case
         _ | length args == 2 -> do
           case args of
@@ -451,6 +459,10 @@ convertExpr expr = case expr of
   -- Handle sliced expressions (e.g., list[:12], node[:12])
   SlicedExpr expr slices _ -> do
     convertSlicedExpr expr slices
+  
+  -- Handle lambda expressions (e.g., lambda: self.client.commit(...))
+  Lambda args body _ -> do
+    convertLambda args body
   
   _ -> do
     addTodo $ "Unhandled expression: " ++ take 50 (show expr)
@@ -760,6 +772,23 @@ convertSlicedExpr expr slices = do
       addTodo $ "Complex slicing pattern: " ++ show slices
       return $ "-- TODO: " ++ exprStr ++ "[sliced]"
 
+-- | Convert lambda expressions
+convertLambda :: [ParameterSpan] -> ExprSpan -> Converter String
+convertLambda args body = do
+  bodyStr <- convertExpr body
+  case args of
+    [] -> do
+      -- No arguments lambda (lambda: expr) -> (\() -> expr)
+      return $ "(\\_-> " ++ bodyStr ++ ")"
+    _ -> do
+      -- Lambda with arguments - for now, create a simple conversion
+      argNames <- mapM extractParameterName args
+      let argPattern = intercalate " " argNames
+      return $ "(\\" ++ argPattern ++ " -> " ++ bodyStr ++ ")"
+  where
+    extractParameterName (Param (Ident name _) _ _ _) = return name
+    extractParameterName _ = return "_"
+
 -- | Convert dot access to record accessor functions
 convertDotAccess :: String -> String -> String
 convertDotAccess exprStr attrName = 
@@ -927,12 +956,24 @@ generateHaskellModule moduleName testMethods = do
   todos <- getTodos
   errors <- getErrors
   
+  -- Filter out malformed imports and add standard imports
+  let filteredImports = filter isValidImport requiredImports
+      standardImports = 
+        [ "Control.Exception (try, SomeException)"
+        , "Data.Text (Text)"
+        , "HgLib.Types"
+        , "Test.HgLib.Common"
+        , "Test.Hspec"
+        , "qualified Data.Text as T"
+        , "qualified HgLib.Commands as C"
+        ] ++ filteredImports
+  
   let moduleHeader = unlines $
         [ "{-# LANGUAGE OverloadedStrings #-}"
         , ""
         , "module Test.HgLib." ++ moduleName ++ "Spec (spec) where"
         , ""
-        ] ++ map ("import " ++) requiredImports ++
+        ] ++ map ("import " ++) standardImports ++
         [ ""
         , "-- Helper function to check if Either is Left"
         , "isLeft :: Either a b -> Bool"
@@ -951,6 +992,11 @@ generateHaskellModule moduleName testMethods = do
              map ("-- ERROR: " ++) errors ++ [""]
   
   return $ moduleHeader ++ commentsSection ++ unlines testMethods
+  where
+    isValidImport imp = 
+      not ("Ident {" `isPrefixOf` imp) && 
+      not ("SpanCoLinear" `isInfixOf` imp) &&
+      not (null imp)
 
 -- | Convert class name to module name
 moduleNameFromClassName :: String -> String

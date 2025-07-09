@@ -7,7 +7,13 @@ import Data.Text (Text)
 import HgLib.Types
 import Test.HgLib.Common
 import Test.Hspec
-import [Ident {ident_string = "os", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_status.py", span_row = 1, span_start_column = 8, span_end_column = 9}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
+import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
 

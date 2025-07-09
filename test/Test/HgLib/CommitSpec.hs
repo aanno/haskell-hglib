@@ -7,8 +7,13 @@ import Data.Text (Text)
 import HgLib.Types
 import Test.HgLib.Common
 import Test.Hspec
-import [Ident {ident_string = "datetime", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_commit.py", span_row = 2, span_start_column = 15, span_end_column = 22}}]
-import [Ident {ident_string = "hglib", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_commit.py", span_row = 2, span_start_column = 8, span_end_column = 12}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
+import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
 
@@ -21,12 +26,11 @@ spec :: Spec
 spec = describe "Commit" $ do
 
 -- Conversion notes:
--- TODO: Complex assertion: assertRaises with 4 args
--- TODO: Complex assertion: assertRaises with 4 args
+-- TODO: Unhandled module attribute: self.client.commit
+-- TODO: Unhandled module attribute: self.client.commit
 -- TODO: Unhandled module attribute: self.client.commit
 -- TODO: Unhandled method call: now.isoformat
 -- TODO: Unhandled method call: now.isoformat
--- TODO: Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call
 
   it "should handle commit with custom user" $
     withTestRepo $ \bt -> do
@@ -40,7 +44,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt ->
       let client = btClient bt
       commonAppendFile "a" "a"
-      -- TODO: complex assertRaises
+      -- TODO: self.client.commit "first" -- TODO: keyword arg user="" `shouldThrow` anyException
 
   it "should close branch" $
     withTestRepo $ \bt -> do
@@ -58,7 +62,7 @@ spec = describe "Commit" $ do
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt ->
       let client = btClient bt
-      -- TODO: complex assertRaises
+      -- TODO: self.client.commit "foo" -- TODO: keyword arg logfile="bar" `shouldThrow` anyException
       -- TODO: self.client.commit `shouldThrow` anyException
       pendingWith "Test not implemented yet"
 
@@ -87,14 +91,13 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      -- TODO: Lambda {lambda_args = [], lambda_body = Call {call `shouldThrow` anyException
+      (\_-> C.commit client "fail\0-A") `shouldThrow` anyException
       0 `shouldBe` length C.log_ client 
 
 
 -- TODOS:
--- Complex assertion: assertRaises with 4 args
--- Complex assertion: assertRaises with 4 args
+-- Unhandled module attribute: self.client.commit
+-- Unhandled module attribute: self.client.commit
 -- Unhandled module attribute: self.client.commit
 -- Unhandled method call: now.isoformat
 -- Unhandled method call: now.isoformat
--- Unhandled expression: Lambda {lambda_args = [], lambda_body = Call {call

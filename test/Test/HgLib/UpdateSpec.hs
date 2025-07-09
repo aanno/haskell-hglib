@@ -7,7 +7,13 @@ import Data.Text (Text)
 import HgLib.Types
 import Test.HgLib.Common
 import Test.Hspec
-import [Ident {ident_string = "os", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 86, span_start_column = 16, span_end_column = 17}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
+import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
 
@@ -23,9 +29,9 @@ spec = describe "Update" $ do
 -- TODO: Unhandled module call: common.basetest.setUp
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: old.encode
--- TODO: Complex assertion: assertRaises with 4 args
+-- TODO: Unhandled module attribute: self.client.update
 -- TODO: With statement conversion
--- TODO: Complex assertion: assertRaises with 3 args
+-- TODO: Unhandled module attribute: self.client.update
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: self.test_basic
 
@@ -116,7 +122,7 @@ spec = describe "Update" $ do
       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { C.commitAddRemove = True })
       commonAppendFile "a" "a"
       (rev1, node1) <- C.commit client "second"
-      -- TODO: complex assertRaises
+      -- TODO: self.client.update -- TODO: keyword arg clean=True -- TODO: keyword arg check=True `shouldThrow` anyException
 
   it "should clean" $
     withTestRepo $ \bt -> do
@@ -129,7 +135,7 @@ spec = describe "Update" $ do
       (rev1, node1) <- C.commit client "second"
       -- TODO: with statement
       commonAppendFile "a" "b"
-      -- TODO: complex assertRaises
+      -- TODO: self.client.update -- TODO: keyword arg check=True `shouldThrow` anyException
       (u, m, r, ur) <- C.update client  -- TODO: options clean=True
       u `shouldBe` 1
       -- TODO: with statement
@@ -153,8 +159,8 @@ spec = describe "Update" $ do
 -- Unhandled module call: common.basetest.setUp
 -- With statement conversion
 -- Unhandled method call: old.encode
--- Complex assertion: assertRaises with 4 args
+-- Unhandled module attribute: self.client.update
 -- With statement conversion
--- Complex assertion: assertRaises with 3 args
+-- Unhandled module attribute: self.client.update
 -- With statement conversion
 -- Unhandled method call: self.test_basic
