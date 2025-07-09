@@ -54,16 +54,15 @@ spec = describe "Status" $ do
           status `shouldBe` []
         Left _ -> pendingWith "Commit functionality not working yet"
 
--- TODO: no defaultStatusOptions, defaultCommitOptions at present
---   it "should handle file copies" $ do
---     withTestRepo $ \bt -> do
---       let client = btClient bt
+  it "should handle file copies" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
---       commonCreateFile "source" "a"
---       C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
---       C.copy client "source" "dest" []
+      commonCreateFile "source" "a"
+      C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
+      C.copy client "source" "dest" []
       
---       status <- C.status client (C.defaultStatusOptions { C.statusCopies = True })
+      status <- C.status client (defaultStatusOptions { statusCopies = True })
       
---       let copyEntries = filter (\s -> statusCode s `elem` ['A', ' ']) status
---       length copyEntries `shouldBe` 2
+      let copyEntries = filter (\s -> statusCode s `elem` ['A', ' ']) status
+      length copyEntries `shouldBe` 2

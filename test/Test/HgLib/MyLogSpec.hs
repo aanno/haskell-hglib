@@ -52,41 +52,39 @@ spec = describe "Log" $ do
             Left _ -> pendingWith "Second commit failed"
         Left _ -> pendingWith "First commit failed"
 
--- TODO: logRev is not implemented
---   it "should filter by specific revision" $ do
---     withTestRepo $ \bt -> do
---       let client = btClient bt
+  it "should filter by specific revision" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
---       commonAppendFile "a" "a"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
---       commonAppendFile "a" "a"
---       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
+      commonAppendFile "a" "a"
+      (rev0, node0) <- C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
+      commonAppendFile "a" "a"
+      (rev1, node1) <- C.commit client $ mkDefaultCommitOptions "second"
       
---       revs <- C.log_ client (defaultLogOptions { C.logRev = Just "0" })
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just "0" })
       
---       length revs `shouldBe` 1
---       revNode (head revs) `shouldBe` node0
+      length revs `shouldBe` 1
+      revNode (head revs) `shouldBe` node0
   
-  -- TODO: logFiles is not implemented yet
-  -- it "should handle files parameter" $ do
-  --   withTestRepo $ \bt -> do
-  --     let client = btClient bt
+  it "should handle files parameter" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
-  --     commonCreateFile "a" "a"
-  --     commonCreateFile "b" "b"
-  --     C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
+      commonCreateFile "a" "a"
+      commonCreateFile "b" "b"
+      C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
       
-  --     commonAppendFile "a" "a"
-  --     C.commit client "second on a" C.defaultCommitOptions
+      commonAppendFile "a" "a"
+      C.commit client $ mkDefaultCommitOptions "second on a"
       
-  --     commonAppendFile "b" "b"  
-  --     C.commit client "third on b" C.defaultCommitOptions
+      commonAppendFile "b" "b"  
+      C.commit client $ mkDefaultCommitOptions "third on b"
       
-  --     -- Log should show all commits
-  --     allRevs <- C.log_ client defaultLogOptions
-  --     length allRevs `shouldBe` 3
+      -- Log should show all commits
+      allRevs <- C.log_ client [] defaultLogOptions
+      length allRevs `shouldBe` 3
       
-  --     -- Log for file 'a' should show 2 commits
-  --     aRevs <- C.log_ client (defaultLogOptions { C.logFiles = ["a"] })
-  --     length aRevs `shouldBe` 2
+      -- Log for file 'a' should show 2 commits
+      aRevs <- C.log_ client [] (defaultLogOptions { logFiles = ["a"] })
+      length aRevs `shouldBe` 2
 

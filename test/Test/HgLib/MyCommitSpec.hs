@@ -128,19 +128,18 @@ spec = describe "Commit" $ do
 -- Additional test modules would continue following this pattern...
 -- Each module covers the functionality from the corresponding Python test
 
--- TODO: logRev is not implemented
---   it "should create commit with custom user" $ do
---     withTestRepo $ \bt -> do
---       let client = btClient bt
+  it "should create commit with custom user" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
---       commonAppendFile "a" "a"
---       (rev, node) <- C.commit client "first" 
---         (C.defaultCommitOptions { commitAddRemove = True, commitUser = Just "foo" })
+      commonAppendFile "a" "a"
+      (rev, node) <- C.commit client
+        (mkDefaultCommitOptions "first") { commitAddRemove = True, commitUser = Just "foo" }
       
---       revs <- C.log_ client (defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
---       case revs of
---         [rev'] -> revAuthor rev' `shouldBe` "foo"
---         _ -> expectationFailure "Expected exactly one revision"
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack $ TE.decodeUtf8 node) })
+      case revs of
+        [rev'] -> revAuthor rev' `shouldBe` "foo"
+        _ -> expectationFailure "Expected exactly one revision"
   
   it "should fail with empty user" $
     withTestRepo $ \bt -> do
@@ -155,28 +154,27 @@ spec = describe "Commit" $ do
         Left _ -> return ()  -- Expected to fail
         Right _ -> expectationFailure "Expected commit with empty user to fail"
 
-  -- TODO: no implementation of logRev
-  -- it "should handle custom date" $ do
-  --   withTestRepo $ \bt -> do
-  --     let client = btClient bt
+  it "should handle custom date" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
-  --     commonAppendFile "a" "a"
-  --     now <- getCurrentTime
-  --     let dateStr = T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" now
+      commonAppendFile "a" "a"
+      now <- getCurrentTime
+      let dateStr = T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" now
       
-  --     (rev, node) <- C.commit client "first" 
-  --       (C.defaultCommitOptions 
-  --         { commitAddRemove = True
-  --         , C.commitDate = Just dateStr 
-  --         })
+      (rev, node) <- C.commit client
+        (mkDefaultCommitOptions "first")
+          { commitAddRemove = True
+          , commitDate = Just dateStr 
+          }
       
-  --     revs <- C.log_ client (defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
-  --     case revs of
-  --       [rev'] -> do
-  --         let commitTime = revDate rev'
-  --         let timeDiff = diffUTCTime commitTime now
-  --         abs timeDiff `shouldSatisfy` (< 60)  -- Within 1 minute
-  --       _ -> expectationFailure "Expected exactly one revision"
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack $ TE.decodeUtf8 node) })
+      case revs of
+        [rev'] -> do
+          let commitTime = revDate rev'
+          let timeDiff = diffUTCTime commitTime now
+          abs timeDiff `shouldSatisfy` (< 60)  -- Within 1 minute
+        _ -> expectationFailure "Expected exactly one revision"
 
 -- Additional test modules would continue following this pattern...
 -- Each module covers the functionality from the corresponding Python test

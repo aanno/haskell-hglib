@@ -49,38 +49,36 @@ spec = describe "C.summary" $ do
       -- Should not be clean anymore
       summaryCommitClean summary `shouldBe` False
   
-  -- Commented out until UpdateOptions is implemented
-  -- it "should handle update information" $ do
-  --   withTestRepo $ \bt -> do
-  --     let client = btClient bt
-  --     
-  --     -- Create two commits
-  --     appendcommonAppendFileFile "a" "a"
-  --     (rev0, node0) <- C.commit client (C.defaultCommitOptions { commitAddRemove = True })
-  --     commonAppendFile "a" "a"
-  --     (rev1, node1) <- C.commit client C.defaultCommitOptions
-  --     
-  --     -- Update to first revision (need UpdateOptions implementation)
-  --     -- C.update client (C.defaultUpdateOptions { C.updateRev = Just (show rev0) })
-  --     
-  --     C.summary <- C.summary client []
-  --     -- Should show that 1 update is available
-  --     summaryUpdateCount C.summary `shouldBe` 1
+  it "should handle update information" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
+      
+      -- Create two commits
+      commonAppendFile "a" "a"
+      (rev0, node0) <- C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
+      commonAppendFile "a" "a"
+      (rev1, node1) <- C.commit client $ mkDefaultCommitOptions "second"
+      
+      -- Update to first revision (need UpdateOptions implementation)
+      C.update client (defaultUpdateOptions { updateRev = Just (show rev0) })
+      
+      summary <- C.summary client []
+      -- Should show that 1 update is available
+      summaryUpdateCount summary `shouldBe` 1
 
--- TODO: updateRev is not implemented
---   it "should handle update information" $ do
---     withTestRepo $ \bt -> do
---       let client = btClient bt
+  it "should handle update information" $ do
+    withTestRepo $ \bt -> do
+      let client = btClient bt
       
---       -- Create two commits
---       commonAppendFile "a" "a"
---       (rev0, node0) <- C.commit client "first" (C.defaultCommitOptions { commitAddRemove = True })
---       commonAppendFile "a" "a"
---       (rev1, node1) <- C.commit client "second" C.defaultCommitOptions
+      -- Create two commits
+      commonAppendFile "a" "a"
+      (rev0, node0) <- C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
+      commonAppendFile "a" "a"
+      (rev1, node1) <- C.commit client $ mkDefaultCommitOptions "second"
       
---       -- Update to first revision
---       C.update client (C.defaultUpdateOptions { C.updateRev = Just (show rev0) })
+      -- Update to first revision
+      C.update client (defaultUpdateOptions { updateRev = Just (show rev0) })
       
---       C.summary <- C.summary client []
---       let update = lookup "update" C.summary
---       update `shouldSatisfy` maybe False (T.isPrefixOf "1")
+      summary <- C.summary client []
+      let update = lookup "update" summary
+      update `shouldSatisfy` maybe False (T.isPrefixOf "1")
