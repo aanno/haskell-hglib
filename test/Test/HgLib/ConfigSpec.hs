@@ -24,12 +24,9 @@ spec = describe "Config" $ do
 -- TODO: Unhandled method call: hglib.open
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- TODO: Unhandled method call: hglib.open
--- TODO: Complex assignment pattern
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Complex assertion: assertRaises with 3 args
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [BinaryOp
+-- TODO: Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+-- TODO: Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}}
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
@@ -38,12 +35,11 @@ spec = describe "Config" $ do
       -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       -- Setup: hPutStrLn f "[section]\nkey=value\n"
       -- Setup: -- TODO: close f (handled by withFile)
-      -- Setup: -- TODO: complex assignment
       config <- C.config client 
-      elem -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca C.config client  `shouldBe` True
-      [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca] `shouldBe True` C.config client "section"
-      [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca] `shouldBe True` C.config client ["section", "foo"]
-      -- TODO: complex assertRaises
+      elem ("section", "key", "value") C.config client  `shouldBe` True
+      [("section", "key", "value")] `shouldBe True` C.config client "section"
+      [("section", "key", "value")] `shouldBe True` C.config client ["section", "foo"]
+      -- TODO: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I ["a.b", "foo"] `shouldThrow` anyException
 
   it "should show_source" $
     withTestRepo $ \bt -> do
@@ -52,18 +48,14 @@ spec = describe "Config" $ do
       -- Setup: f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       -- Setup: hPutStrLn f "[section]\nkey=value\n"
       -- Setup: -- TODO: close f (handled by withFile)
-      -- Setup: -- TODO: complex assignment
       config <- C.config client  -- TODO: options showsource=True
-      elem -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [BinaryOp C.config client  -- TODO: options showsource=True `shouldBe` True
+      elem (-- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V -- TODO: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}} ":2", "section", "key", "value") C.config client  -- TODO: options showsource=True `shouldBe` True
 
 
 -- TODOS:
 -- Unhandled method call: hglib.open
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- Unhandled method call: hglib.open
--- Complex assignment pattern
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Complex assertion: assertRaises with 3 args
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [BinaryOp
+-- Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
+-- Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_config.py", span_row = 29, span_column = 57}}

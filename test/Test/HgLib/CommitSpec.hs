@@ -36,9 +36,15 @@ spec = describe "Commit" $ do
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
@@ -75,8 +81,8 @@ spec = describe "Commit" $ do
       (rev1, node1) <- C.commit client "second"
       revclose <- C.commit client "closing foo" -- TODO: options closebranch=True
       (rev0, rev1, revclose) <- C.log_ client [node0, node1, -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i]
-      C.branches client  `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
-      C.branches client  -- TODO: options closed=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
+      C.branches client  `shouldBe` [(-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
+      C.branches client  -- TODO: options closed=True `shouldBe` [(-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden), (-- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, int -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri, -- TODO: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden)]
 
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt ->
@@ -131,9 +137,15 @@ spec = describe "Commit" $ do
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Complex assertion: assertRaises with 4 args
 -- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: SlicedExpr {slicee = Dot {dot_expr = Var {var_iden
 -- Complex assertion: assertRaises with 4 args
 -- Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 

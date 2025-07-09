@@ -25,18 +25,14 @@ spec = describe "Summary" $ do
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: phase
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: clone
--- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: bookmark
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: merge
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
+-- WARNING: Unknown assertion method: append
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -50,29 +46,26 @@ spec = describe "Summary" $ do
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: If statement conversion
 -- TODO: If statement conversion
+-- TODO: Unhandled binary operator: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}}
 -- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: If statement conversion
 -- TODO: Unhandled method call: hglib.open
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled method call: other.summary
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
+-- TODO: Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 9, span_end_column = 22}}]
 -- TODO: Unhandled method call: other.summary
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
+-- TODO: Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 9, span_end_column = 22}}]
 -- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled method call: other.bookmark
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
+-- TODO: Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 9, span_end_column = 22}}]
 -- TODO: If statement conversion
 -- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled method call: other.commit
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
+-- TODO: Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 9, span_end_column = 22}}]
 -- TODO: If statement conversion
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
+-- TODO: Unhandled expression: SlicedExpr {slicee = Var {var_ident = Ident {ident
+-- TODO: Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'parent'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 9, span_end_column = 22}}]
 -- TODO: If statement conversion
 -- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -109,7 +102,7 @@ spec = describe "Summary" $ do
       -- TODO: if statement
       -- TODO: append
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: client.phase
+      C.phase client ["%d" -- TODO: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}} rev] -- TODO: options secret=True force=True
       e <- C.summary client 
       -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i `shouldBe` True
 
@@ -130,26 +123,26 @@ spec = describe "Summary" $ do
       let client = btClient bt
       -- TODO: append
       (rev, node) <- C.commit client "first" -- TODO: options addremove=True
-      -- TODO: client.clone
+      C.clone client  -- TODO: options dest="other"
       other <- -- TODO: hglib.open
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: append
       C.commit client "second"
-      -- TODO: complex assignment
+      -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 9, span_end_column = 22}}]
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      -- TODO: client.bookmark
-      -- TODO: complex assignment
+      C.bookmark client "bm"
+      -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 9, span_end_column = 22}}]
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: other.bookmark
-      -- TODO: complex assignment
+      -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 9, span_end_column = 22}}]
       -- TODO: if statement
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: append
       (rev, node) <- -- TODO: other.commit
-      -- TODO: complex assignment
+      -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 9, span_end_column = 22}}]
       -- TODO: if statement
-      -- TODO: complex assignment
+      -- TODO: complex assignment: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'parent'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 9, span_end_column = 22}}]
       -- TODO: if statement
       -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
@@ -163,7 +156,7 @@ spec = describe "Summary" $ do
       C.update client rev0
       -- TODO: append
       (rev2, node2) <- C.commit client "third" -- TODO: options addremove=True
-      -- TODO: client.merge
+      C.merge client rev1
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
       C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -174,18 +167,14 @@ spec = describe "Summary" $ do
 -- Unknown assertion method: append
 -- Unknown assertion method: append
 -- Unknown assertion method: append
--- Unknown client method: phase
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown assertion method: append
--- Unknown client method: clone
--- Unknown assertion method: append
--- Unknown client method: bookmark
 -- Unknown assertion method: append
 -- Unknown assertion method: append
 -- Unknown assertion method: append
 -- Unknown assertion method: append
--- Unknown client method: merge
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
+-- Unknown assertion method: append
 -- TODOS:
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -200,29 +189,26 @@ spec = describe "Summary" $ do
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- If statement conversion
 -- If statement conversion
+-- Unhandled binary operator: Modulo {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 47, span_column = 36}}
 -- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- If statement conversion
 -- Unhandled method call: hglib.open
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled method call: other.summary
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
+-- Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 85, span_start_column = 9, span_end_column = 22}}]
 -- Unhandled method call: other.summary
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
+-- Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 89, span_start_column = 9, span_end_column = 22}}]
 -- Unhandled method call: other.summary
 -- Unhandled method call: other.bookmark
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
+-- Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 93, span_start_column = 9, span_end_column = 22}}]
 -- If statement conversion
 -- Unhandled method call: other.summary
 -- Unhandled method call: other.commit
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
+-- Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'remote'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 103, span_start_column = 9, span_end_column = 22}}]
 -- If statement conversion
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
+-- Unhandled expression: SlicedExpr {slicee = Var {var_ident = Ident {ident
+-- Complex assignment pattern: [Subscript {subscriptee = Var {var_ident = Ident {ident_string = "d", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 9}}, subscript_expr = Call {call_fun = Var {var_ident = Ident {ident_string = "b", ident_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, expr_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_column = 11}}, call_args = [ArgExpr {arg_expr = Strings {strings_strings = ["'parent'"], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}, arg_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 13, span_end_column = 20}}], expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 11, span_end_column = 21}}, expr_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 108, span_start_column = 9, span_end_column = 22}}]
 -- If statement conversion
 -- Unhandled method call: other.summary
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call

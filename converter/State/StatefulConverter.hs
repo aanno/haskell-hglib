@@ -222,9 +222,18 @@ convertAssignment targets expr = do
       varNames <- mapM extractVarName vars
       let tuplePattern = "(" ++ intercalate ", " varNames ++ ")"
       return [tuplePattern ++ " <- " ++ exprStr]
+    [Dot (Var (Ident objName _) _) (Ident attrName _) _] -> do
+      -- Attribute assignment (e.g., self.client = ...)
+      if objName == "self"
+        then do
+          -- For self.client assignments, we typically don't need them in Haskell tests
+          return ["-- TODO: " ++ objName ++ "." ++ attrName ++ " = " ++ exprStr ++ " (handled by withTestRepo)"]
+        else do
+          addTodo $ "Attribute assignment: " ++ objName ++ "." ++ attrName
+          return ["-- TODO: " ++ objName ++ "." ++ attrName ++ " <- " ++ exprStr]
     _ -> do
-      addTodo "Complex assignment pattern"
-      return ["-- TODO: complex assignment"]
+      addTodo $ "Complex assignment pattern: " ++ show targets
+      return ["-- TODO: complex assignment: " ++ show targets]
 
 -- | Extract variable name from expression
 extractVarName :: ExprSpan -> Converter String
@@ -266,6 +275,11 @@ convertAssertion assertMethod args = do
         ("assertRaises", [ArgExpr excType _, ArgExpr func _]) -> do
           funcStr <- convertExpr func
           return [funcStr ++ " `shouldThrow` anyException"]
+        -- assertRaises with exception type, function, and arguments
+        ("assertRaises", [ArgExpr excType _, ArgExpr func _, ArgExpr args _]) -> do
+          funcStr <- convertExpr func
+          argsStr <- convertExpr args
+          return [funcStr ++ " " ++ argsStr ++ " `shouldThrow` anyException"]
         -- Generic two-argument case
         _ | length args == 2 -> do
           case args of
@@ -339,6 +353,10 @@ convertExpr expr = case expr of
   -- Handle method calls on variables (e.g., f.write(), f.close())
   Call (Dot (Var (Ident varName _) _) (Ident methodName _) _) args _ -> do
     convertVariableMethodCall varName methodName args
+  
+  -- Handle parenthesized expressions
+  Paren innerExpr _ -> do
+    convertExpr innerExpr
   
   _ -> do
     addTodo $ "Unhandled expression: " ++ take 50 (show expr)

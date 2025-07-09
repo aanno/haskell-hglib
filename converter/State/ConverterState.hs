@@ -99,6 +99,27 @@ defaultClientMethods = Map.fromList
   , ("summary", "C.summary")
   , ("parents", "C.parents")
   , ("tip", "C.tip")
+  , ("clone", "C.clone")
+  , ("bookmark", "C.bookmark")
+  , ("bookmarks", "C.bookmarks")
+  , ("add", "C.add")
+  , ("remove", "C.remove")
+  , ("diff", "C.diff")
+  , ("pull", "C.pull")
+  , ("push", "C.push")
+  , ("merge", "C.merge")
+  , ("revert", "C.revert")
+  , ("resolve", "C.resolve")
+  , ("forget", "C.forget")
+  , ("archive", "C.archive")
+  , ("cat", "C.cat")
+  , ("copy", "C.copy")
+  , ("move", "C.move")
+  , ("paths", "C.paths")
+  , ("phase", "C.phase")
+  , ("root", "C.root")
+  , ("serve", "C.serve")
+  , ("version", "C.version")
   ]
 
 -- | Default assertion method mappings
@@ -111,6 +132,19 @@ defaultAssertionMethods = Map.fromList
   , ("assertRaises", "shouldThrow")
   , ("assertIn", "shouldContain")
   , ("assertNotIn", "shouldNotContain")
+  , ("assertIsNone", "shouldBe Nothing")
+  , ("assertIsNotNone", "shouldNotBe Nothing")
+  , ("assertGreater", "shouldSatisfy (>)")
+  , ("assertLess", "shouldSatisfy (<)")
+  , ("assertGreaterEqual", "shouldSatisfy (>=)")
+  , ("assertLessEqual", "shouldSatisfy (<=)")
+  , ("assertStartsWith", "shouldStartWith")
+  , ("assertEndsWith", "shouldEndWith")
+  , ("assertRegex", "shouldMatch")
+  , ("assertIsInstance", "shouldSatisfy")
+  , ("fail", "expectationFailure")
+  -- Note: 'append' is not a standard assertion method
+  -- It might be a custom method or misidentified
   ]
 
 -- | Default builtin function mappings

@@ -28,39 +28,11 @@ spec = describe "Status" $ do
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: add
--- WARNING: Unknown client method: remove
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: copy
 -- WARNING: Unknown assertion method: append
--- WARNING: Unknown client method: copy
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: Unhandled method call: os.remove
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 
   it "should handle empty repository" $
     withTestRepo $ \bt -> do
@@ -79,11 +51,11 @@ spec = describe "Status" $ do
       C.commit client "first" -- TODO: options addremove=True
       -- TODO: append
       -- TODO: append
-      -- TODO: client.add
+      C.add client ["added"]
       -- TODO: os.remove
-      -- TODO: client.remove
+      C.remove client ["removed"]
       -- TODO: append
-      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      l <- [("M", "modified"), ("A", "added"), ("R", "removed"), ("C", ".hgignore"), ("C", "clean"), ("!", "missing"), ("?", "untracked"), ("I", "ignored")]
       st <- C.status client  -- TODO: options all=True
       -- TODO: For {for_targets = [Var {var_ident = Ident {ident_
 
@@ -92,18 +64,18 @@ spec = describe "Status" $ do
       let client = btClient bt
       -- TODO: append
       C.commit client "first" -- TODO: options addremove=True
-      -- TODO: client.copy
-      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
-      C.status client  -- TODO: options copies=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      C.copy client "source" "dest"
+      l <- [("A", "dest"), (" ", "source")]
+      C.status client  -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "source")]
 
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
       C.commit client "first" -- TODO: options addremove=True
-      -- TODO: client.copy
-      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
-      C.status client  -- TODO: options copies=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      C.copy client "s ource" "dest"
+      l <- [("A", "dest"), (" ", "s ource")]
+      C.status client  -- TODO: options copies=True `shouldBe` [("A", "dest"), (" ", "s ource")]
 
 
 -- WARNINGS:
@@ -115,37 +87,9 @@ spec = describe "Status" $ do
 -- Unknown assertion method: append
 -- Unknown assertion method: append
 -- Unknown assertion method: append
--- Unknown client method: add
--- Unknown client method: remove
 -- Unknown assertion method: append
 -- Unknown assertion method: append
--- Unknown client method: copy
 -- Unknown assertion method: append
--- Unknown client method: copy
 -- TODOS:
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- Unhandled method call: os.remove
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca

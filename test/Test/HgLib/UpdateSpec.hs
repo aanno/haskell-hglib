@@ -35,11 +35,9 @@ spec = describe "Update" $ do
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: old.encode
 -- TODO: Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
@@ -80,7 +78,7 @@ spec = describe "Update" $ do
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      elem -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca C.status client  `shouldBe` True
+      elem ("M", "a") C.status client  `shouldBe` True
 
   it "should merge" $
     withTestRepo $ \bt -> do
@@ -104,7 +102,7 @@ spec = describe "Update" $ do
       m `shouldBe` 1
       r `shouldBe` 0
       ur `shouldBe` 0
-      C.status client  `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      C.status client  `shouldBe` [("M", "a")]
 
   it "should tip" $
     withTestRepo $ \bt -> do
@@ -182,11 +180,9 @@ spec = describe "Update" $ do
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- With statement conversion
 -- Unhandled method call: old.encode
 -- Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
