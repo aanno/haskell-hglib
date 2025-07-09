@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to transform absolute paths containing '.ghcup' to use $GHCHOME variable
+# Script to transform absolute paths containing '.ghcup' or '.stack' to use $GHCHOME variable
 
 # Check if GHCHOME is set
 if [ -z "$GHCHOME" ]; then
@@ -33,12 +33,12 @@ process_file() {
     fi
     
     # Check if it's a shell script by reading the shebang
-    if ! head -n 1 "$file" | grep -q '^#!/bin/sh'; then
+    if ! head -n 1 "$file" | grep -q '^#!/bin/sh\|^#!/usr/bin/env sh'; then
         return
     fi
     
-    # Check if the file contains '.ghcup' paths
-    if ! grep -q '\.ghcup' "$file"; then
+    # Check if the file contains '.ghcup' or '.stack' paths
+    if ! grep -q '\.\(ghcup\|stack\)' "$file"; then
         return
     fi
     
@@ -49,11 +49,12 @@ process_file() {
     
     # Process the file line by line
     while IFS= read -r line; do
-        # Check if the line contains an absolute path with '.ghcup'
-        if echo "$line" | grep -q '="[^"]*\.ghcup[^"]*"'; then
-            # Extract and replace paths
+        # Check if the line contains an absolute path with '.ghcup' or '.stack'
+        if echo "$line" | grep -q '\.\(ghcup\|stack\)'; then
+            # Extract and replace paths - handle both quoted and unquoted paths
             # This handles lines like: exedir="/stratis/home/tpasch/dev/.ghcup/ghc/9.8.4/lib/ghc-9.8.4/bin"
-            modified_line=$(echo "$line" | sed 's|="\([^"]*\)/\.ghcup|="$GHCHOME/.ghcup|g')
+            # and: exedir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-9.8.4/bin"
+            modified_line=$(echo "$line" | sed 's|"\([^"]*\)/\.ghcup\([^"]*\)"|"$GHCHOME/.ghcup\2"|g; s|"\([^"]*\)/\.stack\([^"]*\)"|"$GHCHOME/.stack\2"|g')
             echo "$modified_line" >> "$temp_file"
         else
             echo "$line" >> "$temp_file"
@@ -77,6 +78,13 @@ find -P "$START_DIR" -type d -name "bin" 2>/dev/null | while read -r bin_dir; do
         process_file "$file"
     done
 done
+
+# If the START_DIR itself contains executable files, process them directly
+if [ -d "$START_DIR" ]; then
+    find "$START_DIR" -maxdepth 1 -type f 2>/dev/null | while read -r file; do
+        process_file "$file"
+    done
+fi
 
 echo "Transformation complete!"
 

@@ -38,6 +38,9 @@ dependencies:
 - tasty >= 1.5.3
 - streamly >= 0.10.1
 - streamly-core >= 0.2.3
+# state monad
+- mtl >= 2.2.2
+- containers >= 0.6.7
 
 ghc-options:
 - -Wall
@@ -90,6 +93,30 @@ executables:
     - haskell-hglib
     - language-python >= 0.6.0
     # - language-python >= 0.5.8
+  #!/bin/sh
+exedir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/bin"
+exeprog="./ghc-9.6.6"
+executablename="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/bin/./ghc-9.6.6"
+bindir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/bin"
+libdir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib"
+docdir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/share/doc/ghc-9.6.6"
+includedir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/include"
+
+exec "$executablename" -B"$libdir" ${1+"$@"}:
+    main:                Main.hs
+    source-dirs:         converter
+    other-modules:
+    - ConverterState
+    - StatefulConverter
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-hglib
+    - language-python >= 0.6.0
+    - mtl >= 2.2.2
+    - containers >= 0.6.7
 
 tests:
   haskell-hglib-test:
