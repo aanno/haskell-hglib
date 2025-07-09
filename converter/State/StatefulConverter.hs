@@ -245,6 +245,17 @@ convertAssignment targets expr = do
 -- | Extract variable name from expression
 extractVarName :: ExprSpan -> Converter String
 extractVarName (Var (Ident name _) _) = return name
+extractVarName (Dot (Var (Ident objName _) _) (Ident attrName _) _) = do
+  -- Handle self.attrName -> attrName (e.g., self.rev0 -> rev0)
+  if objName == "self"
+    then do
+      -- Track this as a variable assignment for later reference
+      let varName = attrName
+      addVariable ("self." ++ attrName) varName
+      return varName
+    else do
+      addWarning $ "Non-self attribute assignment: " ++ objName ++ "." ++ attrName
+      return "_"
 extractVarName _ = do
   addWarning "Non-variable in assignment target"
   return "_"
@@ -384,7 +395,13 @@ convertExpr expr = case expr of
   
   -- Handle 2-level attribute access (e.g., hglib.open)
   Dot (Var (Ident modName _) _) (Ident attrName _) _ -> do
-    convertModuleAttr modName "" attrName
+    -- Special case for self.attribute -> lookup in variable map
+    if modName == "self"
+      then do
+        let selfAttrName = "self." ++ attrName
+        maybeVar <- lookupVariable selfAttrName
+        return $ fromMaybe ("-- TODO: " ++ selfAttrName) maybeVar
+      else convertModuleAttr modName "" attrName
   
   -- Handle attribute access on subscript results (e.g., result[0].node)
   Dot (Subscript expr index _) (Ident attrName _) _ -> do

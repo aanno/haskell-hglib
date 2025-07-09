@@ -20,19 +20,9 @@ spec :: Spec
 spec = describe "Update" $ do
 
 -- Conversion notes:
--- WARNING: Non-variable in assignment target
--- WARNING: Non-variable in assignment target
--- WARNING: Non-variable in assignment target
--- WARNING: Non-variable in assignment target
 -- TODO: Unhandled module call: common.basetest.setUp
--- TODO: Unhandled module attribute: self.rev0
--- TODO: Unhandled module attribute: self.rev0
 -- TODO: With statement conversion
 -- TODO: Unhandled method call: old.encode
--- TODO: Unhandled module attribute: self.rev0
--- TODO: Unhandled module attribute: self.node1
--- TODO: Unhandled module attribute: self.rev0
--- TODO: Unhandled module attribute: self.rev0
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: With statement conversion
 -- TODO: Complex assertion: assertRaises with 3 args
@@ -45,10 +35,10 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
-      (u, m, r, ur) <- C.update client -- TODO: self.rev0
+      (rev1, node1) <- C.commit client "second"
+      (u, m, r, ur) <- C.update client rev0
       u `shouldBe` 1
       m `shouldBe` 0
       r `shouldBe` 0
@@ -60,10 +50,10 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
-      C.update client -- TODO: self.rev0
+      (rev1, node1) <- C.commit client "second"
+      C.update client rev0
       commonAppendFile "a" "b"
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 0
@@ -78,9 +68,9 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
+      (rev1, node1) <- C.commit client "second"
       commonAppendFile "a" "\n\n\n\nb"
       (rev2, node2) <- C.commit client "third"
       commonAppendFile "a" "b"
@@ -103,17 +93,17 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
-      C.update client -- TODO: self.rev0
+      (rev1, node1) <- C.commit client "second"
+      C.update client rev0
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 1
-      revNode (head C.parents client ) `shouldBe` -- TODO: self.node1
-      C.update client -- TODO: self.rev0
+      revNode (head C.parents client ) `shouldBe` node1
+      C.update client rev0
       commonAppendFile "a" "b"
       (rev2, node2) <- C.commit client "new head"
-      C.update client -- TODO: self.rev0
+      C.update client rev0
       C.update client 
       revNode (head C.parents client ) `shouldBe` node2
 
@@ -123,9 +113,9 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
+      (rev1, node1) <- C.commit client "second"
       -- TODO: complex assertRaises
 
   it "should clean" $
@@ -134,9 +124,9 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
+      (rev1, node1) <- C.commit client "second"
       -- TODO: with statement
       commonAppendFile "a" "b"
       -- TODO: complex assertRaises
@@ -150,30 +140,19 @@ spec = describe "Update" $ do
       -- Setup:
       -- TODO: common.basetest.setUp
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "first" -- TODO: options addremove=True
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
       commonAppendFile "a" "a"
-      (_, _) <- C.commit client "second"
+      (rev1, node1) <- C.commit client "second"
       f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
       hPutStrLn f "[defaults]\nupdate=-v\n"
       -- TODO: close f (handled by withFile)
       -- TODO: self.test_basic
 
 
--- WARNINGS:
--- Non-variable in assignment target
--- Non-variable in assignment target
--- Non-variable in assignment target
--- Non-variable in assignment target
 -- TODOS:
 -- Unhandled module call: common.basetest.setUp
--- Unhandled module attribute: self.rev0
--- Unhandled module attribute: self.rev0
 -- With statement conversion
 -- Unhandled method call: old.encode
--- Unhandled module attribute: self.rev0
--- Unhandled module attribute: self.node1
--- Unhandled module attribute: self.rev0
--- Unhandled module attribute: self.rev0
 -- Complex assertion: assertRaises with 4 args
 -- With statement conversion
 -- Complex assertion: assertRaises with 3 args
