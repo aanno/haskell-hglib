@@ -83,8 +83,8 @@ executables:
     # NOT used here - but needed because of an stack bug
     # - language-python >= 0.6.0
   python-testcase-converter-exe:
-    main:                PythonTestcaseConverter.hs
-    source-dirs:         converter
+    main:                ../PythonTestcaseConverter.hs
+    source-dirs:         converter/null
     ghc-options:
     - -threaded
     - -rtsopts
@@ -93,21 +93,13 @@ executables:
     - haskell-hglib
     - language-python >= 0.6.0
     # - language-python >= 0.5.8
-  #!/bin/sh
-exedir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/bin"
-exeprog="./ghc-9.6.6"
-executablename="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/bin/./ghc-9.6.6"
-bindir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/bin"
-libdir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/lib/ghc-9.6.6/lib"
-docdir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/share/doc/ghc-9.6.6"
-includedir="/stratis/home/tpasch/dev/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.6/include"
-
-exec "$executablename" -B"$libdir" ${1+"$@"}:
+  stateful-converter-exe:
     main:                Main.hs
     source-dirs:         converter
+    # this will exclude PythonTestcaseConverter.hs (with a Main module)
     other-modules:
-    - ConverterState
-    - StatefulConverter
+    - State.ConverterState
+    - State.StatefulConverter
     ghc-options:
     - -threaded
     - -rtsopts

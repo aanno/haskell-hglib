@@ -94,17 +94,13 @@ executable haskell-hglib-exe
   default-language: Haskell2010
 
 executable python-testcase-converter-exe
-  main-is: PythonTestcaseConverter.hs
+  main-is: ../PythonTestcaseConverter.hs
   other-modules:
-      ConverterState
-      Main
-      StatefulConverter
-      StatefulMain
       Paths_haskell_hglib
   autogen-modules:
       Paths_haskell_hglib
   hs-source-dirs:
-      converter
+      converter/null
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-matches -Wno-unused-imports -Wno-unused-top-binds -Wno-unused-local-binds -Wno-orphans -Wno-partial-fields -Wno-unused-do-bind -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson >=2.2.3.0
@@ -133,8 +129,8 @@ executable python-testcase-converter-exe
 executable stateful-converter-exe
   main-is: Main.hs
   other-modules:
-      ConverterState
-      StatefulConverter
+      State.ConverterState
+      State.StatefulConverter
   hs-source-dirs:
       converter
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-matches -Wno-unused-imports -Wno-unused-top-binds -Wno-unused-local-binds -Wno-orphans -Wno-partial-fields -Wno-unused-do-bind -threaded -rtsopts -with-rtsopts=-N

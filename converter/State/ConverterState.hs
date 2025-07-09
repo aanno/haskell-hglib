@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- | State monad for the Python to Haskell converter
-module ConverterState where
+module State.ConverterState where
 
 import Control.Monad.State
 import Data.Map.Strict (Map)

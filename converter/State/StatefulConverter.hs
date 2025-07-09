@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 -- | Stateful converter using State monad
-module StatefulConverter where
+module State.StatefulConverter where
 
 import Control.Monad.State
 import Control.Monad (when)
@@ -14,7 +14,7 @@ import System.FilePath (takeBaseName)
 
 import Language.Python.Common.AST
 import Language.Python.Common.SrcLocation
-import ConverterState
+import State.ConverterState
 
 -- | Convert a Python module to Haskell using State monad
 convertModule :: FilePath -> ModuleSpan -> Converter String

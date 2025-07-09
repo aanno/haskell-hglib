@@ -13,8 +13,8 @@ import Language.Python.Common.AST
 import Language.Python.Version3 (parseModule)
 import Logging
 
-import ConverterState
-import StatefulConverter
+import State.ConverterState
+import State.StatefulConverter
 
 -- | Parse a Python file
 parsePythonFile :: FilePath -> IO (ModuleSpan)

@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Main entry point for the stateful converter
-module Main where
+module State.StatefulMain where
 
 import Control.Monad.State
 import System.Environment (getArgs)
