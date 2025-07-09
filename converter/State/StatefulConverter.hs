@@ -315,9 +315,30 @@ convertExpr expr = case expr of
             return $ haskellMethod ++ " client " ++ posArgsStr ++ " -- TODO: options " ++ intercalate " " keywordStr
   
   Call (Var (Ident funcName _) _) args _ -> do
-    -- Regular function call
-    argsStr <- convertArgs args
-    return $ funcName ++ " " ++ argsStr
+    -- Handle special function calls
+    case funcName of
+      "open" -> convertOpenCall args
+      "b" -> convertBytesCall args  -- Handle b('string') calls
+      _ -> do
+        -- Regular function call
+        argsStr <- convertArgs args
+        return $ funcName ++ " " ++ argsStr
+  
+  -- Handle binary operators
+  BinaryOp op left right _ -> do
+    convertBinaryOp left op right
+  
+  -- Handle lists
+  List exprs _ -> do
+    convertList exprs
+  
+  -- Handle tuples
+  Tuple exprs _ -> do
+    convertTuple exprs
+  
+  -- Handle method calls on variables (e.g., f.write(), f.close())
+  Call (Dot (Var (Ident varName _) _) (Ident methodName _) _) args _ -> do
+    convertVariableMethodCall varName methodName args
   
   _ -> do
     addTodo $ "Unhandled expression: " ++ take 50 (show expr)
@@ -368,6 +389,85 @@ convertKeywordArg (ArgKeyword (Ident name _) expr _) = do
   exprStr <- convertExpr expr
   return $ name ++ "=" ++ exprStr
 convertKeywordArg _ = return "-- TODO: non-keyword arg"
+
+-- | Convert binary operators
+convertBinaryOp :: ExprSpan -> OpSpan -> ExprSpan -> Converter String
+convertBinaryOp left op right = do
+  leftStr <- convertExpr left
+  rightStr <- convertExpr right
+  -- For now, handle the most common case and fall back to string representation
+  let opStr = case show op of
+        s | "In" `isInfixOf` s -> "elem " ++ leftStr ++ " " ++ rightStr
+        s | "And" `isInfixOf` s -> leftStr ++ " && " ++ rightStr
+        s | "Or" `isInfixOf` s -> leftStr ++ " || " ++ rightStr
+        s | "Eq" `isInfixOf` s -> leftStr ++ " == " ++ rightStr
+        s | "NotEq" `isInfixOf` s -> leftStr ++ " /= " ++ rightStr
+        _ -> leftStr ++ " -- TODO: " ++ show op ++ " " ++ rightStr
+  if "elem" `isPrefixOf` opStr || "&&" `isInfixOf` opStr || "||" `isInfixOf` opStr || "==" `isInfixOf` opStr || "/=" `isInfixOf` opStr
+    then return opStr
+    else do
+      addTodo $ "Unhandled binary operator: " ++ show op
+      return opStr
+
+-- | Convert list expressions
+convertList :: [ExprSpan] -> Converter String
+convertList exprs = do
+  elemStrs <- mapM convertExpr exprs
+  return $ "[" ++ intercalate ", " elemStrs ++ "]"
+
+-- | Convert tuple expressions
+convertTuple :: [ExprSpan] -> Converter String
+convertTuple exprs = do
+  elemStrs <- mapM convertExpr exprs
+  return $ "(" ++ intercalate ", " elemStrs ++ ")"
+
+-- | Convert open() calls to withFile
+convertOpenCall :: [ArgumentSpan] -> Converter String
+convertOpenCall args = do
+  case args of
+    [ArgExpr pathExpr _, ArgExpr modeExpr _] -> do
+      pathStr <- convertExpr pathExpr
+      modeStr <- convertExpr modeExpr
+      let haskellMode = pythonModeToHaskell modeStr
+      return $ "-- TODO: withFile " ++ pathStr ++ " " ++ haskellMode ++ " $ \\h ->"
+    _ -> do
+      addTodo $ "Complex open() call with " ++ show (length args) ++ " args"
+      return "-- TODO: complex open() call"
+  where
+    pythonModeToHaskell mode = case mode of
+      "\"r\"" -> "ReadMode"
+      "\"w\"" -> "WriteMode"
+      "\"a\"" -> "AppendMode"
+      _ -> "-- TODO: unknown mode " ++ mode
+
+-- | Convert b() calls (bytes literals)
+convertBytesCall :: [ArgumentSpan] -> Converter String
+convertBytesCall args = do
+  case args of
+    [ArgExpr strExpr _] -> do
+      strStr <- convertExpr strExpr
+      return strStr  -- For now, just return the string as-is
+    _ -> do
+      addTodo $ "Complex b() call"
+      return "-- TODO: complex b() call"
+
+-- | Convert method calls on variables (e.g., f.write(), f.close())
+convertVariableMethodCall :: String -> String -> [ArgumentSpan] -> Converter String
+convertVariableMethodCall varName methodName args = do
+  case methodName of
+    "write" -> do
+      case args of
+        [ArgExpr contentExpr _] -> do
+          contentStr <- convertExpr contentExpr
+          return $ "hPutStrLn " ++ varName ++ " " ++ contentStr
+        _ -> do
+          addTodo $ "Complex write() call"
+          return "-- TODO: complex write() call"
+    "close" -> do
+      return $ "-- TODO: close " ++ varName ++ " (handled by withFile)"
+    _ -> do
+      addTodo $ "Unhandled method call: " ++ varName ++ "." ++ methodName
+      return $ "-- TODO: " ++ varName ++ "." ++ methodName
 
 -- | Convert setUp method body to setup code
 convertSetUp :: SuiteSpan -> Converter [String]

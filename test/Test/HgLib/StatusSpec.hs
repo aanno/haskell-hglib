@@ -35,20 +35,37 @@ spec = describe "Status" $ do
 -- WARNING: Unknown client method: copy
 -- WARNING: Unknown assertion method: append
 -- WARNING: Unknown client method: copy
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: List {list_exprs = [], expr_annot = SpanCoLinear {
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled method call: os.remove
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 
   it "should handle empty repository" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      C.status client  `shouldBe` -- TODO: List {list_exprs = [], expr_annot = SpanCoLinear {
+      C.status client  `shouldBe` []
 
   it "should one_of_each" $
     withTestRepo $ \bt -> do
@@ -59,14 +76,14 @@ spec = describe "Status" $ do
       -- TODO: append
       -- TODO: append
       -- TODO: append
-      C.commit client b "first" -- TODO: options addremove=True
+      C.commit client "first" -- TODO: options addremove=True
       -- TODO: append
       -- TODO: append
       -- TODO: client.add
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: os.remove
       -- TODO: client.remove
       -- TODO: append
-      l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
+      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
       st <- C.status client  -- TODO: options all=True
       -- TODO: For {for_targets = [Var {var_ident = Ident {ident_
 
@@ -74,19 +91,19 @@ spec = describe "Status" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      C.commit client b "first" -- TODO: options addremove=True
+      C.commit client "first" -- TODO: options addremove=True
       -- TODO: client.copy
-      l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      C.status client  -- TODO: options copies=True `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
+      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      C.status client  -- TODO: options copies=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
 
   it "should copy_origin_space" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      C.commit client b "first" -- TODO: options addremove=True
+      C.commit client "first" -- TODO: options addremove=True
       -- TODO: client.copy
-      l <- -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      C.status client  -- TODO: options copies=True `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
+      l <- [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
+      C.status client  -- TODO: options copies=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
 
 
 -- WARNINGS:
@@ -106,12 +123,29 @@ spec = describe "Status" $ do
 -- Unknown assertion method: append
 -- Unknown client method: copy
 -- TODOS:
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: List {list_exprs = [], expr_annot = SpanCoLinear {
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled method call: os.remove
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- Unhandled statement: For {for_targets = [Var {var_ident = Ident {ident_
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca

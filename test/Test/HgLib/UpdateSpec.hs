@@ -35,11 +35,11 @@ spec = describe "Update" $ do
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- TODO: Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: With statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled method call: old.encode
+-- TODO: Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
@@ -50,17 +50,15 @@ spec = describe "Update" $ do
 -- TODO: With statement conversion
 -- TODO: Complex assertion: assertRaises with 3 args
 -- TODO: With statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       (u, m, r, ur) <- C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       u `shouldBe` 1
       m `shouldBe` 0
@@ -72,9 +70,9 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       -- TODO: append
       (u, m, r, ur) <- C.update client 
@@ -82,47 +80,47 @@ spec = describe "Update" $ do
       m `shouldBe` 0
       r `shouldBe` 0
       ur `shouldBe` 1
-      -- TODO: BinaryOp {operator = In {op_annot = SpanCoLinear { `shouldBe` True
+      elem -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca C.status client  `shouldBe` True
 
   it "should merge" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       -- TODO: append
-      (rev2, node2) <- C.commit client b "third"
+      (rev2, node2) <- C.commit client "third"
       -- TODO: append
-      C.commit client b "fourth"
+      C.commit client "fourth"
       C.update client rev2
       -- TODO: with statement
-      f <- open "a" "wb"
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      f <- -- TODO: withFile "a" -- TODO: unknown mode "wb" $ \h ->
+      hPutStrLn f "a" -- TODO: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}} -- TODO: old.encode
+      -- TODO: close f (handled by withFile)
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 0
       m `shouldBe` 1
       r `shouldBe` 0
       ur `shouldBe` 0
-      C.status client  `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
+      C.status client  `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca]
 
   it "should tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       (u, m, r, ur) <- C.update client 
       u `shouldBe` 1
       -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       -- TODO: append
-      (rev2, node2) <- C.commit client b "new head"
+      (rev2, node2) <- C.commit client "new head"
       C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
       C.update client 
       -- TODO: Dot {dot_expr = Subscript {subscriptee = Call {cal `shouldBe` node2
@@ -132,9 +130,9 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       -- TODO: complex assertRaises
       pendingWith "Test not implemented yet"
 
@@ -143,9 +141,9 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
+      -- Setup: (_, _) <- C.commit client "second"
       -- TODO: with statement
       -- TODO: append
       -- TODO: complex assertRaises
@@ -158,12 +156,12 @@ spec = describe "Update" $ do
       let client = btClient bt
       -- Setup: -- TODO: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "first" -- TODO: options addremove=True
+      -- Setup: (_, _) <- C.commit client "first" -- TODO: options addremove=True
       -- Setup: -- TODO: append
-      -- Setup: (_, _) <- C.commit client b "second"
-      f <- open ".hg/hgrc" "a"
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- Setup: (_, _) <- C.commit client "second"
+      f <- -- TODO: withFile ".hg/hgrc" AppendMode $ \h ->
+      hPutStrLn f "[defaults]\nupdate=-v\n"
+      -- TODO: close f (handled by withFile)
       -- TODO: test_basic
 
 
@@ -184,11 +182,11 @@ spec = describe "Update" $ do
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Dot {dot_expr = V
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
--- Unhandled expression: BinaryOp {operator = In {op_annot = SpanCoLinear {
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- With statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled method call: old.encode
+-- Unhandled binary operator: Plus {op_annot = SpanPoint {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 39, span_column = 24}}
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Call {ca
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Unhandled expression: Dot {dot_expr = Subscript {subscriptee = Call {cal
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
@@ -199,5 +197,3 @@ spec = describe "Update" $ do
 -- With statement conversion
 -- Complex assertion: assertRaises with 3 args
 -- With statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 

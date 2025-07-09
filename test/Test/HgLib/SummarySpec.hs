@@ -41,7 +41,7 @@ spec = describe "Summary" $ do
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled method call: hglib.open
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -53,28 +53,28 @@ spec = describe "Summary" $ do
 -- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: If statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled method call: hglib.open
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- TODO: Complex assignment pattern
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- TODO: Complex assignment pattern
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- TODO: Complex assignment pattern
--- TODO: If statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled method call: other.summary
+-- TODO: Unhandled method call: other.bookmark
 -- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- TODO: Complex assignment pattern
 -- TODO: If statement conversion
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled method call: other.summary
+-- TODO: Unhandled method call: other.commit
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- TODO: Complex assignment pattern
 -- TODO: If statement conversion
--- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- TODO: Complex assignment pattern
+-- TODO: If statement conversion
+-- TODO: Unhandled method call: other.summary
 -- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- TODO: If statement conversion
 
@@ -88,7 +88,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
       C.summary client  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -97,7 +97,7 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       -- TODO: append
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
@@ -108,7 +108,7 @@ spec = describe "Summary" $ do
       let client = btClient bt
       -- TODO: if statement
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       -- TODO: client.phase
       e <- C.summary client 
       -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i `shouldBe` True
@@ -117,9 +117,9 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       -- TODO: append
-      C.commit client b "second"
+      C.commit client "second"
       C.update client 0
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
@@ -129,40 +129,40 @@ spec = describe "Summary" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True
       -- TODO: client.clone
-      other <- -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      other <- -- TODO: hglib.open
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident =  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: append
-      C.commit client b "second"
+      C.commit client "second"
       -- TODO: complex assignment
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident =  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: client.bookmark
       -- TODO: complex assignment
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident =  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: other.bookmark
       -- TODO: complex assignment
       -- TODO: if statement
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident =  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: append
-      (rev, node) <- -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- -- TODO: other.commit
       -- TODO: complex assignment
       -- TODO: if statement
       -- TODO: complex assignment
       -- TODO: if statement
-      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident =  `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: other.summary `shouldBe` -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
 
   it "should handle two parents" $
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev0, node) <- C.commit client b "first" -- TODO: options addremove=True
+      (rev0, node) <- C.commit client "first" -- TODO: options addremove=True
       -- TODO: append
-      (rev1, node1) <- C.commit client b "second"
+      (rev1, node1) <- C.commit client "second"
       C.update client rev0
       -- TODO: append
-      (rev2, node2) <- C.commit client b "third" -- TODO: options addremove=True
+      (rev2, node2) <- C.commit client "third" -- TODO: options addremove=True
       -- TODO: client.merge
       d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
       -- TODO: if statement
@@ -191,7 +191,7 @@ spec = describe "Summary" $ do
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled method call: hglib.open
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
@@ -203,27 +203,27 @@ spec = describe "Summary" $ do
 -- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- If statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled method call: hglib.open
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled method call: other.summary
 -- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- Complex assignment pattern
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled method call: other.summary
 -- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- Complex assignment pattern
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
--- Complex assignment pattern
--- If statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled method call: other.summary
+-- Unhandled method call: other.bookmark
 -- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- Complex assignment pattern
 -- If statement conversion
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled method call: other.summary
+-- Unhandled method call: other.commit
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
 -- Complex assignment pattern
 -- If statement conversion
--- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- Complex assignment pattern
+-- If statement conversion
+-- Unhandled method call: other.summary
 -- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
 -- If statement conversion

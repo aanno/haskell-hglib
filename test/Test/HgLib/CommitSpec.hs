@@ -35,9 +35,10 @@ spec = describe "Commit" $ do
 -- TODO: Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
 -- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- TODO: Complex assertion: assertRaises with 4 args
--- TODO: Unhandled expression: List {list_exprs = [Var {var_ident = Ident {ident_
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
 -- TODO: Complex assertion: assertRaises with 4 args
 -- TODO: Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
 -- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
@@ -53,9 +54,9 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev, node) <- C.commit client b "first" -- TODO: options addremove=True user=b "foo"
+      (rev, node) <- C.commit client "first" -- TODO: options addremove=True user="foo"
       rev <- -- TODO: Subscript {subscriptee = Call {call_fun = Dot {dot
-      -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri `shouldBe` b "foo"
+      -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri `shouldBe` "foo"
 
   it "should fail with empty user" $
     withTestRepo $ \bt ->
@@ -68,14 +69,14 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       -- TODO: append
-      (rev0, node0) <- C.commit client b "first" -- TODO: options addremove=True
-      C.branch client b "foo"
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True
+      C.branch client "foo"
       -- TODO: append
-      (rev1, node1) <- C.commit client b "second"
-      revclose <- C.commit client b "closing foo" -- TODO: options closebranch=True
-      (rev0, rev1, revclose) <- C.log_ client -- TODO: List {list_exprs = [Var {var_ident = Ident {ident_
-      C.branches client  `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
-      C.branches client  -- TODO: options closed=True `shouldBe` -- TODO: List {list_exprs = [Paren {paren_expr = Tuple {tup
+      (rev1, node1) <- C.commit client "second"
+      revclose <- C.commit client "closing foo" -- TODO: options closebranch=True
+      (rev0, rev1, revclose) <- C.log_ client [node0, node1, -- TODO: Subscript {subscriptee = Var {var_ident = Ident {i]
+      C.branches client  `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
+      C.branches client  -- TODO: options closed=True `shouldBe` [-- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot, -- TODO: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot]
 
   it "should handle message and logfile conflicts" $
     withTestRepo $ \bt ->
@@ -89,7 +90,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       -- TODO: append
       now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      (rev0, node0) <- C.commit client b "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
       -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` -- TODO: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
 
   it "should amend previous commit" $
@@ -97,7 +98,7 @@ spec = describe "Commit" $ do
       let client = btClient bt
       -- TODO: append
       now <- -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
-      (rev0, node0) <- C.commit client b "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
+      (rev0, node0) <- C.commit client "first" -- TODO: options addremove=True date=-- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun = 
       -- TODO: Call {call_fun = Dot {dot_expr = Call {call_fun =  `shouldBe` -- TODO: Dot {dot_expr = Call {call_fun = Dot {dot_expr = D
       -- TODO: append
       (rev1, node1) <- C.commit client  -- TODO: options amend=True
@@ -129,9 +130,10 @@ spec = describe "Commit" $ do
 -- Unhandled expression: Subscript {subscriptee = Call {call_fun = Dot {dot
 -- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
 -- Complex assertion: assertRaises with 4 args
--- Unhandled expression: List {list_exprs = [Var {var_ident = Ident {ident_
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
--- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Unhandled expression: Subscript {subscriptee = Var {var_ident = Ident {i
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Dot {dot
 -- Complex assertion: assertRaises with 4 args
 -- Unhandled expression: Dot {dot_expr = Dot {dot_expr = Var {var_ident = I
 -- Unhandled expression: Call {call_fun = Dot {dot_expr = Call {call_fun = 
