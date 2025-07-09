@@ -2,15 +2,14 @@
 
 module Test.HgLib.UpdateSpec (spec) where
 
-import Test.Hspec
-import Test.HgLib.Common
-import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..), Revision(..))
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Data.Time
 import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
+import [Ident {ident_string = "os", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_update.py", span_row = 86, span_start_column = 16, span_end_column = 17}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -19,91 +18,162 @@ isLeft (Right _) = False
 
 spec :: Spec
 spec = describe "Update" $ do
+
+-- Conversion notes:
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: With statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: With statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: With statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      (u, m, r, ur) <- C.update client (Just show rev0) []
-      u `shouldBe` 1
-      m `shouldBe` 0
-      r `shouldBe` 0
-      ur `shouldBe` 0
+      (u, m, r, ur) <- C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_unresolved" $
+  it "should unresolved" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      _ <- C.update client (Just show rev0) []
-      commonAppendFile "a" "b"
-      (u, m, r, ur) <- C.update client Nothing []
-      u `shouldBe` 0
-      m `shouldBe` 0
-      r `shouldBe` 0
-      ur `shouldBe` 1
-      -- TODO: complex tuple <op> C.status client C.defaultStatusOptions `shouldBe` True
+      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (u, m, r, ur) <- C.update client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_merge" $
+  it "should merge" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "\n\n\n\nb"
-      (rev2, node2) <- C.commit client (mkTestCommitOptions "third")
-      commonAppendFile "a" "b"
-      _ <- C.commit client (mkTestCommitOptions "fourth")
-      _ <- C.update client (Just rev2) []
-      -- TODO: with statement with 1 context items
-      --   -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- TODO: f = open("a", "wb")
-      -- TODO: file write f.write("a" <op> -- TODO: method call old.encode (AST: Var {var_ident = Ident {ident_string = "old", ident_annot = ...))
-      -- TODO: file close f.close()
-      (u, m, r, ur) <- C.update client Nothing []
-      u `shouldBe` 0
-      m `shouldBe` 1
-      r `shouldBe` 0
-      ur `shouldBe` 0
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev2, node2) <- C.commit client b "third"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.commit client b "fourth"
+      C.update client rev2
+      -- TODO: with statement
+      f <- open "a" "wb"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (u, m, r, ur) <- C.update client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_tip" $
+  it "should tip" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      _ <- C.update client (Just show rev0) []
-      (u, m, r, ur) <- C.update client Nothing []
-      u `shouldBe` 1
-      do
-        actualResult <- TE.decodeUtf8 (revNode ((C.parents client [] !! 0)))
-        actualResult `shouldBe` node1
-      _ <- C.update client (Just show rev0) []
-      commonAppendFile "a" "b"
-      (rev2, node2) <- C.commit client (mkTestCommitOptions "new head")
-      _ <- C.update client (Just show rev0) []
-      _ <- C.update client Nothing []
-      do
-        actualResult <- TE.decodeUtf8 (revNode ((C.parents client [] !! 0)))
-        actualResult `shouldBe` node2
+      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      (u, m, r, ur) <- C.update client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev2, node2) <- C.commit client b "new head"
+      C.update client -- TODO: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+      C.update client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_check_clean" $
-    withTestRepo $ \bt -> do
+  it "should check_clean" $
+    withTestRepo $ \bt ->
       let client = btClient bt
-      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing ["--clean", "--check"] -- TODO: UpdateOptions not implemented, got ["clean","check"]
-      result `shouldSatisfy` isLeft
-
-  it "test_clean" $
-    withTestRepo $ \bt -> do
-      let client = btClient bt
-      -- TODO: with statement with 1 context items
-      --   -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      commonAppendFile "a" "b"
-      result <- (try :: IO (Int, Int, Int, Int) -> IO (Either SomeException (Int, Int, Int, Int))) $ C.update client Nothing ["--check"] -- TODO: UpdateOptions not implemented, got ["check"]
-      result `shouldSatisfy` isLeft
-      (u, m, r, ur) <- C.update client Nothing ["--clean"] -- TODO: UpdateOptions not implemented, got ["clean"]
-      u `shouldBe` 1
-      -- TODO: with statement with 1 context items
-      --   -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-
-  it "test_basic_plain" $
-    withTestRepo $ \bt -> do
-      let client = btClient bt
-      -- TODO: f = open(".hg/hgrc", "a")
-      -- TODO: file write f.write("[defaults]\nupdate=-v\n")
-      -- TODO: file close f.close()
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
       pendingWith "Test not implemented yet"
 
+  it "should clean" $
+    withTestRepo $ \bt -> do
+      let client = btClient bt
+      -- TODO: with statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (u, m, r, ur) <- C.update client clean=True
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: with statement
 
+  it "should basic_plain" $
+    withTestRepo $ \bt -> do
+      let client = btClient bt
+      f <- open ".hg/hgrc" "a"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+
+
+-- TODOS:
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- With statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dot {dot_expr = Var {var_ident = Ident {ident_stri
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- With statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- With statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 

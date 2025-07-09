@@ -83,8 +83,8 @@ executables:
     # NOT used here - but needed because of an stack bug
     # - language-python >= 0.6.0
   python-testcase-converter-exe:
-    main:                ../PythonTestcaseConverter.hs
-    source-dirs:         converter/null
+    main:                PythonTestcaseConverter.hs
+    source-dirs:         converter
     ghc-options:
     - -threaded
     - -rtsopts
@@ -93,20 +93,6 @@ executables:
     - haskell-hglib
     - language-python >= 0.6.0
     # - language-python >= 0.5.8
-  stateful-converter-exe:
-    main:                Main.hs
-    source-dirs:         converter
-    # this will exclude PythonTestcaseConverter.hs (with a Main module)
-    other-modules:
-    - State.ConverterState
-    - State.StatefulConverter
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - haskell-hglib
-    - language-python >= 0.6.0
     - mtl >= 2.2.2
     - containers >= 0.6.7
 

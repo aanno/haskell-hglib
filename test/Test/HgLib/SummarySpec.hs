@@ -2,15 +2,15 @@
 
 module Test.HgLib.SummarySpec (spec) where
 
-import Test.Hspec
-import Test.HgLib.Common
-import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..), Revision(..))
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Data.Time
 import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
+import [Ident {ident_string = "hglib", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 3, span_start_column = 8, span_end_column = 12}}]
+import [Ident {ident_string = "unittest", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_summary.py", span_row = 1, span_start_column = 8, span_end_column = 15}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -19,98 +19,221 @@ isLeft (Right _) = False
 
 spec :: Spec
 spec = describe "Summary" $ do
+
+-- Conversion notes:
+-- WARNING: Unknown client method: phase
+-- WARNING: Unknown client method: clone
+-- WARNING: Unknown client method: bookmark
+-- WARNING: Unknown client method: merge
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- TODO: Complex assignment pattern
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- TODO: Complex assignment pattern
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- TODO: Complex assignment pattern
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- TODO: Complex assignment pattern
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- TODO: Complex assignment pattern
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- TODO: If statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+
   it "should handle empty repository" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- Dictionary assignment for d omitted
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      pendingWith "Test not implemented yet"
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      -- Dictionary assignment for d omitted
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      return ()
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- C.commit client b "first" addremove=True
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should detect dirty working directory" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      commonAppendFile "a" "a"
-      -- Dictionary assignment for d omitted
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- C.commit client b "first" addremove=True
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle secret commit clean" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      -- TODO: if statement with complex condition
-      commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      e <- C.summary client []
-      summaryCommitClean e `shouldBe` True
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- C.commit client b "first" addremove=True
+      -- TODO: client.phase
+      e <- C.summary client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle update" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      commonAppendFile "a" "a"
-      _ <- C.commit client (mkTestCommitOptions "second")
-      _ <- C.update client (Just 0) []
-      -- Dictionary assignment for d omitted
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      return ()
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- C.commit client b "first" addremove=True
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.commit client b "second"
+      C.update client 0
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle remote" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Var {var_ident = Ident {ident_string = ...)
-      -- Dictionary assignment for d omitted
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      commonAppendFile "a" "a"
-      _ <- C.commit client (mkTestCommitOptions "second")
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      commonAppendFile "other/a" "a"
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Tuple {tuple_exprs = [Var {var_ident = ...)
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
-      -- TODO: if statement with complex condition
-      -- TODO: statement not implemented (AST: Assign {assign_to = [Subscript {subscriptee = Var {var_ident...)
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- C.commit client b "first" addremove=True
+      -- TODO: client.clone
+      other <- -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.commit client b "second"
+      -- TODO: complex assignment
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: client.bookmark
+      -- TODO: complex assignment
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: complex assignment
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev, node) <- -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: complex assignment
+      -- TODO: if statement
+      -- TODO: complex assignment
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
   it "should handle two parents" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev0, node) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
-      _ <- C.update client (Just rev0) []
-      commonAppendFile "b" "a"
-      (rev2, node2) <- C.commit client (mkTestCommitOptions "third") -- TODO: options addremove
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Dot {...)
-      -- Dictionary assignment for d omitted
-      -- TODO: if statement with complex condition
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      return ()
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev0, node) <- C.commit client b "first" addremove=True
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev1, node1) <- C.commit client b "second"
+      C.update client rev0
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev2, node2) <- C.commit client b "third" addremove=True
+      -- TODO: client.merge
+      d <- -- TODO: Dictionary {dict_mappings = [DictMappingPair (Call
+      -- TODO: if statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
 
+-- WARNINGS:
+-- Unknown client method: phase
+-- Unknown client method: clone
+-- Unknown client method: bookmark
+-- Unknown client method: merge
+-- TODOS:
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- Complex assignment pattern
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- Complex assignment pattern
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- Complex assignment pattern
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Paren {paren_expr = Tuple {tuple_exprs = [Int {int
+-- Complex assignment pattern
+-- If statement conversion
+-- Unhandled expression: List {list_exprs = [Paren {paren_expr = Tuple {tup
+-- Complex assignment pattern
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Dictionary {dict_mappings = [DictMappingPair (Call
+-- If statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 

@@ -2,15 +2,15 @@
 
 module Test.HgLib.LogSpec (spec) where
 
-import Test.Hspec
-import Test.HgLib.Common
-import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..), Revision(..))
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Data.Time
 import Control.Exception (try, SomeException)
+import Data.Text (Text)
+import HgLib.Types
+import Test.HgLib.Common
+import Test.Hspec
+import [Ident {ident_string = "hglib", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_log.py", span_row = 2, span_start_column = 8, span_end_column = 12}}]
+import [Ident {ident_string = "subprocess", ident_annot = SpanCoLinear {span_filename = "/workspaces/ghc/tmp/python-hglib/tests/test_log.py", span_row = 4, span_start_column = 8, span_end_column = 17}}]
+import qualified Data.Text as T
+import qualified HgLib.Commands as C
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -19,47 +19,94 @@ isLeft (Right _) = False
 
 spec :: Spec
 spec = describe "Log" $ do
+
+-- Conversion notes:
+-- TODO: Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- TODO: Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: With statement conversion
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- TODO: Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+
   it "should handle basic repository with one commit" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client (mkTestCommitOptions "first") -- TODO: options addremove
-      commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client (mkTestCommitOptions "second")
-      revs <- C.log_ client [] C.defaultLogOptions
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      length revs == 2 `shouldBe` True
-      TE.decodeUtf8 (revNode ((revs !! 1))) `shouldBe` node1
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      -- TODO: complex assertEqual (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev0, node0) <- C.commit client b "first" addremove=True
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      (rev1, node1) <- C.commit client b "second"
+      revs <- C.log_ client 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_dash_in_filename" $
+  it "should dash_in_filename" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "-a" "-a"
-      _ <- C.commit client (mkTestCommitOptions "first")
-      revs <- C.log_ client [] C.defaultLogOptions -- TODO: with options
-      length revs == 1 `shouldBe` True
-      show (revRev ((revs !! 0))) `shouldBe` "0"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.commit client b "first" addremove=True
+      revs <- C.log_ client files=-- TODO: List {list_exprs = [Call {call_fun = Var {var_iden
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_empty_short_option" $
+  it "should empty_short_option" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "foobar" "foobar"
-      _ <- C.commit client (mkTestCommitOptions "first")
-      revs <- C.log_ client [] C.defaultLogOptions -- TODO: with options
-      length revs == 1 `shouldBe` True
-      show (revRev ((revs !! 0))) `shouldBe` "0"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      C.commit client b "first" addremove=True
+      revs <- C.log_ client keyword=b "" files=-- TODO: List {list_exprs = [Call {call_fun = Var {var_iden
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
-  it "test_null_byte" $
+  it "should null_byte" $
     withTestRepo $ \bt -> do
       let client = btClient bt
-      commonAppendFile "a" "a"
-      -- TODO: with open("commitmessagenullbyte", "w") as f:
-      --   -- TODO: file write f.write("some message\0more stuff")
-      -- TODO: statement not implemented (AST: StmtExpr {stmt_expr = Call {call_fun = Dot {dot_expr = Var {...)
-      revs <- C.log_ client [] C.defaultLogOptions -- TODO: with options
-      revDesc ((revs !! 0)) `shouldBe` "some message\0more stuff"
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      -- TODO: with statement
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+      revs <- C.log_ client revrange=b "."
+      -- TODO: Call {call_fun = Dot {dot_expr = Var {var_ident = 
 
 
+-- TODOS:
+-- Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: List {list_exprs = [Call {call_fun = Var {var_iden
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- With statement conversion
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
+-- Unhandled expression: Call {call_fun = Dot {dot_expr = Var {var_ident = 
