@@ -100,7 +100,7 @@ defaultClientMethods = Map.fromList
   [ ("commit", CommandMetadata "C.commit" ["message"] "C.mkDefaultCommitOptions" [])
   , ("log", CommandMetadata "C.log_" [] "C.defaultLogOptions" ["[]"])
   , ("status", CommandMetadata "C.status" [] "C.defaultStatusOptions" ["[]"])
-  , ("config", CommandMetadata "C.config" [] "C.defaultConfigOptions" ["[]", "[]"])
+  , ("config", CommandMetadata "C.config" [] "C.defaultConfigOptions" [])
   , ("update", CommandMetadata "C.update" [] "C.defaultUpdateOptions" [])
   , ("branches", CommandMetadata "C.branches" [] "C.defaultBranchesOptions" [])
   , ("branch", CommandMetadata "C.branch" [] "C.defaultBranchOptions" [])

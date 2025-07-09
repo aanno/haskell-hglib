@@ -34,8 +34,8 @@ spec = describe "Config" $ do
       withFile ".hg/hgrc" AppendMode $ \h -> do
         hPutStrLn h "[section]\nkey=value\n"
         -- TODO: close f (handled by withFile)
-        config <- C.config client [] []
-        let hasValue = any (\item -> item == ("section", "key", "value")) C.config client [] []
+        config <- C.config client 
+        let hasValue = any (\item -> item == ("section", "key", "value")) C.config client 
         hasValue `shouldBe` True
         [("section", "key", "value")] `shouldBe` C.config client "section"
         [("section", "key", "value")] `shouldBe` C.config client ["section", "foo"]
@@ -53,8 +53,8 @@ spec = describe "Config" $ do
       withFile ".hg/hgrc" AppendMode $ \h -> do
         hPutStrLn h "[section]\nkey=value\n"
         -- TODO: close f (handled by withFile)
-        config <- C.config client [] [] (C.defaultConfigOptions { -- TODO: options showsource=True })
-        let hasValue = any (\item -> item == (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value")) C.config client [] [] (C.defaultConfigOptions { -- TODO: options showsource=True })
+        config <- C.config client  (C.defaultConfigOptions { -- TODO: options showsource=True })
+        let hasValue = any (\item -> item == (System.FilePath.normalise ".hg/hgrc" ++ ":2", "section", "key", "value")) C.config client  (C.defaultConfigOptions { -- TODO: options showsource=True })
         hasValue `shouldBe` True
       closeClient client
       client' <- openClient nonInteractiveConfig

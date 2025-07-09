@@ -54,11 +54,19 @@ module HgLib.Commands
     , LogOptions(..)
     , StatusOptions(..)
     , DiffOptions(..)
+    , UpdateOptions(..)
+    , BranchOptions(..)
+    , BranchesOptions(..)
+    , ConfigOptions(..)
     , defaultAddOptions
     , mkDefaultCommitOptions
     , defaultLogOptions
     , defaultStatusOptions
     , defaultDiffOptions
+    , defaultUpdateOptions
+    , defaultBranchOptions
+    , defaultBranchesOptions
+    , defaultConfigOptions
     ) where
 
 import Control.Monad (void)
@@ -175,6 +183,53 @@ data DiffOptions = DiffOptions
 defaultDiffOptions :: DiffOptions
 defaultDiffOptions = DiffOptions [] Nothing False False False False False False False False Nothing False False Nothing Nothing
 
+-- | Options for the update command
+data UpdateOptions = UpdateOptions
+    { updateRev :: !(Maybe String)       -- ^ -r --rev REV
+    , updateClean :: !Bool               -- ^ -C --clean
+    , updateCheck :: !Bool               -- ^ -c --check  
+    , updateMerge :: !Bool               -- ^ -m --merge
+    , updateDate :: !(Maybe String)      -- ^ -d --date DATE
+    , updateTool :: !(Maybe String)      -- ^ -t --tool TOOL
+    } deriving (Show, Eq)
+
+defaultUpdateOptions :: UpdateOptions
+defaultUpdateOptions = UpdateOptions Nothing False False False Nothing Nothing
+
+-- | Options for the branch command
+data BranchOptions = BranchOptions
+    { branchName :: !(Maybe String)      -- ^ Branch name argument
+    , branchForce :: !Bool               -- ^ -f --force
+    , branchClean :: !Bool               -- ^ -C --clean
+    } deriving (Show, Eq)
+
+defaultBranchOptions :: BranchOptions
+defaultBranchOptions = BranchOptions Nothing False False
+
+-- | Options for the branches command  
+data BranchesOptions = BranchesOptions
+    { branchesRev :: ![String]           -- ^ -r --rev VALUE [+]
+    , branchesClosed :: !Bool            -- ^ -c --closed
+    , branchesTemplate :: !(Maybe String) -- ^ -T --template TEMPLATE
+    } deriving (Show, Eq)
+
+defaultBranchesOptions :: BranchesOptions
+defaultBranchesOptions = BranchesOptions [] False Nothing
+
+-- | Options for the config/showconfig command
+data ConfigOptions = ConfigOptions
+    { configNames :: ![String]           -- ^ NAME arguments
+    , configUntrusted :: !Bool           -- ^ -u --untrusted
+    , configEdit :: !Bool                -- ^ -e --edit
+    , configLocal :: !Bool               -- ^ -l --local
+    , configSource :: !Bool              -- ^ --source
+    , configGlobal :: !Bool              -- ^ -g --global
+    , configTemplate :: !(Maybe String) -- ^ -T --template TEMPLATE
+    } deriving (Show, Eq)
+
+defaultConfigOptions :: ConfigOptions
+defaultConfigOptions = ConfigOptions [] False False False False False Nothing
+
 -- | Add files to the repository
 add :: HgClient -> [FilePath] -> AddOptions -> IO Bool
 add client files AddOptions{..} = do
@@ -241,18 +296,24 @@ bookmarks client = do
     return $ parseBookmarks $ TE.decodeUtf8 result
 
 -- | Get or set branch name
-branch :: HgClient -> Maybe String -> [String] -> IO Text
-branch client name options = do
+branch :: HgClient -> BranchOptions -> IO Text
+branch client BranchOptions{..} = do
     let args = buildArgs "branch"
-            (maybe [] (\n -> [("name", Just n)]) name ++ map (\o -> (o, Just "")) options) []
+            [ ("force", boolFlag branchForce)
+            , ("clean", boolFlag branchClean)
+            ] (maybe [] (\n -> [n]) branchName)
     
     result <- rawCommand client args
     return $ T.strip $ TE.decodeUtf8 result
 
 -- | List branches
-branches :: HgClient -> [String] -> IO [BranchInfo]
-branches client options = do
-    let args = buildArgs "branches" (map (\o -> (o, Just "")) options) []
+branches :: HgClient -> BranchesOptions -> IO [BranchInfo]
+branches client BranchesOptions{..} = do
+    let args = buildArgs "branches"
+            (map (\r -> ("rev", Just r)) branchesRev ++
+             [ ("closed", boolFlag branchesClosed)
+             , ("template", branchesTemplate)
+             ]) []
     
     result <- rawCommand client args
     return $ parseBranches $ TE.decodeUtf8 result
@@ -301,9 +362,16 @@ commit client CommitOptions{..} = do
     parseCommitResult $ TE.decodeUtf8 result
 
 -- | Show configuration
-config :: HgClient -> [String] -> [String] -> IO [(Text, Text, Text)]
-config client names options = do
-    let args = buildArgs "showconfig" (map (\o -> (o, Just "")) options) names
+config :: HgClient -> ConfigOptions -> IO [(Text, Text, Text)]
+config client ConfigOptions{..} = do
+    let args = buildArgs "showconfig"
+            [ ("untrusted", boolFlag configUntrusted)
+            , ("edit", boolFlag configEdit)
+            , ("local", boolFlag configLocal)
+            , ("source", boolFlag configSource)
+            , ("global", boolFlag configGlobal)
+            , ("template", configTemplate)
+            ] configNames
     
     result <- rawCommand client args
     return $ parseConfig $ TE.decodeUtf8 result
@@ -586,10 +654,16 @@ tip client = do
         [] -> throwHgError $ mkResponseError "No tip revision found"
 
 -- | Update working directory
-update :: HgClient -> Maybe String -> [String] -> IO (Int, Int, Int, Int)
-update client rev options = do
+update :: HgClient -> UpdateOptions -> IO (Int, Int, Int, Int)
+update client UpdateOptions{..} = do
     let args = buildArgs "update"
-            (maybe [] (\r -> [("rev", Just r)]) rev ++ map (\o -> (o, Just "")) options) []
+            [ ("rev", updateRev)
+            , ("clean", boolFlag updateClean)
+            , ("check", boolFlag updateCheck)
+            , ("merge", boolFlag updateMerge)
+            , ("date", updateDate)
+            , ("tool", updateTool)
+            ] []
     
     result <- rawCommand client args
     return $ parseUpdateResult $ TE.decodeUtf8 result

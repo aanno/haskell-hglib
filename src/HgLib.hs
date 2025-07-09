@@ -105,7 +105,7 @@ getRepositoryInfo :: HgClient -> IO RepositoryInfo
 getRepositoryInfo client = do
     repoRoot <- C.root client
     repoCurrentRevision <- getCurrentRevision client
-    repoBranch <- C.branch client Nothing []
+    repoBranch <- C.branch client C.defaultBranchOptions
     
     statuses <- simpleStatus client
     let repoIsClean = null statuses
