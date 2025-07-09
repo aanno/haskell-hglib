@@ -657,7 +657,7 @@ convertCommitOption (ArgKeyword (Ident name _) expr _) = do
   exprStr <- convertExpr expr
   case name of
     "addremove" -> return $ "commitAddRemove = " ++ exprStr
-    "user" -> return $ "C.commitUser = Just " ++ exprStr
+    "user" -> return $ "commitUser = Just " ++ exprStr
     "date" -> return $ "C.commitDate = Just " ++ exprStr
     "closebranch" -> return $ "C.commitCloseBranch = " ++ exprStr
     "amend" -> return $ "C.commitAmend = " ++ exprStr

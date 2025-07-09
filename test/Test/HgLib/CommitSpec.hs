@@ -30,7 +30,7 @@ spec = describe "Commit" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt
       commonAppendFile "a" "a"
-      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, C.commitUser = Just "foo" })
+      (rev, node) <- C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True, commitUser = Just "foo" })
       rev <- head C.log_ client node
       revAuthor rev `shouldBe` "foo"
 

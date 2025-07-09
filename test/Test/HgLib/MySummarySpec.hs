@@ -6,7 +6,7 @@ module Test.HgLib.MySummarySpec (spec) where
 import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
-import HgLib.Types (SummaryInfo(..))
+import HgLib.Types
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -14,9 +14,9 @@ spec :: Spec
 spec = describe "C.summary" $ do  
   it "should handle empty repository" $ do
     withTestRepo $ \bt -> do
-      C.summary <- C.summary (btClient bt) []
+      summary <- C.summary (btClient bt) []
       -- Access the SummaryInfo fields directly
-      summaryCommitClean C.summary `shouldBe` True
+      summaryCommitClean summary `shouldBe` True
   
   it "should handle basic repository with one commit" $ do
     withTestRepo $ \bt -> do
@@ -27,11 +27,11 @@ spec = describe "C.summary" $ do
       let options = mkTestCommitOptions "msg2"
       (rev, node) <- C.commit client (options { commitAddRemove = True })
       
-      C.summary <- C.summary client []
+      summary <- C.summary client []
       -- Check SummaryInfo fields
-      summaryBranch C.summary `shouldBe` "default"
-      summaryCommitClean C.summary `shouldBe` True
-      length (summaryParents C.summary) `shouldBe` 1
+      summaryBranch summary `shouldBe` "default"
+      summaryCommitClean summary `shouldBe` True
+      length (summaryParents summary) `shouldBe` 1
   
   it "should detect dirty working directory" $ do
     withTestRepo $ \bt -> do
@@ -45,9 +45,9 @@ spec = describe "C.summary" $ do
       -- Modify the file
       commonAppendFile "a" "b"
       
-      C.summary <- C.summary client []
+      summary <- C.summary client []
       -- Should not be clean anymore
-      summaryCommitClean C.summary `shouldBe` False
+      summaryCommitClean summary `shouldBe` False
   
   -- Commented out until UpdateOptions is implemented
   -- it "should handle update information" $ do

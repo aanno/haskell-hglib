@@ -48,7 +48,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { commitAddRemove = True, C.commitUser = Just "" })
+        C.commit client (options { commitAddRemove = True, commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail
@@ -135,7 +135,7 @@ spec = describe "Commit" $ do
       
 --       commonAppendFile "a" "a"
 --       (rev, node) <- C.commit client "first" 
---         (C.defaultCommitOptions { commitAddRemove = True, C.commitUser = Just "foo" })
+--         (C.defaultCommitOptions { commitAddRemove = True, commitUser = Just "foo" })
       
 --       revs <- C.log_ client (defaultLogOptions { C.logRev = Just (T.unpack $ TE.decodeUtf8 node) })
 --       case revs of
@@ -149,7 +149,7 @@ spec = describe "Commit" $ do
       commonAppendFile "a" "a"
       let options = mkTestCommitOptions "first"
       result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { commitAddRemove = True, C.commitUser = Just "" })
+        C.commit client (options { commitAddRemove = True, commitUser = Just "" })
       
       case result of
         Left _ -> return ()  -- Expected to fail
