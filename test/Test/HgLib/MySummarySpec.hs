@@ -66,19 +66,3 @@ spec = describe "C.summary" $ do
       -- Should show that 1 update is available
       summaryUpdateCount summary `shouldBe` 1
 
-  it "should handle update information" $ do
-    withTestRepo $ \bt -> do
-      let client = btClient bt
-      
-      -- Create two commits
-      commonAppendFile "a" "a"
-      (rev0, node0) <- C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
-      commonAppendFile "a" "a"
-      (rev1, node1) <- C.commit client $ mkDefaultCommitOptions "second"
-      
-      -- Update to first revision
-      C.update client (defaultUpdateOptions { updateRev = Just (show rev0) })
-      
-      summary <- C.summary client []
-      let updateCount = summaryUpdateCount summary
-      updateCount `shouldBe` 1

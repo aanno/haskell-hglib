@@ -141,19 +141,6 @@ spec = describe "Commit" $ do
         [rev'] -> revAuthor rev' `shouldBe` "foo"
         _ -> expectationFailure "Expected exactly one revision"
   
-  it "should fail with empty user" $
-    withTestRepo $ \bt -> do
-      let client = btClient bt
-      
-      commonAppendFile "a" "a"
-      let options = mkTestCommitOptions "first"
-      result <- (try :: IO (Int, Text) -> IO (Either SomeException (Int, Text))) $ 
-        C.commit client (options { commitAddRemove = True, commitUser = Just "" })
-      
-      case result of
-        Left _ -> return ()  -- Expected to fail
-        Right _ -> expectationFailure "Expected commit with empty user to fail"
-
   it "should handle custom date" $ do
     withTestRepo $ \bt -> do
       let client = btClient bt

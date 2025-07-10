@@ -11,6 +11,8 @@ import HgLib.Types
 import Control.Exception (try, SomeException)
 import Data.Text (Text)
 import qualified Data.Text as T
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 spec :: Spec
 spec = describe "Status" $ do
@@ -60,7 +62,9 @@ spec = describe "Status" $ do
       
       commonCreateFile "source" "a"
       C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
-      C.copy client ["source"] "dest" []
+      sourcePath <- OsPath.encodeUtf "source"
+      destPath <- OsPath.encodeUtf "dest"
+      C.copy client [sourcePath] destPath []
       
       status <- C.status client (defaultStatusOptions { statusCopies = True })
       

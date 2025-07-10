@@ -10,6 +10,8 @@ import Test.Hspec
 import Test.HgLib.Common
 import qualified HgLib.Commands as C
 import HgLib.Types
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 spec :: Spec  
 spec = describe "Update" $ do
@@ -60,7 +62,8 @@ spec = describe "Update" $ do
       
       -- Check status shows modified file
       status <- C.status client defaultStatusOptions
-      any (\s -> statusCode s == 'M' && statusFile s == "a") status `shouldBe` True
+      aPath <- OsPath.encodeUtf "a"
+      any (\s -> statusCode s == 'M' && statusFile s == aPath) status `shouldBe` True
 
   it "should handle clean flag" $
     withTestRepo $ \bt -> do
