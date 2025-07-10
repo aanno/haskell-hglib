@@ -80,5 +80,5 @@ spec = describe "C.summary" $ do
       C.update client (defaultUpdateOptions { updateRev = Just (show rev0) })
       
       summary <- C.summary client []
-      let update = lookup "update" summary
-      update `shouldSatisfy` maybe False (T.isPrefixOf "1")
+      let updateCount = summaryUpdateCount summary
+      updateCount `shouldBe` 1

@@ -4,6 +4,7 @@
 module Test.HgLib.MyUpdateSpec (spec) where
 
 import qualified Data.ByteString as BS
+import qualified Data.Text.Encoding as TE
 
 import Test.Hspec
 import Test.HgLib.Common
@@ -35,7 +36,7 @@ spec = describe "Update" $ do
       -- Verify we're at the right revision
       parents <- C.parents client []
       case parents of
-        [parent] -> revNode parent `shouldBe` node0
+        [parent] -> revNode parent `shouldBe` TE.encodeUtf8 node0
         _ -> expectationFailure "Expected exactly one parent"
   
   it "should handle merge conflicts" $

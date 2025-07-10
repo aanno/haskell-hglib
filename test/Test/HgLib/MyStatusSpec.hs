@@ -60,7 +60,7 @@ spec = describe "Status" $ do
       
       commonCreateFile "source" "a"
       C.commit client (mkDefaultCommitOptions "first") { commitAddRemove = True }
-      C.copy client "source" "dest" []
+      C.copy client ["source"] "dest" []
       
       status <- C.status client (defaultStatusOptions { statusCopies = True })
       

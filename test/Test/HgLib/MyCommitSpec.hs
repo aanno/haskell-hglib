@@ -136,7 +136,7 @@ spec = describe "Commit" $ do
       (rev, node) <- C.commit client
         (mkDefaultCommitOptions "first") { commitAddRemove = True, commitUser = Just "foo" }
       
-      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack $ TE.decodeUtf8 node) })
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack node) })
       case revs of
         [rev'] -> revAuthor rev' `shouldBe` "foo"
         _ -> expectationFailure "Expected exactly one revision"
@@ -165,10 +165,10 @@ spec = describe "Commit" $ do
       (rev, node) <- C.commit client
         (mkDefaultCommitOptions "first")
           { commitAddRemove = True
-          , commitDate = Just dateStr 
+          , commitDate = Just (T.unpack dateStr) 
           }
       
-      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack $ TE.decodeUtf8 node) })
+      revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just (T.unpack node) })
       case revs of
         [rev'] -> do
           let commitTime = revDate rev'

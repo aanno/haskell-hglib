@@ -10,6 +10,7 @@ import qualified HgLib
 import HgLib.Types
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Control.Exception (try, SomeException)
 
 spec :: Spec
@@ -64,7 +65,7 @@ spec = describe "Log" $ do
       revs <- C.log_ client [] (defaultLogOptions { logRevRange = Just "0" })
       
       length revs `shouldBe` 1
-      revNode (head revs) `shouldBe` node0
+      revNode (head revs) `shouldBe` TE.encodeUtf8 node0
   
   it "should handle files parameter" $ do
     withTestRepo $ \bt -> do
