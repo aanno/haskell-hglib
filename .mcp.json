@@ -7,6 +7,19 @@
                 "http://localhost:3000/mcp"
             ]
         },
+        "gw-memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "supergateway",
+                "--sse",
+                "http://host.docker.internal:3012/sse"
+            ]
+        },
+        "fetch": {
+            "command": "uvx",
+            "args": ["mcp-server-fetch"]
+        },
         "git": {
             "command": "uvx",
             "args": [

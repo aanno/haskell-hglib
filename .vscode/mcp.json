@@ -1,12 +1,5 @@
 {
     "mcpServers": {
-        "vscode-mcp-server": {
-            "command": "npx",
-            "args": [
-                "mcp-remote@next",
-                "http://localhost:3000/mcp"
-            ]
-        },
         "git": {
             "command": "uvx",
             "args": [
@@ -20,6 +13,10 @@
                 "@modelcontextprotocol/server-filesystem",
                 "/workspaces/ghc"
             ]
+        },
+        "fetch": {
+            "command": "uvx",
+            "args": ["mcp-server-fetch"]
         },
         "sequential-thinking": {
             "command": "npx",
