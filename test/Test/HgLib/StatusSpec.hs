@@ -5,11 +5,13 @@ module Test.HgLib.StatusSpec (spec) where
 import Control.Exception (try, SomeException)
 import Data.Text (Text)
 import HgLib.Types
+import System.OsPath (OsPath)
 import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
 import qualified System.FilePath
+import qualified System.OsPath as OsPath
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool
@@ -54,7 +56,9 @@ spec = describe "Status" $ do
       let client = btClient bt
       commonAppendFile "source" "a"
       C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
-      C.copy client "source" "dest"
+      sourcePath <- OsPath.encodeUtf "source"
+      destPath <- OsPath.encodeUtf "dest"
+      C.copy client [sourcePath] destPath []
       l <- [("A", "dest"), (" ", "source")]
       C.status client [] (C.defaultStatusOptions { -- TODO: options copies=True }) `shouldBe` [("A", "dest"), (" ", "source")]
 
@@ -63,7 +67,9 @@ spec = describe "Status" $ do
       let client = btClient bt
       commonAppendFile "s ource" "a"
       C.commit client ((mkDefaultCommitOptions "first") { commitAddRemove = True })
-      C.copy client "s ource" "dest"
+      sourcePath <- OsPath.encodeUtf "s ource"
+      destPath <- OsPath.encodeUtf "dest"
+      C.copy client [sourcePath] destPath []
       l <- [("A", "dest"), (" ", "s ource")]
       C.status client [] (C.defaultStatusOptions { -- TODO: options copies=True }) `shouldBe` [("A", "dest"), (" ", "s ource")]
 

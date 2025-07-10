@@ -6,11 +6,13 @@ import Control.Exception (try, SomeException)
 import Data.Text (Text)
 import HgLib.Types
 import System.IO
+import System.OsPath (OsPath)
 import Test.HgLib.Common
 import Test.Hspec
 import qualified Data.Text as T
 import qualified HgLib.Commands as C
 import qualified System.FilePath
+import qualified System.OsPath as OsPath
 
 -- Helper function to check if Either is Left
 isLeft :: Either a b -> Bool

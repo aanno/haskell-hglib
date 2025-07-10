@@ -121,7 +121,7 @@ defaultClientMethods = Map.fromList
   , ("forget", CommandMetadata "C.forget" [] "C.defaultForgetOptions" [])
   , ("archive", CommandMetadata "C.archive" [] "C.defaultArchiveOptions" [])
   , ("cat", CommandMetadata "C.cat" [] "C.defaultCatOptions" [])
-  , ("copy", CommandMetadata "C.copy" [] "C.defaultCopyOptions" [])
+  , ("copy", CommandMetadata "C.copy" ["sources", "dest"] "" ["[]"])
   , ("move", CommandMetadata "C.move" [] "C.defaultMoveOptions" [])
   , ("paths", CommandMetadata "C.paths" [] "C.defaultPathsOptions" [])
   , ("phase", CommandMetadata "C.phase" [] "C.defaultPhaseOptions" [])
@@ -176,6 +176,8 @@ defaultRequiredImports =
   , "Data.Text (Text)"
   , "qualified Data.Text as T"
   , "qualified System.FilePath"
+  , "System.OsPath (OsPath)"
+  , "qualified System.OsPath as OsPath"
   ]
 
 -- | Type alias for the converter monad

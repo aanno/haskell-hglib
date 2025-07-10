@@ -530,6 +530,43 @@ convertExpr expr = case expr of
 -- | Build command call with proper argument handling using CommandMetadata
 buildCommandCall :: CommandMetadata -> [ArgumentSpan] -> [ArgumentSpan] -> Converter String
 buildCommandCall CommandMetadata{..} positionalArgs keywordArgs = do
+  -- Special handling for copy command
+  if cmdFunction == "C.copy"
+    then buildCopyCommand positionalArgs keywordArgs
+    else buildRegularCommand CommandMetadata{..} positionalArgs keywordArgs
+
+-- | Build copy command with proper OsPath conversion
+buildCopyCommand :: [ArgumentSpan] -> [ArgumentSpan] -> Converter String
+buildCopyCommand positionalArgs keywordArgs = do
+  case positionalArgs of
+    [ArgExpr sourceExpr _, ArgExpr destExpr _] -> do
+      sourceStr <- convertExpr sourceExpr
+      destStr <- convertExpr destExpr
+      -- Convert string literals to OsPath
+      let sourceOsPath = if isStringLiteral sourceStr
+                        then "sourcePath <- OsPath.encodeUtf " ++ sourceStr ++ "\n      "
+                        else ""
+      let destOsPath = if isStringLiteral destStr
+                      then "destPath <- OsPath.encodeUtf " ++ destStr
+                      else destStr ++ " -- TODO: convert to OsPath"
+      let sourceArg = if isStringLiteral sourceStr then "[sourcePath]" else "[" ++ sourceStr ++ "]"
+      let destArg = if isStringLiteral destStr then "destPath" else destStr
+      
+      if not (null keywordArgs)
+        then do
+          optionsStr <- convertArgs keywordArgs
+          return $ sourceOsPath ++ destOsPath ++ "\n      C.copy client " ++ sourceArg ++ " " ++ destArg ++ " " ++ optionsStr
+        else do
+          return $ sourceOsPath ++ destOsPath ++ "\n      C.copy client " ++ sourceArg ++ " " ++ destArg ++ " []"
+    _ -> do
+      addTodo "Complex copy command arguments"
+      return "-- TODO: complex copy command"
+  where
+    isStringLiteral str = head str == '"' && last str == '"'
+
+-- | Build regular command (non-copy)
+buildRegularCommand :: CommandMetadata -> [ArgumentSpan] -> [ArgumentSpan] -> Converter String
+buildRegularCommand CommandMetadata{..} positionalArgs keywordArgs = do
   let hasRequiredArgs = not (null cmdRequiredArgs)
   let hasKeywordArgs = not (null keywordArgs)
   
