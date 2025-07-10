@@ -1,0 +1,305 @@
+#pragma section-numbers 2
+= Command Server =
+A server that allows communication with Mercurial's API over a pipe.
+
+<<TableOfContents>>
+
+== Problem statement ==
+Mercurial presents several barriers for third-party applications wishing to automate interaction:
+
+ * It is licensed under the GPL, so third-party tools using its internal APIs directly must also be GPL
+ * It is written in Python, which makes it difficult to interface via other languages
+ * It does not make any stability guarantees for its internal API
+ * Documentation is fairly minimal
+
+The usual answer to these problems is to use its command line API which is:
+
+ * Language-neutral
+ * Guaranteed stable
+ * Well-documented
+ * No licensing issues
+
+The two primary downsides of interfacing with the command line directly are:
+
+ * Significant performance overhead for launching Mercurial repeatedly
+ * Text parsing required
+
+== Licensing ==
+
+The Mercurial developers specifically designed this command server
+with the intention that users of it could write clients to the command
+server and release clients that use the existing command server under
+licenses of their choosing.  However, if you modify Mercurial
+to export new functionality via the command server, that adds obligations for you under GPL.
+If you have questions about this, please contact us.
+
+
+== Command server approach ==
+The goal of the command server is to facilitate the creation of wrapper libraries that are:
+
+ * Friendly to a variety of languages (see [[#Libraries|libraries below]])
+ * Guaranteed stable
+ * Low-overhead
+ * Conveniently licensed
+
+This is done by allowing third-party applications and libraries to communicate with Mercurial over a pipe that eliminates the per-command start-up overhead. Libraries can then encapsulate the command generation and parsing to present a language-appropriate API to these commands. This strategy is similar to how applications typically communicate with SQL servers.
+
+The command server is available with Mercurial versions 1.9 or higher.
+
+== Protocol ==
+All communication with the server is done over a pipe or a socket.
+The byte order used by the server is big-endian.
+
+Data sent from the server is channel based, meaning a (channel, length) pair is sent before the actual data. The channel is a single character, while the length is an unsigned int (4 bytes). In the examples below, the length field is in plain text.
+
+{{{
+o
+1234
+<data: 1234 bytes>
+}}}
+that is 1234 bytes sent on channel 'o', with 1234 bytes of data following.
+
+When starting the server, it will send a hello message on the 'o' channel. The message is sent as '''one''' chunk. It is composed of a \n separated list where each item is of the format:
+
+{{{<field name>: <field data>}}}
+
+<field name> is limited to [a-z0-9]+, and <field data> is field specific (cannot contain new lines).
+
+Known fields are:
+
+ * capabilities: a space separated list of strings representing what commands the server supports.
+ * encoding: a string, the server's encoding.
+ * pid: a decimal number, the process id of the server handling requests. ''(new in version 3.2, Cset:19f5273c9f3e)''
+
+{{{
+capabilities: capability1 capability2 ... capabilityN\n
+encoding: UTF-8\n
+pid: 1234
+}}}
+At the most basic level, the server will support the 'runcommand' capability.
+
+Clients should ignore unknown fields in the hello message, in case a new version of the server decides to update it with some important information.
+
+More on channels below.
+
+=== Modes ===
+Communication stream can be specified by `--cmdserver MODE` option. As of
+Mercurial 3.2, the following modes are available:
+
+ pipe::
+ The server communicates with the client over stdin/stdout. The server
+ process must be owned by the client.
+
+ unix::
+ The server listens on the unix domain socket specified by `--address PATH`
+ option and forks process per connection. The server is typically run as a
+ daemon process.
+
+ ''(Availability: Unix, New in version 3.2)''
+
+=== Encoding ===
+Strings are encoded by default in Mercurial's local encoding. At the moment the encoding cannot be changed after server startup. To set it at startup, use HGENCODING. To query the server's encoding, see the 'getencoding' command.
+
+Clients wanting to use Unicode should specify a UTF-8 encoding, but be aware that some responses will mix UTF-8 metadata and raw file contents. See EncodingStrategy for more information.
+
+=== Channels ===
+Channels are divided into two, required and optional. Required channels identifiers are uppercase. They cannot be ignored. If a client encounters an unexpected required channel, it should abort.
+
+Optional channels identifiers are lowercase, and their data can be ignored.
+
+Optional:
+
+ * 'o'utput channel: most of the communication happens on this channel. When running commands, output Mercurial writes to stdout is written to this channel.
+ * 'e'rror channel: when running commands, this correlates to stderr.
+ * 'r'esult channel: the server uses this channel to tell the client that a command finished by writing its return value (command specific).
+ * 'd'ebug channel: used when the server is started with logging to '-'.
+
+Required:
+
+ * 'I'nput channel: the length field here tells the client how many bytes to send.
+ * 'L'ine based input channel: the client should send a single line of input (no more than length bytes). This channel is used when Mercurial interacts with the user or when iterating over stdin. Data sent should include the line separator (\n or \r\n).
+
+Input should be sent on stdin in the following format:
+
+{{{
+length
+data
+}}}
+length = 0 sent by the client is interpreted as EOF by the server.  The server will not ask for more than 4kb per request as to not fill up the pipe.
+
+Note: Mercurial checks if stdin points to a terminal device to determine if it can communicate with the user (unless the config value ui.interactive is set). Most of the time when the command server is being run as a child process, stdin is not a terminal device. In that case it is needed to explicitly tell Mercurial to be interactive by setting ui.interactive=True.
+
+=== Commands ===
+The server is running on an endless loop (until stdin is closed) waiting for commands. A command request looks like this:
+
+{{{
+commandname\n
+<command specific request>
+}}}
+The server aborts upon unknown commands. Clients are expected to check what commands are supported by the server by consulting the capabilities.
+
+==== runcommand ====
+Run the command specified by a list of \0-terminated strings. An unsigned int indicating the length of the arguments should be sent before the list. Example:
+
+{{{
+runcommand\n
+8
+log\0
+-l\0
+5
+}}}
+Which corresponds to running 'hg log -l 5'.
+
+The server responds with input/output generated by Mercurial on the matching channels. When the command returns, the server writes the return code (signed integer) of the command to the 'r'esult channel.
+
+==== getencoding ====
+Returns the server's encoding on the result channel.
+
+client:
+
+{{{
+getencoding\n
+}}}
+server responds with:
+
+{{{
+r
+5
+ascii
+}}}
+=== Examples ===
+==== runcommand ====
+Complete example of a client running 'hg summary', right after starting the server:
+
+(text in the server column is <channel>: <length>, where length is really 4 byte unsigned ints, not plain text like below)
+||server ||client ||notes ||
+|| ||connected, waiting for hello message || ||
+||'''o''': 52<<BR>>capabilities: runcommand getencoding\n<<BR>>encoding: UTF-8 || || ||
+|| || ||server is waiting for a command ||
+|| ||runcommand\n<<BR>>7<<BR>>summary ||client talks to server on stdin ||
+||starts running command || || ||
+||'''o''': 27<<BR>>parent: 14571:17c0cb1045e5 || || ||
+||'''o''': 3<<BR>>tip || || ||
+||'''o''': 1<<BR>>\n || || ||
+||'''o''': 53<<BR>> paper, coal: display diffstat on the changeset page\n || || ||
+||'''o''': 16<<BR>>branch: default\n || || ||
+||'''o''': 16<<BR>>commit: (clean)\n || || ||
+||'''o''': 18<<BR>>update: (current)\n || || ||
+||'''r''': 4<<BR>>0 || ||server finished running command, writes ret on the 'r' channel to the client ||
+|| ||closes server stdin ||client disconnects ||
+||server exits || ||client waits for server to exit ||
+
+
+
+
+And another one with activity on the input channels too by running 'import -':
+
+(starting after client read the hello message)
+||server ||client ||notes ||
+|| || ||server is waiting for a command ||
+|| ||getencoding\n || ||
+||'''r''': 5<<BR>>UTF-8 || ||server responds with the encoding, then waits for the next command ||
+|| ||runcommand\n<<BR>>8<<BR>>import\0<<BR>>- || ||
+||starts running command || || ||
+||'''o''': 26<<BR>>applying patch from stdin\n || || ||
+||'''l''': 4096 || ||server tells client to send it a line ||
+|| ||21<<BR>># HG changeset patch\n ||client responds with <length><line> ||
+||'''l''': 4096 || ||server processes line, asks for another one ||
+|| || ||...this goes on until the client has no more input ||
+||'''l''': 4096 || || ||
+|| ||0 ||it responds with length=0 ||
+||'''r''': 4<<BR>>0 || ||server finished running command, writes ret on the 'r' channel to the client ||
+|| ||closes server stdin ||client disconnects ||
+||server exits || ||client waits for server to exit ||
+
+
+
+
+== Known issues ==
+ * --(server needs a repository to start)-- (fixed in Cset:e811b93f2cb1, version 3.0)
+ * loading/unloading of extensions using --config does not work
+ * aliases set using --config are permanent
+ * server doesn't notice changes to hgrc files
+ * output generated by an extension during ext/repo/uisetup does not conform to the command protocol
+ * --(--time doesn't work)-- (fixed in Cset:de5c9d0e02ea, version 4.2)
+ * --(password is not read through the command server channel)-- (--(Issue:3161)--, fixed in Cset:9336bc7dca8e, version 3.0)
+ * --(server channels can be easily corrupted by innocent `print`, `os.system()`, etc.)--,
+ worked around by Cset:69f86b937035
+
+== Example client ==
+This is a minimal Python example to illustrate how to establish a connection and execute a command.
+
+{{{#!highlight python
+import sys, struct, subprocess
+
+# connect to the server
+server = subprocess.Popen(['hg', '--config', 'ui.interactive=True', 'serve', '--cmdserver', 'pipe'],
+                          stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+
+def readchannel(server):
+    channel, length = struct.unpack('>cI', server.stdout.read(5))
+    if channel in 'IL': # input
+        return channel, length
+    return channel, server.stdout.read(length)
+
+def writeblock(data):
+    server.stdin.write(struct.pack('>I', len(data)))
+    server.stdin.write(data)
+    server.stdin.flush()
+
+# read the hello block
+hello = readchannel(server)
+print "hello block:", repr(hello)
+
+# write the command
+server.stdin.write('runcommand\n')
+writeblock('\0'.join(sys.argv[1:]))
+
+# receive the response
+while True:
+    channel, val = readchannel(server)
+    if channel == 'o':
+        print "output:", repr(val)
+    elif channel == 'e':
+        print "error:", repr(val)
+    elif channel == 'r':
+        print "exit code:", struct.unpack(">l", val)[0]
+        break
+    elif channel == 'L':
+        print "(line read request)"
+        writeblock(sys.stdin.readline(val))
+    elif channel == 'I':
+        print "(block read request)"
+        writeblock(sys.stdin.read(val))
+    else:
+        print "unexpected channel:", channel, val
+        if channel.isupper(): # required?
+            break
+
+# shut down the server
+server.stdin.close()
+}}}
+== Libraries ==
+A list of client libraries using the command server (feel free to add yours here):
+
+ * Python: PythonHglib
+ * C: [[C-Hglib]]
+ * Java: [[http://javahg.aragost.com/|JavaHg]]
+ * Scala: [[http://code.google.com/p/meutrino/|Meutrino]]
+ * PHP: [[https://bitbucket.org/xrstf/libhg|libhg]] (MIT licensed, work-in-progress)
+ * PHP: [[https://bitbucket.org/gwaz/php-hg|PhpHg]] (BSD-3 licensed)
+ * .NET: [[https://github.com/Tak/hglib-cli|hglib-cli]]
+ * Go: [[https://bitbucket.org/gohg/gohg|gohg]] (early stage; work in progress)
+ * Perl: [[https://bitbucket.org/djerius/hg-lib|Hg::Lib]] (work in progress)
+ * Delphi and C++Builder: [[http://hgbds.vx68k.org/mercurial-client|HgBDS Mercurial Client]] (work in progress) 
+ * Rust: [[http://kbullock.ringworld.org/hg/rust-hglib/|rust-hglib]], [[https://bitbucket.org/yuja/tokio-hglib/|tokio-hglib]]
+ * Lua: [[https://bitbucket.org/av6/lua-hglib|lua-hglib]]
+ * Emacs: [[https://github.com/muffinmad/emacs-vc-hgcmd|VC backend]]
+
+Other command server interfaces:
+
+ * TortoiseHg has a [[https://bitbucket.org/tortoisehg/thg/src/4698c3811c16/tortoisehg/hgqt/cmdcore.py#cl-162|PyQt implementation]] of level-0 client
+ * [[CHg|cHg]] is not a library, but a command server daemon which speeds up '`hg`'
+
+----
+CategoryDeveloper
