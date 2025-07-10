@@ -1,3 +1,4 @@
+/extracted_*.hs
 .stack-work/
 /.claude/*.local.*
 /tmp_*

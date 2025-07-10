@@ -95,6 +95,17 @@ executables:
     # - language-python >= 0.5.8
     - mtl >= 2.2.2
     - containers >= 0.6.7
+  table-extractor-exe:
+    main:                TableExtractor.hs
+    source-dirs:         extractor
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-hglib
+    - text
+    - process
 
 tests:
   haskell-hglib-test:
