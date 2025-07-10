@@ -5,7 +5,9 @@
 module HgLib.Utils
     ( -- * Command Building
       buildArgs
+    , buildArgsWithPaths
     , buildArgList
+    , osPathToStringOption
     
     -- * Parsing Functions
     , parseJsonRevisions
@@ -37,6 +39,7 @@ module HgLib.Utils
     , formatHgTime
     ) where
 
+import Control.Exception (SomeException, try)
 import Control.Monad (mzero)
 import Data.Aeson (decode, Value(..), Object, (.:))
 import qualified Data.Aeson as Aeson
@@ -61,6 +64,8 @@ import Data.List (isInfixOf)
 import System.IO.Unsafe (unsafePerformIO)
 import Data.Char (isSpace, isDigit)
 import Data.Maybe (mapMaybe)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 import HgLib.Types
 import Logging
@@ -73,12 +78,30 @@ buildArgs cmd options positional =
         posArgs = map (TE.encodeUtf8 . T.pack) positional
     in cmdArg : optArgs ++ posArgs
 
+-- | Build command arguments from options and OsPath positional arguments
+buildArgsWithPaths :: String -> [(String, Maybe String)] -> [OsPath] -> IO [ByteString]
+buildArgsWithPaths cmd options positional = do
+    let cmdArg = TE.encodeUtf8 $ T.pack cmd
+        optArgs = concatMap buildOption options
+    posArgs <- mapM (\path -> do
+        pathStr <- OsPath.decodeFS path
+        return $ TE.encodeUtf8 $ T.pack pathStr
+        ) positional
+    return $ cmdArg : optArgs ++ posArgs
+
 -- | Build a single command line argument from option
 buildOption :: (String, Maybe String) -> [ByteString]
 buildOption (name, value) = case value of
     Nothing -> []
     Just "" -> [TE.encodeUtf8 $ T.pack $ "--" ++ name]
     Just val -> [TE.encodeUtf8 $ T.pack $ "--" ++ name ++ "=" ++ val]
+
+-- | Convert OsPath option to String option for command building
+osPathToStringOption :: (String, Maybe OsPath) -> IO (String, Maybe String)
+osPathToStringOption (name, Nothing) = return (name, Nothing)
+osPathToStringOption (name, Just path) = do
+    pathStr <- OsPath.decodeFS path
+    return (name, Just pathStr)
 
 -- | Build argument list for commands that take multiple values
 buildArgList :: String -> [String] -> [String] -> [ByteString]
@@ -136,7 +159,7 @@ parseAnnotationLines = mapMaybe parseAnnotationLine . T.lines
   where
     parseAnnotationLine line = 
         case T.splitOn ": " line of
-            [info, content] -> Just $ AnnotationLine info content
+            [info, content] -> Just $ AnnotationLine info (TE.encodeUtf8 content)
             _ -> Nothing
 
 -- | Parse bookmarks from bookmarks command output
@@ -186,19 +209,24 @@ parseGrepResults :: Text -> [(Text, Text)]
 parseGrepResults = map (\line -> (line, "")) . T.lines  -- Simplified for now
 
 -- | Parse manifest entries from manifest command output
-parseManifest :: Text -> [ManifestEntry]
-parseManifest = mapMaybe parseManifestLine . T.lines
+parseManifest :: Text -> IO [ManifestEntry]
+parseManifest text = do
+    results <- mapM parseManifestLine (T.lines text)
+    return $ mapMaybe id results
   where
     parseManifestLine line 
-        | T.length line >= 47 =
+        | T.length line >= 47 = do
             let node = T.take 40 line
                 perm = T.take 3 $ T.drop 41 line
                 flag = T.index line 45
-                path = T.unpack $ T.drop 47 line
+                pathText = T.drop 47 line
                 executable = flag == '*'
                 symlink = flag == '@'
-            in Just $ ManifestEntry node perm executable symlink path
-        | otherwise = Nothing
+            osPathResult <- (try $ OsPath.encodeFS (T.unpack pathText)) :: IO (Either SomeException OsPath)
+            case osPathResult of
+                Left _ -> return Nothing  -- Invalid path encoding
+                Right osPath -> return $ Just $ ManifestEntry node perm executable symlink osPath
+        | otherwise = return Nothing
 
 -- | Parse paths from paths command output
 parsePaths :: Text -> [(Text, Text)]
@@ -210,13 +238,19 @@ parsePaths = mapMaybe parsePath . T.lines
             _ -> Nothing
 
 -- | Parse resolve status from resolve command output
-parseResolve :: Text -> [ResolveStatus]
-parseResolve = mapMaybe parseResolveLine . T.lines
+parseResolve :: Text -> IO [ResolveStatus]
+parseResolve text = do
+    results <- mapM parseResolveLine (T.lines text)
+    return $ mapMaybe id results
   where
     parseResolveLine line = 
         case T.uncons line of
-            Just (code, rest) -> Just $ ResolveStatus code (T.unpack $ T.strip rest)
-            Nothing -> Nothing
+            Just (code, rest) -> do
+                osPathResult <- (try $ OsPath.encodeFS (T.unpack $ T.strip rest)) :: IO (Either SomeException OsPath)
+                case osPathResult of
+                    Left _ -> return Nothing  -- Invalid path encoding
+                    Right osPath -> return $ Just $ ResolveStatus code osPath
+            Nothing -> return Nothing
 
 -- | Parse tags from tags command output
 parseTags :: Text -> [TagInfo]
@@ -248,23 +282,21 @@ parsePhase = mapMaybe parsePhaseLine . T.lines
             _ -> Nothing
 
 -- | Parse status relative to repository root
-parseStatusWithRoot :: FilePath -> ByteString -> [HgStatus]
-parseStatusWithRoot repoRoot = mapMaybe parseStatusLine . BS8.split '\0'
+parseStatusWithRoot :: OsPath -> ByteString -> IO [HgStatus]
+parseStatusWithRoot repoRoot input = do
+    results <- mapM parseStatusLine (BS8.split '\0' input)
+    return $ mapMaybe id results
   where
     parseStatusLine line 
-        | BS.length line >= 2 =
+        | BS.length line >= 2 = do
             let code = BS8.head line
                 rawPath = BS8.unpack $ BS.drop 2 line
                 cleanPath = takeWhile (`notElem` ['\n', '\r']) rawPath
-                -- Extract everything after the last occurrence of repoRoot/
-                relativePath = extractRelative (repoRoot ++ "/") cleanPath
-            in Just $ HgStatus code relativePath
-        | otherwise = Nothing
-
-    extractRelative prefix fullPath =
-        case findLastIndex prefix fullPath of
-            Just idx -> drop (idx + length prefix) fullPath
-            Nothing -> takeFileName fullPath  -- fallback to just filename
+            osPathResult <- (try $ OsPath.encodeFS cleanPath) :: IO (Either SomeException OsPath)
+            case osPathResult of
+                Left _ -> return Nothing  -- Invalid path encoding
+                Right osPath -> return $ Just $ HgStatus code osPath
+        | otherwise = return Nothing
 
     findLastIndex needle haystack =
         let indices = [i | i <- [0..length haystack - length needle],

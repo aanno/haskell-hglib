@@ -39,6 +39,8 @@ import System.IO (Handle, hClose, hFlush)
 import System.Process (ProcessHandle, createProcess, proc, std_in, std_out, std_err, 
                       StdStream(..), waitForProcess, terminateProcess)
 import System.Timeout (timeout)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 import HgLib.Types
 import HgLib.Error
@@ -94,8 +96,13 @@ channelToByte = \case
 -- | Open a new Mercurial client with the given configuration
 openClient :: HgConfig -> IO HgClient
 openClient config@HgConfig{..} = do
+    pathArg <- case hgPath of
+        Nothing -> return []
+        Just p -> do
+            pathStr <- OsPath.decodeFS p
+            return ["-R", pathStr]
     let args = [hgHgPath, "serve", "--cmdserver", "pipe", "--config", "ui.interactive=True"]
-            ++ maybe [] (\p -> ["-R", p]) hgPath
+            ++ pathArg
             ++ concatMap (\c -> ["--config", c]) hgConfigs
     
     let envs = [("HGPLAIN", "1")] ++ maybe [] (\e -> [("HGENCODING", e)]) hgEncoding

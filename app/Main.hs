@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Demo application showing how to use the Haskell HgLib
 module Main where
 
+import Control.Exception (try, SomeException)
 import Control.Monad (when, unless, forM_)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -11,6 +13,9 @@ import qualified Data.Text.IO as TIO
 import Options.Applicative
 import System.Exit (exitFailure)
 import System.IO (hFlush, stdout)
+import System.IO.Unsafe (unsafePerformIO)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 import HgLib
 import qualified HgLib.Commands as C
@@ -18,7 +23,7 @@ import Logging
 
 -- | Command line options
 data Options = Options
-    { optRepository :: !(Maybe FilePath)
+    { optRepository :: !(Maybe OsPath)
     , optCommand :: !Command
     } deriving (Show)
 
@@ -28,18 +33,33 @@ data Command
     | CmdLog { logLimit :: !(Maybe Int) }
     | CmdInfo
     | CmdCommit { commitMessage :: !String }
-    | CmdAdd { addFiles :: ![FilePath] }
-    | CmdClone { cloneSource :: !String, cloneDestination :: !FilePath }
+    | CmdAdd { addFiles :: ![OsPath] }
+    | CmdClone { cloneSource :: !String, cloneDestination :: !OsPath }
     deriving (Show)
+
+-- | Convert String to OsPath, failing with error message if invalid
+stringToOsPath :: String -> OsPath
+stringToOsPath str = 
+    case unsafePerformIO $ try $ OsPath.encodeFS str of
+        Left (_ :: SomeException) -> error $ "Invalid path: " ++ str
+        Right osPath -> osPath
+
+-- | Parser for OsPath arguments
+osPathArgument :: Mod ArgumentFields String -> Parser OsPath
+osPathArgument = fmap stringToOsPath . strArgument
+
+-- | Parser for optional OsPath options
+osPathOption :: Mod OptionFields String -> Parser (Maybe OsPath)
+osPathOption = fmap (fmap stringToOsPath) . optional . strOption
 
 -- | Command line parser
 optionsParser :: Parser Options
 optionsParser = Options
-    <$> optional (strOption
+    <$> osPathOption
         ( long "repo"
        <> short 'R'
        <> metavar "PATH"
-       <> help "Repository path" ))
+       <> help "Repository path" )
     <*> commandParser
 
 -- | Command parser
@@ -71,12 +91,12 @@ commitParser = CmdCommit
 
 addParser :: Parser Command
 addParser = CmdAdd
-    <$> many (strArgument (metavar "FILES..."))
+    <$> many (osPathArgument (metavar "FILES..."))
 
 cloneParser :: Parser Command
 cloneParser = CmdClone
     <$> strArgument (metavar "SOURCE")
-    <*> strArgument (metavar "DEST")
+    <*> osPathArgument (metavar "DEST")
 
 -- | Main application
 main :: IO ()
@@ -101,7 +121,8 @@ runCli Options{..} = do
     
     case optCommand of
         CmdClone source dest -> do
-            putStrLn $ "Cloning " ++ source ++ " to " ++ dest
+            destStr <- OsPath.decodeFS dest
+            putStrLn $ "Cloning " ++ source ++ " to " ++ destStr
             simpleClone source dest
             putStrLn "Clone completed successfully"
         
@@ -132,7 +153,8 @@ showStatus client = do
                     '?' -> "Untracked"
                     'I' -> "Ignored"
                     c   -> "Unknown (" ++ [c] ++ ")"
-            putStrLn $ codeDesc ++ ": " ++ statusFile status
+            fileStr <- OsPath.decodeFS (statusFile status)
+            putStrLn $ codeDesc ++ ": " ++ fileStr
 
 -- | Show revision log
 showLog :: HgClient -> Maybe Int -> IO ()
@@ -161,7 +183,8 @@ showInfo client = do
     
     info <- getRepositoryInfo client
     
-    putStrLn $ "Root:        " ++ repoRoot info
+    rootStr <- OsPath.decodeFS (repoRoot info)
+    putStrLn $ "Root:        " ++ rootStr
     putStrLn $ "Branch:      " ++ T.unpack (repoBranch info)
     putStrLn $ "Revision:    " ++ T.unpack (formatRevision $ repoCurrentRevision info)
     putStrLn $ "Clean:       " ++ show (repoIsClean info)
@@ -197,7 +220,7 @@ doCommit client message = do
             putStrLn $ "Node: " ++ T.unpack node
 
 -- | Add files to repository
-doAdd :: HgClient -> [FilePath] -> IO ()
+doAdd :: HgClient -> [OsPath] -> IO ()
 doAdd client files = do
     if null files
         then putStrLn "No files specified"
@@ -217,7 +240,8 @@ advancedExample = do
     putStrLn "Advanced HgLib Example:"
     putStrLn "======================"
     
-    let config = defaultConfigWithPath "/path/to/repo"
+    repoPath <- OsPath.encodeFS "/path/to/repo"
+    let config = defaultConfigWithPath repoPath
     
     withClient config $ \client -> do
         -- Get detailed status with options

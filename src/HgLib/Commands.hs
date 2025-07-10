@@ -49,6 +49,7 @@ module HgLib.Commands
     , version    
     ) where
 
+import Control.Exception (SomeException, try)
 import Control.Monad (void)
 import Data.Aeson (decode)
 import Data.ByteString (ByteString)
@@ -61,6 +62,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale)
 import Text.Read (readMaybe)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 import HgLib.Types
 import HgLib.Protocol
@@ -69,9 +72,9 @@ import HgLib.Utils
 import Logging
 
 -- | Add files to the repository
-add :: HgClient -> [FilePath] -> AddOptions -> IO Bool
+add :: HgClient -> [OsPath] -> AddOptions -> IO Bool
 add client files AddOptions{..} = do
-    let args = buildArgs "add" 
+    args <- buildArgsWithPaths "add" 
             [ ("dry-run", boolFlag addDryRun)
             , ("subrepos", boolFlag addSubrepos)
             , ("include", addInclude)
@@ -82,9 +85,9 @@ add client files AddOptions{..} = do
     return (exitCode == 0)
 
 -- | Add new files and remove missing files
-addRemove :: HgClient -> [FilePath] -> Maybe Int -> Bool -> Maybe String -> Maybe String -> IO Bool
+addRemove :: HgClient -> [OsPath] -> Maybe Int -> Bool -> Maybe String -> Maybe String -> IO Bool
 addRemove client files similarity dryrun include exclude = do
-    let args = buildArgs "addremove"
+    args <- buildArgsWithPaths "addremove"
             [ ("similarity", show <$> similarity)
             , ("dry-run", boolFlag dryrun)
             , ("include", include)
@@ -95,19 +98,20 @@ addRemove client files similarity dryrun include exclude = do
     return (exitCode == 0)
 
 -- | Show changeset information by line for each file
-annotate :: HgClient -> [FilePath] -> Maybe String -> [String] -> IO [AnnotationLine]
+annotate :: HgClient -> [OsPath] -> Maybe String -> [String] -> IO [AnnotationLine]
 annotate client files rev options = do
-    let args = buildArgs "annotate"
+    args <- buildArgsWithPaths "annotate"
             (("rev", rev) : map (\o -> (o, Just "")) options) files
     
     result <- rawCommand client args
     return $ parseAnnotationLines $ TE.decodeUtf8 result
 
 -- | Create an archive of the repository
-archive :: HgClient -> FilePath -> Maybe String -> [String] -> IO ()
+archive :: HgClient -> OsPath -> Maybe String -> [String] -> IO ()
 archive client dest rev options = do
+    destOption <- osPathToStringOption ("dest", Just dest)
     let args = buildArgs "archive"
-            (("dest", Just dest) : ("rev", rev) : map (\o -> (o, Just "")) options) []
+            (destOption : ("rev", rev) : map (\o -> (o, Just "")) options) []
     
     void $ rawCommand client args
 
@@ -157,18 +161,19 @@ branches client BranchesOptions{..} = do
     return $ parseBranches $ TE.decodeUtf8 result
 
 -- | Create a bundle
-bundle :: HgClient -> FilePath -> [String] -> IO Bool
+bundle :: HgClient -> OsPath -> [String] -> IO Bool
 bundle client file options = do
+    fileOption <- osPathToStringOption ("file", Just file)
     let args = buildArgs "bundle"
-            (("file", Just file) : map (\o -> (o, Just "")) options) []
+            (fileOption : map (\o -> (o, Just "")) options) []
     
     result <- rawCommand client args
     return True
 
 -- | Show file contents at revision
-cat :: HgClient -> [FilePath] -> Maybe String -> IO ByteString
+cat :: HgClient -> [OsPath] -> Maybe String -> IO ByteString
 cat client files rev = do
-    let args = buildArgs "cat" [("rev", rev)] files
+    args <- buildArgsWithPaths "cat" [("rev", rev)] files
     rawCommand client args
 
 -- | Clone a repository
@@ -183,9 +188,10 @@ clone client source dest options = do
 -- | Commit changes
 commit :: HgClient -> CommitOptions -> IO (Int, Text)
 commit client CommitOptions{..} = do
+    logfileOption <- osPathToStringOption ("logfile", commitLogfile)
     let args = buildArgs "commit"
             [ ("message", Just commitMessage)
-            , ("logfile", commitLogfile)
+            , logfileOption
             , ("addremove", boolFlag commitAddRemove)
             , ("close-branch", boolFlag commitCloseBranch)
             , ("date", commitDate)
@@ -215,18 +221,19 @@ config client ConfigOptions{..} = do
     return $ parseConfig $ TE.decodeUtf8 result
 
 -- | Copy files
-copy :: HgClient -> [FilePath] -> FilePath -> [String] -> IO Bool
+copy :: HgClient -> [OsPath] -> OsPath -> [String] -> IO Bool
 copy client sources dest options = do
-    let args = buildArgs "copy"
-            (("dest", Just dest) : map (\o -> (o, Just "")) options) sources
+    destOption <- osPathToStringOption ("dest", Just dest)
+    args <- buildArgsWithPaths "copy"
+            (destOption : map (\o -> (o, Just "")) options) sources
     
     result <- rawCommand client args
     return True
 
 -- | Show differences
-diff :: HgClient -> [FilePath] -> DiffOptions -> IO ByteString
+diff :: HgClient -> [OsPath] -> DiffOptions -> IO ByteString
 diff client files DiffOptions{..} = do
-    let args = buildArgs "diff"
+    args <- buildArgsWithPaths "diff"
             (map (\r -> ("rev", Just r)) diffRevs ++
              [ ("change", diffChange)
              , ("text", boolFlag diffText)
@@ -253,16 +260,16 @@ export client revs options = do
     rawCommand client args
 
 -- | Forget files
-forget :: HgClient -> [FilePath] -> [String] -> IO Bool
+forget :: HgClient -> [OsPath] -> [String] -> IO Bool
 forget client files options = do
-    let args = buildArgs "forget" (map (\o -> (o, Just "")) options) files
+    args <- buildArgsWithPaths "forget" (map (\o -> (o, Just "")) options) files
     result <- rawCommand client args
     return True
 
 -- | Search for patterns
-grep :: HgClient -> String -> [FilePath] -> [String] -> IO [(Text, Text)]
+grep :: HgClient -> String -> [OsPath] -> [String] -> IO [(Text, Text)]
 grep client pattern files options = do
-    let args = buildArgs "grep"
+    args <- buildArgsWithPaths "grep"
             (("pattern", Just pattern) : map (\o -> (o, Just "")) options) files
     
     result <- rawCommand client args
@@ -286,9 +293,9 @@ identify client options = do
     return $ T.strip $ TE.decodeUtf8 result
 
 -- | Import patches
-import_ :: HgClient -> [FilePath] -> [String] -> IO ()
+import_ :: HgClient -> [OsPath] -> [String] -> IO ()
 import_ client patches options = do
-    let args = buildArgs "import" (map (\o -> (o, Just "")) options) patches
+    args <- buildArgsWithPaths "import" (map (\o -> (o, Just "")) options) patches
     void $ rawCommand client args
 
 -- | Show incoming changes
@@ -302,9 +309,9 @@ incoming client path options = do
     parseJsonRevisions $ TE.decodeUtf8 result
 
 -- | Show revision history
-log_ :: HgClient -> [FilePath] -> LogOptions -> IO [Revision]
+log_ :: HgClient -> [OsPath] -> LogOptions -> IO [Revision]
 log_ client files LogOptions{..} = do
-    let args = buildArgs "log"
+    args <- buildArgsWithPaths "log"
             (("template", Just "json") :
              [ ("rev", logRevRange)
              , ("follow", boolFlag logFollow)
@@ -333,7 +340,7 @@ manifest client options = do
             (("debug", Just "") : map (\o -> (o, Just "")) options) []
     
     result <- rawCommand client args
-    return $ parseManifest $ TE.decodeUtf8 result
+    parseManifest $ TE.decodeUtf8 result
 
 -- | Merge with another revision
 merge :: HgClient -> Maybe String -> [String] -> IO ()
@@ -344,10 +351,11 @@ merge client rev options = do
     void $ rawCommand client args
 
 -- | Move/rename files
-move :: HgClient -> [FilePath] -> FilePath -> [String] -> IO Bool
+move :: HgClient -> [OsPath] -> OsPath -> [String] -> IO Bool
 move client sources dest options = do
-    let args = buildArgs "move"
-            (("dest", Just dest) : map (\o -> (o, Just "")) options) sources
+    destOption <- osPathToStringOption ("dest", Just dest)
+    args <- buildArgsWithPaths "move"
+            (destOption : map (\o -> (o, Just "")) options) sources
     
     result <- rawCommand client args
     return True
@@ -397,40 +405,43 @@ push client dest options = do
     return True
 
 -- | Remove files
-remove :: HgClient -> [FilePath] -> [String] -> IO Bool
+remove :: HgClient -> [OsPath] -> [String] -> IO Bool
 remove client files options = do
-    let args = buildArgs "remove" (map (\o -> (o, Just "")) options) files
+    args <- buildArgsWithPaths "remove" (map (\o -> (o, Just "")) options) files
     result <- rawCommand client args
     return True
 
 -- | Resolve merge conflicts
-resolve :: HgClient -> [FilePath] -> [String] -> IO [ResolveStatus]
+resolve :: HgClient -> [OsPath] -> [String] -> IO [ResolveStatus]
 resolve client files options = do
-    let args = buildArgs "resolve"
+    args <- buildArgsWithPaths "resolve"
             (("list", Just "") : map (\o -> (o, Just "")) options) files
     
     result <- rawCommand client args
-    return $ parseResolve $ TE.decodeUtf8 result
+    parseResolve $ TE.decodeUtf8 result
 
 -- | Revert files
-revert :: HgClient -> [FilePath] -> [String] -> IO Bool
+revert :: HgClient -> [OsPath] -> [String] -> IO Bool
 revert client files options = do
-    let args = buildArgs "revert" (map (\o -> (o, Just "")) options) files
+    args <- buildArgsWithPaths "revert" (map (\o -> (o, Just "")) options) files
     result <- rawCommand client args
     return True
 
 -- | Show repository root
-root :: HgClient -> IO FilePath
+root :: HgClient -> IO OsPath
 root client = do
     result <- rawCommand client ["root"]
-    return $ T.unpack $ T.strip $ TE.decodeUtf8 result
+    let pathStr = T.unpack $ T.strip $ TE.decodeUtf8 result
+    osPathResult <- (try $ OsPath.encodeFS pathStr) :: IO (Either SomeException OsPath)
+    case osPathResult of
+        Left _ -> error $ "Invalid path from root command: " ++ pathStr
+        Right osPath -> return osPath
 
 -- | Show repository status
 status :: HgClient -> StatusOptions -> IO [HgStatus]
 status client StatusOptions{..} = do
     -- First get the repository root
-    (rootResult, _, _) <- runCommand client ["root"]
-    let repoRoot = T.unpack $ T.strip $ TE.decodeUtf8 rootResult
+    repoRoot <- root client
 
     -- Then run status command
     let args = buildArgs "status"
@@ -453,8 +464,8 @@ status client StatusOptions{..} = do
 
     (result, _, _) <- runCommand client args
     logDebug $ "status: args: " ++ show args
-    logDebug $ "calling parseStatusWithRoot " ++ show repoRoot ++ show result
-    return $ parseStatusWithRoot repoRoot result
+    logDebug $ "calling parseStatusWithRoot with result"
+    parseStatusWithRoot repoRoot result
 
 -- | Add tags
 tag :: HgClient -> [String] -> [String] -> IO ()

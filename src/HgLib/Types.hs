@@ -65,6 +65,8 @@ import Data.Time (UTCTime, parseTimeM, defaultTimeLocale, formatTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import GHC.Generics (Generic)
 import System.IO (Handle)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 import System.Process (ProcessHandle)
 
 -- | Mercurial client handle containing connection and state information
@@ -90,7 +92,7 @@ instance Show HgClient where
 
 -- | Configuration for creating an HgClient
 data HgConfig = HgConfig
-    { hgPath :: !(Maybe FilePath)      -- ^ Repository path (Nothing for current directory)
+    { hgPath :: !(Maybe OsPath)        -- ^ Repository path (Nothing for current directory)
     , hgEncoding :: !(Maybe String)    -- ^ Character encoding (Nothing for default)
     , hgConfigs :: ![String]           -- ^ Additional hg config options
     , hgHidden :: !Bool                -- ^ Include hidden changesets
@@ -145,7 +147,7 @@ defaultConfig = HgConfig
     }
 
 -- | Default configuration with specified repository path
-defaultConfigWithPath :: FilePath -> HgConfig
+defaultConfigWithPath :: OsPath -> HgConfig
 defaultConfigWithPath path = defaultConfig { hgPath = Just path }
 
 -- | Represents a Mercurial revision with all metadata
@@ -191,7 +193,7 @@ instance ToJSON Revision where
 -- | File status in working directory
 data HgStatus = HgStatus
     { statusCode :: !Char      -- ^ Status code (M, A, R, C, !, ?, I, or space)
-    , statusFile :: !FilePath  -- ^ File path
+    , statusFile :: !OsPath  -- ^ File path
     } deriving stock (Show, Eq, Generic)
 
 -- | Convert status code character to human-readable description
@@ -210,14 +212,14 @@ statusCodeToChar = \case
 -- | Parse status code from character
 charToStatusCode :: Char -> Maybe HgStatus -> Maybe HgStatus
 charToStatusCode c mPrev = case c of
-    'M' -> Just $ HgStatus 'M' ""
-    'A' -> Just $ HgStatus 'A' ""
-    'R' -> Just $ HgStatus 'R' ""
-    'C' -> Just $ HgStatus 'C' ""
-    '!' -> Just $ HgStatus '!' ""
-    '?' -> Just $ HgStatus '?' ""
-    'I' -> Just $ HgStatus 'I' ""
-    ' ' -> Just $ HgStatus ' ' ""
+    'M' -> Just $ HgStatus 'M' mempty
+    'A' -> Just $ HgStatus 'A' mempty
+    'R' -> Just $ HgStatus 'R' mempty
+    'C' -> Just $ HgStatus 'C' mempty
+    '!' -> Just $ HgStatus '!' mempty
+    '?' -> Just $ HgStatus '?' mempty
+    'I' -> Just $ HgStatus 'I' mempty
+    ' ' -> Just $ HgStatus ' ' mempty
     _   -> mPrev
 
 -- | Changeset phase (public, draft, secret)
@@ -272,19 +274,19 @@ data ManifestEntry = ManifestEntry
     , manifestPermissions :: !Text
     , manifestExecutable :: !Bool
     , manifestSymlink :: !Bool
-    , manifestPath :: !FilePath
+    , manifestPath :: !OsPath
     } deriving stock (Show, Eq, Generic)
 
 -- | Line from annotate command
 data AnnotationLine = AnnotationLine
-    { annotationInfo :: !Text     -- ^ Revision/author/date info
-    , annotationContent :: !Text  -- ^ Line content
+    { annotationInfo :: !Text        -- ^ Revision/author/date info
+    , annotationContent :: !ByteString  -- ^ Line content (unknown encoding)
     } deriving stock (Show, Eq, Generic)
 
 -- | File resolve status for merge conflicts
 data ResolveStatus = ResolveStatus
     { resolveCode :: !Char      -- ^ 'R' for resolved, 'U' for unresolved
-    , resolvePath :: !FilePath  -- ^ File path
+    , resolvePath :: !OsPath  -- ^ File path
     } deriving stock (Show, Eq, Generic)
 
 -- | Repository C.summary information
@@ -335,7 +337,7 @@ defaultAddOptions = AddOptions [] False False Nothing Nothing
 data CommitOptions = CommitOptions
     { commitFiles :: ![String]            -- ^ file argument
     , commitMessage :: !String            -- mandatory
-    , commitLogfile :: !(Maybe FilePath)
+    , commitLogfile :: !(Maybe OsPath)
     , commitAddRemove :: !Bool
     , commitCloseBranch :: !Bool
     , commitDate :: !(Maybe String)

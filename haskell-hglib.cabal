@@ -49,6 +49,7 @@ library
     , filepath >=1.4.301.0
     , mtl >=2.2.2
     , optparse-applicative
+    , os-string >=2.0.0
     , process >=1.6.25.0
     , scientific >=0.3.8.0
     , stm >=2.5.3.1
@@ -81,6 +82,7 @@ executable haskell-hglib-exe
     , haskell-hglib
     , mtl >=2.2.2
     , optparse-applicative
+    , os-string >=2.0.0
     , process >=1.6.25.0
     , scientific >=0.3.8.0
     , stm >=2.5.3.1
@@ -117,6 +119,7 @@ executable python-testcase-converter-exe
     , language-python >=0.6.0
     , mtl >=2.2.2
     , optparse-applicative
+    , os-string >=2.0.0
     , process >=1.6.25.0
     , scientific >=0.3.8.0
     , stm >=2.5.3.1
@@ -149,6 +152,7 @@ executable table-extractor-exe
     , haskell-hglib
     , mtl >=2.2.2
     , optparse-applicative
+    , os-string >=2.0.0
     , process
     , scientific >=0.3.8.0
     , stm >=2.5.3.1
@@ -198,6 +202,7 @@ test-suite haskell-hglib-test
     , hspec-core >=2.11.12
     , mtl >=2.2.2
     , optparse-applicative
+    , os-string >=2.0.0
     , process
     , scientific >=0.3.8.0
     , stm >=2.5.3.1

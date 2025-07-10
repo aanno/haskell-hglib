@@ -56,15 +56,17 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Maybe (fromMaybe)
 import Text.Read (readMaybe)
+import System.OsPath (OsPath)
+import qualified System.OsPath as OsPath
 
 import HgLib.Types
 import qualified HgLib.Commands as C
 import HgLib.Protocol
 import HgLib.Error
 
--- | C.summary information about a repository
+-- | Summary information about a repository
 data RepositoryInfo = RepositoryInfo
-    { repoRoot :: !FilePath
+    { repoRoot :: !OsPath
     , repoCurrentRevision :: !Revision
     , repoBranch :: !Text
     , repoIsClean :: !Bool
@@ -72,10 +74,11 @@ data RepositoryInfo = RepositoryInfo
     } deriving (Show, Eq)
 
 -- | Simple repository cloning
-simpleClone :: String -> FilePath -> IO ()
+simpleClone :: String -> OsPath -> IO ()
 simpleClone source dest = do
-    withClient defaultConfig $ \client ->
-        C.clone client source (Just dest) []
+    withClient defaultConfig $ \client -> do
+        destStr <- OsPath.decodeFS dest
+        C.clone client source (Just destStr) []
 
 -- | Simple commit with just a message
 simpleCommit :: HgClient -> String -> IO (Int, Text)
